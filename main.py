@@ -241,7 +241,7 @@ while running:
 
         screen.blit(cowImg, (farmer["pos"].x, farmer["pos"].y))
 
-        screen.blit(rocket, (screen_width-150, 100))
+        screen.blit(rocket, (screen_width-200, 120))
     
         farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
         if ufo_rect.colliderect(farmer_rect):  
@@ -257,19 +257,20 @@ while running:
             mining = True 
             pygame.draw.rect(screen, "black", enter_cave_rect, 50)
             screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_RETURN]:
-            current_screen = "insideCave1"  
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_RETURN]:
+                current_screen = "insideCave1"  
 
     if current_screen == "insideCave1":
         screen.blit(insideCave1, (0, 0))
 
-    enter_rocket_rect = pygame.Rect(screen_width-150, 100 - 40, 200, 60)  
+    enter_rocket_rect = pygame.Rect(screen_width-250, 100, 230, 60)  
+    rocketRect = pygame.Rect(screen_width-200, 120, 100,100)
     rocketText = font.render('Enter rocket', True, (100, 100, 50)) 
     
     screen.blit(playerImg, (player_pos.x, player_pos.y))
 
-    if ufo_rect.colliderect(enter_rocket_rect):  
+    if ufo_rect.colliderect(rocketRect):  
         pygame.draw.rect(screen, "black", enter_rocket_rect, 50)
         screen.blit(rocketText, (enter_rocket_rect.x + 7, enter_rocket_rect.y + 10)) 
         keys = pygame.key.get_pressed()
@@ -278,6 +279,17 @@ while running:
 
     if current_screen == "hall3":
         screen.blit(hall3, (0, 0))
+        firstDoorRec = pygame.Rect((screen_width / 2) - 70, (screen_height / 2) - 70, 160, 150)
+        pygame.draw.rect(screen, (200, 0, 0), firstDoorRec, 3) 
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if firstDoorRec.collidepoint(mouse_pos):
+                    current_screen = "hall6"
+
+    if current_screen == "hall6": 
+        screen.blit(hall6, (0, 0))
+
 
     # cows logic
     for cow in cows:
@@ -311,7 +323,7 @@ while running:
         pygame.draw.rect(screen, color , slot, 3) 
 
     # game over page 
-    if (game_over):   
+    if (game_over):   #??????
         if not game_over:  
             game_over = True  
             current_screen = "gameover"  
