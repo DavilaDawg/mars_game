@@ -46,11 +46,14 @@ cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 1
 numOfCows = 5
 numOfFarmers = 2
 numOfCaves = random.randint(0, 4)
+
+# States
 game_over= False
-
-current_screen = "game" 
-
 mining = False
+current_screen = "game" 
+selectedItem = "pickAx"
+selected_slot_index = None
+
 
 back_rect = pygame.Rect(495, 620, 300, 80)
 
@@ -65,6 +68,7 @@ badBannana = pygame.transform.scale(pygame.image.load('./icon/badBannana.png'), 
 rocket = pygame.transform.scale(pygame.image.load("./icon/rocket.png"), (150,150))
 table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
 chocolate =  pygame.transform.scale(pygame.image.load("./icon/chocolate-bar.png"), (50,50))
+pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
 
 if current_screen == "game": 
     collectible_items = [
@@ -91,7 +95,8 @@ if current_screen == "game":
 item_images = {
     "item1": flippedBannana, 
     "badBannana": badBannana,
-    "chocolate": chocolate
+    "chocolate": chocolate,
+    "pickAx": pickAx,
 }
 
 def check_item_collision(player_rect):
@@ -163,7 +168,7 @@ for row in range(inventory_rows):
         y = inventory_start_y + row * (inventory_slot_size + inventory_margin)
         inventory_slots.append(pygame.Rect(x, y, inventory_slot_size, inventory_slot_size))
 
-inventory_contents = ["item1", None, None, None, None, None, None, None]
+inventory_contents = ["pickAx", None, None, None, None, None, None, None]
 
 
 def add_to_inventory(item_name):
@@ -184,7 +189,10 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()                
+            mouse_pos = pygame.mouse.get_pos()      
+            for i, slot in enumerate(inventory_slots):
+                    if slot.collidepoint(mouse_pos):
+                        selected_slot_index = i  
             
     screen.blit(bg, (0, 0))
 
@@ -199,7 +207,7 @@ while running:
     for item in collectible_items:
         if not item["collected"]:
             screen.blit(item["image"], (item["pos"].x, item["pos"].y))
-
+            
     # Player movement
     keys = pygame.key.get_pressed()
     if keys[pygame.K_a]:
@@ -296,8 +304,11 @@ while running:
             screen.blit(item_img, (slot.x, slot.y))
 
     # Draw inventory slots
-    for slot in inventory_slots:
-        pygame.draw.rect(screen, "gray", slot, 3) 
+    for i, slot in enumerate(inventory_slots):
+        color = "gray"
+        if selected_slot_index== i: 
+            color= "yellow"
+        pygame.draw.rect(screen, color , slot, 3) 
 
     # game over page 
     if (game_over):   
