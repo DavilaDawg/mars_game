@@ -70,8 +70,8 @@ table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100)
 chocolate =  pygame.transform.scale(pygame.image.load("./icon/chocolate-bar.png"), (50,50))
 pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
 
-if current_screen == "game": 
-    collectible_items = [
+collectible_items = {
+    "game": [
         {
             "pos": pygame.Vector2(200, 200),  
             "image": flippedBannana,          
@@ -90,7 +90,16 @@ if current_screen == "game":
             "name": "chocolate",
             "collected": False    
         }
+    ],
+    "insideCave1": [
+        {
+            "pos": pygame.Vector2(300, 300),
+            "image": pickAx,
+            "name": "pickAx",
+            "collected": False    
+        }
     ]
+}
 
 item_images = {
     "item1": flippedBannana, 
@@ -100,7 +109,8 @@ item_images = {
 }
 
 def check_item_collision(player_rect):
-    for item in collectible_items:
+    current_items = collectible_items.get(current_screen, [])
+    for item in current_items:
         if not item["collected"]:  
             item_rect = pygame.Rect(item["pos"].x, item["pos"].y, 40, 40)  
             if player_rect.colliderect(item_rect):  
@@ -204,7 +214,7 @@ while running:
     check_item_collision(ufo_rect)
 
     # Draw collectible items that are not yet collected
-    for item in collectible_items:
+    for item in collectible_items.get(current_screen, []):
         if not item["collected"]:
             screen.blit(item["image"], (item["pos"].x, item["pos"].y))
             
@@ -223,52 +233,49 @@ while running:
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
     player_pos.y = max(0, min(player_pos.y, screen_height - playerSize))
 
-    # farmer logic 
-    for farmer in farmers:
-        # Wandering 
-        farmer["time_since_last_change"] += dt
-        if farmer["time_since_last_change"] >= 6:
-            farmer["direction"] = pygame.Vector2(random.choice([-1, 1]), random.choice([-1, 1]))
-            farmer["time_since_last_change"] = 0
+    if current_screen == "game":
+        # farmer logic 
+        for farmer in farmers:
+            # Wandering 
+            farmer["time_since_last_change"] += dt
+            if farmer["time_since_last_change"] >= 6:
+                farmer["direction"] = pygame.Vector2(random.choice([-1, 1]), random.choice([-1, 1]))
+                farmer["time_since_last_change"] = 0
 
-        farmer["pos"] += farmer["direction"] * farmer["speed"] * dt
+            farmer["pos"] += farmer["direction"] * farmer["speed"] * dt
 
-        # farmer bounds
-        if farmer["pos"].x <= 0 or farmer["pos"].x >= screen_width - farmerSize:
-            farmer["direction"].x *= -1
-        if farmer["pos"].y <= 0 or farmer["pos"].y >= screen_height - farmerSize:
-            farmer["direction"].y *= -1
+            # farmer bounds
+            if farmer["pos"].x <= 0 or farmer["pos"].x >= screen_width - farmerSize:
+                farmer["direction"].x *= -1
+            if farmer["pos"].y <= 0 or farmer["pos"].y >= screen_height - farmerSize:
+                farmer["direction"].y *= -1
 
-        screen.blit(cowImg, (farmer["pos"].x, farmer["pos"].y))
+            screen.blit(cowImg, (farmer["pos"].x, farmer["pos"].y))
 
-        screen.blit(rocket, (screen_width-200, 120))
-    
-        farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
-        if ufo_rect.colliderect(farmer_rect):  
-            collisionTracked =True 
+            screen.blit(rocket, (screen_width-200, 120))
+        
+            farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
+            if ufo_rect.colliderect(farmer_rect):  
+                collisionTracked =True 
 
-    for cave in caves:
-        screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
-        enter_cave_rect = pygame.Rect(cave["pos"].x - 50, cave["pos"].y - 40, 200, 60)  
-        mineText = font.render('Enter cave', True, (100, 100, 50)) 
-        cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
-    
-        if ufo_rect.colliderect(cave_rect):  
-            mining = True 
-            pygame.draw.rect(screen, "black", enter_cave_rect, 50)
-            screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_RETURN]:
-                current_screen = "insideCave1"  
+        for cave in caves:
+            screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
+            enter_cave_rect = pygame.Rect(cave["pos"].x - 50, cave["pos"].y - 40, 200, 60)  
+            mineText = font.render('Enter cave', True, (100, 100, 50)) 
+            cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
+        
+            if ufo_rect.colliderect(cave_rect):  
+                mining = True 
+                pygame.draw.rect(screen, "black", enter_cave_rect, 50)
+                screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_RETURN]:
+                    current_screen = "insideCave1"  
 
-    if current_screen == "insideCave1":
-        screen.blit(insideCave1, (0, 0))
-
-    enter_rocket_rect = pygame.Rect(screen_width-250, 100, 230, 60)  
-    rocketRect = pygame.Rect(screen_width-200, 120, 100,100)
-    rocketText = font.render('Enter rocket', True, (100, 100, 50)) 
-    
-    screen.blit(playerImg, (player_pos.x, player_pos.y))
+        enter_rocket_rect = pygame.Rect(screen_width-250, 100, 230, 60)  
+        rocketRect = pygame.Rect(screen_width-200, 120, 100,100)
+        rocketText = font.render('Enter rocket', True, (100, 100, 50)) 
+        screen.blit(playerImg, (player_pos.x, player_pos.y))
 
     if ufo_rect.colliderect(rocketRect):  
         pygame.draw.rect(screen, "black", enter_rocket_rect, 50)
@@ -286,6 +293,10 @@ while running:
                 mouse_pos = pygame.mouse.get_pos()
                 if firstDoorRec.collidepoint(mouse_pos):
                     current_screen = "hall6"
+
+    if current_screen == "insideCave1":
+        screen.blit(insideCave1, (0, 0))
+        screen.blit(playerImg, (player_pos.x, player_pos.y))
 
     if current_screen == "hall6": 
         screen.blit(hall6, (0, 0))
