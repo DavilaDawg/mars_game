@@ -115,10 +115,7 @@ def check_item_collision(player_rect):
             item_rect = pygame.Rect(item["pos"].x, item["pos"].y, 40, 40)  
             if player_rect.colliderect(item_rect):  
                 if add_to_inventory(item["name"]): 
-                    print(f"Collected {item['name']}")
                     item["collected"] = True  
-                else:
-                    print("Inventory full!")
 
 player_pos = pygame.Vector2(screen_width / 2, 10)
 
