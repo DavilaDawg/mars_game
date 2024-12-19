@@ -53,6 +53,7 @@ mining = False
 current_screen = "game" 
 selectedItem = "pickAx"
 selected_slot_index = None
+mouse_pos = None
 
 
 back_rect = pygame.Rect(495, 620, 300, 80)
@@ -285,11 +286,10 @@ while running:
         screen.blit(hall3, (0, 0))
         firstDoorRec = pygame.Rect((screen_width / 2) - 70, (screen_height / 2) - 70, 160, 150)
         pygame.draw.rect(screen, (200, 0, 0), firstDoorRec, 3) 
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                if firstDoorRec.collidepoint(mouse_pos):
-                    current_screen = "hall6"
+        if mouse_pos is None:
+            mouse_pos = pygame.mouse.get_pos()
+        if firstDoorRec.collidepoint(mouse_pos):
+            current_screen = "hall6"
 
     if current_screen == "insideCave1":
         screen.blit(insideCave1, (0, 0))
@@ -351,56 +351,50 @@ while running:
         screen.blit(text4, (540, 535))
         screen.blit(achieveText, (510, screen_height-80))
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                if current_screen == "gameover":
-                    if button_rect.collidepoint(mouse_pos):
-                        numCaptured = 0
-                        totalTime = 0
-                        game_over = False
-                        win_counted = False
-                        collisionTracked = False
-                        play_music("background", loop=True, volume=2)
-                        current_screen = "game"
+        if current_screen == "gameover":
+            if button_rect.collidepoint(mouse_pos):
+                numCaptured = 0
+                totalTime = 0
+                game_over = False
+                win_counted = False
+                collisionTracked = False
+                play_music("background", loop=True, volume=2)
+                current_screen = "game"
+                player_pos = pygame.Vector2(screen_width / 2, 10)
 
-                        player_pos = pygame.Vector2(screen_width / 2, 10)
-
-                        cows = [
-                            {
-                                "pos": pygame.Vector2(
-                                    random.randint(0, screen_width - cowSize),
-                                    random.randint(screen_height // 2, screen_height - cowSize)
-                                ),
-                                "speed": random.randint(2, 15),
-                                "direction": pygame.Vector2(random.choice([-1, 1]), 0),
-                                "time_since_last_change": 0,
-                                "time_since_last_jump": 0,
-                                "time_below": 0,
-                                "sound_played": False
-                            }
-                            for _ in range(numOfCows)
-                        ]
+                cows = [
+                    {
+                        "pos": pygame.Vector2(
+                            random.randint(0, screen_width - cowSize),
+                            random.randint(screen_height // 2, screen_height - cowSize)
+                        ),
+                        "speed": random.randint(2, 15),
+                        "direction": pygame.Vector2(random.choice([-1, 1]), 0),
+                        "time_since_last_change": 0,
+                        "time_since_last_jump": 0,
+                        "time_below": 0,
+                        "sound_played": False
+                    }
+                for _ in range(numOfCows)
+                ]
                  
-                        farmers= [
-                            {
-                            "pos": pygame.Vector2(
-                                    random.randint(0, screen_width - farmerSize),
-                                    random.randint(0, screen_height//2)
-                                ),
-                            "speed": random.randint(10, 40),
-                            "direction": pygame.Vector2(0, random.choice([-1, 1])),
-                            "time_since_last_change": 0,
-                            }
-                            for _ in range(numOfFarmers)
-                        ]
-                    elif achieve_rect.collidepoint(mouse_pos):
-                        current_screen = "achievements"
-                elif current_screen == "achievements":
-                    if back_rect.collidepoint(mouse_pos):
-                        current_screen = "gameover"
+                farmers= [
+                    {
+                    "pos": pygame.Vector2(
+                        random.randint(0, screen_width - farmerSize),
+                        random.randint(0, screen_height//2)
+                    ),
+                    "speed": random.randint(10, 40),
+                    "direction": pygame.Vector2(0, random.choice([-1, 1])),
+                    "time_since_last_change": 0,
+                    }
+                    for _ in range(numOfFarmers)
+                    ]
+            elif achieve_rect.collidepoint(mouse_pos):
+                current_screen = "achievements"
+            elif current_screen == "achievements":
+                if back_rect.collidepoint(mouse_pos):
+                    current_screen = "gameover"
 
         if current_screen == "achievements": 
             screen.blit(bg2, (0, 0))
