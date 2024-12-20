@@ -32,6 +32,8 @@ bg2 = pygame.transform.scale(pygame.image.load("./icon/black.png"), (screen_widt
 insideCave1 = pygame.transform.scale(pygame.image.load("./icon/cav1_.webp"), (screen_width, screen_height))
 hall3 = pygame.transform.scale(pygame.image.load("./icon/hall3.jpg"), (screen_width, screen_height))
 hall6 = pygame.transform.scale(pygame.image.load("./icon/hall6.jpg"), (screen_width, screen_height))
+hall7 = pygame.transform.scale(pygame.image.load("./icon/hall7.webp"), (screen_width, screen_height))
+bedroom = pygame.transform.scale(pygame.image.load("./icon/bedroom.jpg"), (screen_width, screen_height))
 tileSize = 40
 playerSize = 80
 cowSize= 80
@@ -193,11 +195,14 @@ while running:
     totalTime += dt 
     ufo_rect = pygame.Rect(player_pos.x, player_pos.y, playerSize, playerSize)
 
+    mouse_pos = pygame.mouse.get_pos()
+    clicked = False
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()      
+            clicked = True 
             for i, slot in enumerate(inventory_slots):
                     if slot.collidepoint(mouse_pos):
                         selected_slot_index = i  
@@ -286,18 +291,29 @@ while running:
         screen.blit(hall3, (0, 0))
         firstDoorRec = pygame.Rect((screen_width / 2) - 70, (screen_height / 2) - 70, 160, 150)
         pygame.draw.rect(screen, (200, 0, 0), firstDoorRec, 3) 
-        if mouse_pos is None:
-            mouse_pos = pygame.mouse.get_pos()
-        if firstDoorRec.collidepoint(mouse_pos):
+        if clicked and firstDoorRec.collidepoint(mouse_pos):
             current_screen = "hall6"
-
-    if current_screen == "insideCave1":
-        screen.blit(insideCave1, (0, 0))
-        screen.blit(playerImg, (player_pos.x, player_pos.y))
 
     if current_screen == "hall6": 
         screen.blit(hall6, (0, 0))
+        secondDoorRec = pygame.Rect((screen_width / 4) - 30, (screen_height / 3)+40 , 70, 120)
+        pygame.draw.rect(screen, (200, 0, 0), secondDoorRec, 3) 
+        if clicked and secondDoorRec.collidepoint(mouse_pos):
+            current_screen = "hall7"
 
+    if current_screen == "hall7": 
+        screen.blit(hall7, (0, 0))
+        bedDoorRec = pygame.Rect(140, 300 , 40, 40)
+        pygame.draw.circle(screen, (255, 0, 0), (155, 315), 35, 3)
+        if clicked and bedDoorRec.collidepoint(mouse_pos):
+            current_screen = "bedroom"
+
+    if current_screen == "bedroom": 
+        screen.blit(bedroom, (0,0))
+        
+    if current_screen == "insideCave1":
+        screen.blit(insideCave1, (0, 0))
+        screen.blit(playerImg, (player_pos.x, player_pos.y))
 
     # cows logic
     for cow in cows:
