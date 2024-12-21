@@ -55,6 +55,7 @@ mining = False
 current_screen = "game" 
 selectedItem = "pickAx"
 selected_slot_index = None
+selected_item_from_inventory = True
 mouse_pos = None
 
 
@@ -172,14 +173,30 @@ inventory_start_x = 410
 inventory_start_y = 630 
 inventory_slots = [] 
 
+# Storage 
+storageRows = 5
+storageCols = 8
+storageSlotSize = 70
+storageMargin= 15
+storageStartX= 335
+storageStartY = 120
+storageSlots = []
+
 for row in range(inventory_rows):
     for col in range(inventory_cols):
         x = inventory_start_x + col * (inventory_slot_size + inventory_margin)
         y = inventory_start_y + row * (inventory_slot_size + inventory_margin)
         inventory_slots.append(pygame.Rect(x, y, inventory_slot_size, inventory_slot_size))
 
-inventory_contents = ["pickAx", None, None, None, None, None, None, None]
+for row in range(storageRows):
+    for col in range(storageCols):
+        x = storageStartX + col * (storageSlotSize + storageMargin)
+        y = storageStartY + row * (storageSlotSize + storageMargin)
+        storageSlots.append(pygame.Rect(x, y, storageSlotSize, storageSlotSize))
 
+inventory_contents = [None, None, None, None, None, None, None, None]
+
+storage_contents = [None] * (storageRows * storageCols)
 
 def add_to_inventory(item_name):
     for i, content in enumerate(inventory_contents):
@@ -205,7 +222,22 @@ while running:
             clicked = True 
             for i, slot in enumerate(inventory_slots):
                     if slot.collidepoint(mouse_pos):
-                        selected_slot_index = i  
+                        if selected_slot_index is None:  
+                            if inventory_contents[i] is not None:
+                                selected_slot_index = i 
+                                selected_item_from_inventory = True
+                        else:
+                            if inventory_contents[i] is None: 
+                                if selected_item_from_inventory:
+                                    # Move within inventory
+                                    inventory_contents[i] = inventory_contents[selected_slot_index]
+                                    inventory_contents[selected_slot_index] = None
+                                else: 
+                                    # Move from storage to inventory
+                                    inventory_contents[i] = storage_contents[selected_slot_index]
+                                    storage_contents[selected_slot_index] = None
+                                selected_slot_index = None
+                        break
             
     screen.blit(bg, (0, 0))
 
@@ -310,7 +342,38 @@ while running:
 
     if current_screen == "bedroom": 
         screen.blit(bedroom, (0,0))
-        
+        storageDoorRec1 = pygame.Rect(86, 110 , 15, 45)
+        pygame.draw.rect(screen, (255, 0, 0), storageDoorRec1, 2)
+        if clicked and storageDoorRec1.collidepoint(mouse_pos):
+            current_screen = "storage1"
+        storageDoorRec2 = pygame.Rect(93, 286 , 15, 45)
+        pygame.draw.rect(screen, (255, 0, 0), storageDoorRec2, 2)
+        if clicked and storageDoorRec2.collidepoint(mouse_pos):
+            current_screen = "storage2"
+        storageDoorRec3 = pygame.Rect(103, 455 , 15, 45)
+        pygame.draw.rect(screen, (255, 0, 0), storageDoorRec3, 2)
+        if clicked and storageDoorRec3.collidepoint(mouse_pos):
+            current_screen = "storage3"
+
+    if current_screen == "storage1":    
+        screen.blit(bg2, (0,0))
+        for i, slot in enumerate(storageSlots):
+            color = "gray"
+            if selected_slot_index == i and not selected_item_from_inventory:
+                color= "yellow"
+            pygame.draw.rect(screen, color , slot, 3)
+            if storage_contents[i] is not None:
+                item_img = pygame.transform.scale(item_images[storage_contents[i]], (storageSlotSize, storageSlotSize))
+                screen.blit(item_img, (slot.x, slot.y))
+
+    if current_screen == "storage2":    
+        screen.blit(bg2, (0,0))
+
+
+    if current_screen == "storage3":    
+        screen.blit(bg2, (0,0))
+
+
     if current_screen == "insideCave1":
         screen.blit(insideCave1, (0, 0))
         screen.blit(playerImg, (player_pos.x, player_pos.y))
@@ -333,18 +396,14 @@ while running:
         if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
             cow["direction"].y *= -1
 
-    # Draw items in inventory
     for i, slot in enumerate(inventory_slots):
+        color = "gray"
+        if selected_slot_index == i and selected_item_from_inventory:
+            color= "yellow"
+        pygame.draw.rect(screen, color , slot, 3)
         if inventory_contents[i] is not None:
             item_img = pygame.transform.scale(item_images[inventory_contents[i]], (inventory_slot_size, inventory_slot_size))
             screen.blit(item_img, (slot.x, slot.y))
-
-    # Draw inventory slots
-    for i, slot in enumerate(inventory_slots):
-        color = "gray"
-        if selected_slot_index== i: 
-            color= "yellow"
-        pygame.draw.rect(screen, color , slot, 3) 
 
     # game over page 
     if (game_over):   #??????
