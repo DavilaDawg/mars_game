@@ -34,6 +34,7 @@ hall3 = pygame.transform.scale(pygame.image.load("./icon/hall3.jpg"), (screen_wi
 hall6 = pygame.transform.scale(pygame.image.load("./icon/hall6.jpg"), (screen_width, screen_height))
 hall7 = pygame.transform.scale(pygame.image.load("./icon/hall7.webp"), (screen_width, screen_height))
 bedroom = pygame.transform.scale(pygame.image.load("./icon/bedroom.jpg"), (screen_width, screen_height))
+kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_width, screen_height))
 tileSize = 40
 playerSize = 80
 cowSize= 80
@@ -175,7 +176,7 @@ inventory_slots = []
 
 # Storage 
 storageRows = 5
-storageCols = 8
+storageCols = 7
 storageSlotSize = 70
 storageMargin= 15
 storageStartX= 335
@@ -194,9 +195,14 @@ for row in range(storageRows):
         y = storageStartY + row * (storageSlotSize + storageMargin)
         storageSlots.append(pygame.Rect(x, y, storageSlotSize, storageSlotSize))
 
+
 inventory_contents = [None, None, None, None, None, None, None, None]
 
-storage_contents = [None] * (storageRows * storageCols)
+storage_contents1 = [pickAx] * (storageRows * storageCols)
+storage_contents2 = [bannana] * (storageRows * storageCols)
+storage_contents3 = [bannana] * (storageRows * storageCols)
+
+current_storage_contents = storage_contents1 
 
 def add_to_inventory(item_name):
     for i, content in enumerate(inventory_contents):
@@ -216,28 +222,47 @@ while running:
     clicked = False
 
     for event in pygame.event.get():
+
+        if current_screen == "storage1":
+            current_storage_contents = storage_contents1
+        elif current_screen == "storage2":
+            current_storage_contents = storage_contents2
+        elif current_screen == "storage3":
+            current_storage_contents = storage_contents3
+
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             clicked = True 
             for i, slot in enumerate(inventory_slots):
-                    if slot.collidepoint(mouse_pos):
-                        if selected_slot_index is None:  
-                            if inventory_contents[i] is not None:
-                                selected_slot_index = i 
-                                selected_item_from_inventory = True
-                        else:
-                            if inventory_contents[i] is None: 
-                                if selected_item_from_inventory:
-                                    # Move within inventory
-                                    inventory_contents[i] = inventory_contents[selected_slot_index]
-                                    inventory_contents[selected_slot_index] = None
-                                else: 
-                                    # Move from storage to inventory
-                                    inventory_contents[i] = storage_contents[selected_slot_index]
-                                    storage_contents[selected_slot_index] = None
-                                selected_slot_index = None
-                        break
+                if slot.collidepoint(mouse_pos):
+                    if selected_slot_index is None:  
+                        if inventory_contents[i] is not None:
+                            selected_slot_index = i 
+                            selected_item_from_inventory = True
+                    else:
+                        if inventory_contents[i] is None: 
+                            if selected_item_from_inventory: 
+                                inventory_contents[i]= inventory_contents[selected_slot_index]
+                                inventory_contents[selected_slot_index]= None
+                            else:
+                                inventory_contents[i]= current_storage_contents[selected_slot_index]
+                            if not selected_item_from_inventory:
+                                current_storage_contents[selected_slot_index] = None
+                            selected_slot_index = None
+                    break
+
+            for j, slot in enumerate(storageSlots):
+                if slot.collidepoint(mouse_pos):  
+                    if selected_slot_index is not None:  
+                        # move from storage to inventory
+                        selected_slot_index = j
+                        selected_item_from_inventory = True
+                    # else:
+                    #     if selected_item_from_inventory: 
+                    #         current_storage_contents[j] = inventory_contents[selected_slot_index]
+                        selected_slot_index = None
+                    break  
             
     screen.blit(bg, (0, 0))
 
@@ -278,10 +303,7 @@ while running:
                 farmer["time_since_last_change"] = 0
 
             farmer["pos"] += farmer["direction"] * farmer["speed"] * dt
-
-            # farmer bounds
-            if farmer["pos"].x <= 0 or farmer["pos"].x >= screen_width - farmerSize:
-                farmer["direction"].x *= -1
+            farmer["direction"].x *= -1
             if farmer["pos"].y <= 0 or farmer["pos"].y >= screen_height - farmerSize:
                 farmer["direction"].y *= -1
 
@@ -335,10 +357,13 @@ while running:
 
     if current_screen == "hall7": 
         screen.blit(hall7, (0, 0))
-        bedDoorRec = pygame.Rect(140, 300 , 40, 40)
+        bedDoorRec = pygame.Rect(125, 280 , 65, 65)
         pygame.draw.circle(screen, (255, 0, 0), (155, 315), 35, 3)
-        if clicked and bedDoorRec.collidepoint(mouse_pos):
-            current_screen = "bedroom"
+        kitchenDoorRec= pygame.Rect(screen_width-73, 275 , 70, 70)
+        pygame.draw.circle(screen, (255, 0, 0), (screen_width-40, 310), 37, 3)
+        if clicked and kitchenDoorRec.collidepoint(mouse_pos):
+            current_screen = "kitchen"
+        
 
     if current_screen == "bedroom": 
         screen.blit(bedroom, (0,0))
@@ -362,18 +387,33 @@ while running:
             if selected_slot_index == i and not selected_item_from_inventory:
                 color= "yellow"
             pygame.draw.rect(screen, color , slot, 3)
-            if storage_contents[i] is not None:
-                item_img = pygame.transform.scale(item_images[storage_contents[i]], (storageSlotSize, storageSlotSize))
-                screen.blit(item_img, (slot.x, slot.y))
+            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+            screen.blit(item_img, (slot.x, slot.y))
 
     if current_screen == "storage2":    
         screen.blit(bg2, (0,0))
-
+        for i, slot in enumerate(storageSlots):
+            color = "gray"
+            if selected_slot_index == i and not selected_item_from_inventory:
+                color= "yellow"
+            pygame.draw.rect(screen, color , slot, 3)
+            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+            screen.blit(item_img, (slot.x, slot.y))
 
     if current_screen == "storage3":    
         screen.blit(bg2, (0,0))
+        for i, slot in enumerate(storageSlots):
+            color = "gray"
+            if selected_slot_index == i and not selected_item_from_inventory:
+                color= "yellow"
+            pygame.draw.rect(screen, color , slot, 3)
+            # if current_storage_contents[i] is not None:
+            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+            screen.blit(item_img, (slot.x, slot.y))
 
-
+    if current_screen == "kitchen": 
+        screen.blit(kitchen, (0, 0))
+    
     if current_screen == "insideCave1":
         screen.blit(insideCave1, (0, 0))
         screen.blit(playerImg, (player_pos.x, player_pos.y))
