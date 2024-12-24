@@ -37,11 +37,11 @@ bedroom = pygame.transform.scale(pygame.image.load("./icon/bedroom.jpg"), (scree
 kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_width, screen_height))
 tileSize = 40
 playerSize = 70
-cowSize= 80
+cowSize= 70
 farmerSize= 60
 
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
-cowImg = pygame.transform.scale(pygame.image.load('./icon/alien.png'), (cowSize, cowSize))
+cowImg = pygame.transform.scale(pygame.image.load('./icon/astronaut2.png'), (cowSize, cowSize))
 farmImg = pygame.transform.scale(pygame.image.load('./icon/farm.png'), (90, 90))
 cave1Img = pygame.transform.scale(pygame.image.load('./icon/cave1.png'), (100, 100))
 cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 100))
@@ -163,7 +163,7 @@ cows = [
             random.randint(0, screen_width - cowSize),
             random.randint(screen_height // 2, screen_height - cowSize)
         ),
-        "speed": random.randint(2, 15),
+        "speed": random.randint(5, 15),
         "direction": pygame.Vector2(random.choice([-1, 1]), 0),
         "selected": False,
         "captured": False,
@@ -212,7 +212,9 @@ storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
 storage_contents3 = [None] * (storageRows * storageCols)
 
-current_storage_contents = storage_contents1
+storage_contents1[0] = "pickAx"
+
+current_storage_contents = storage_contents1.copy()
 
 inventory_timestamps = [None] * len(inventory_contents)
 
@@ -339,7 +341,6 @@ while running:
     player_pos.y = max(0, min(player_pos.y, screen_height - playerSize))
 
     if current_screen == "game":
-        last_screen = "game"
         # farmer logic 
         for farmer in farmers:
             # Wandering 
@@ -496,9 +497,10 @@ while running:
             item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
             screen.blit(item_img, (slot.x, slot.y))
 
-    pygame.draw.rect(screen, "black", back_rect, 50)
-    backText = font.render('BACK', True, (100, 100, 50))
-    screen.blit(backText, (25, 25))
+    if current_screen is not "game":
+        pygame.draw.rect(screen, "black", back_rect, 50)
+        backText = font.render('BACK', True, (100, 100, 50))
+        screen.blit(backText, (25, 25))
 
 
     # game over page 
