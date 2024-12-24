@@ -264,14 +264,17 @@ while running:
             for j, slot in enumerate(storageSlots):
                 if slot.collidepoint(mouse_pos):  
                     if selected_slot_index is None:  
-                        if current_storage_contents[i] is not None:
+                        if current_storage_contents[j] is not None:
                             selected_slot_index = j
                             selected_item_from_inventory = False
                     else:
-                        if current_storage_contents[i] is None:  # Empty slot
+                        if current_storage_contents[j] is None:  # Empty slot
                             if selected_item_from_inventory: # Inventory to storage
                                 current_storage_contents[j] = inventory_contents[selected_slot_index]
                                 inventory_contents[selected_slot_index] = None
+                            else: 
+                                current_storage_contents[j] = current_storage_contents[selected_slot_index]
+                                current_storage_contents[selected_slot_index] = None
                         selected_slot_index = None
                     break  
             
