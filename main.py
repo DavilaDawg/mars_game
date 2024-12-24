@@ -198,9 +198,9 @@ for row in range(storageRows):
 
 inventory_contents = [None, None, None, None, None, None, None, None]
 
-storage_contents1 = [pickAx] * (storageRows * storageCols)
-storage_contents2 = [bannana] * (storageRows * storageCols)
-storage_contents3 = [bannana] * (storageRows * storageCols)
+storage_contents1 = [None] * (storageRows * storageCols)
+storage_contents2 = [None] * (storageRows * storageCols)
+storage_contents3 = [None] * (storageRows * storageCols)
 
 current_storage_contents = storage_contents1 
 
@@ -254,13 +254,15 @@ while running:
 
             for j, slot in enumerate(storageSlots):
                 if slot.collidepoint(mouse_pos):  
-                    if selected_slot_index is not None:  
-                        # move from storage to inventory
-                        selected_slot_index = j
-                        selected_item_from_inventory = True
-                    # else:
-                    #     if selected_item_from_inventory: 
-                    #         current_storage_contents[j] = inventory_contents[selected_slot_index]
+                    if selected_slot_index is None:  
+                        if current_storage_contents[i] is not None:
+                            selected_slot_index = j
+                            selected_item_from_inventory = False
+                    else:
+                        if current_storage_contents[i] is None:  # Empty slot
+                            if selected_item_from_inventory: # Inventory to storage
+                                current_storage_contents[j] = inventory_contents[selected_slot_index]
+                                inventory_contents[selected_slot_index] = None
                         selected_slot_index = None
                     break  
             
@@ -361,10 +363,11 @@ while running:
         pygame.draw.circle(screen, (255, 0, 0), (155, 315), 35, 3)
         kitchenDoorRec= pygame.Rect(screen_width-73, 275 , 70, 70)
         pygame.draw.circle(screen, (255, 0, 0), (screen_width-40, 310), 37, 3)
+        if clicked and bedDoorRec.collidepoint(mouse_pos):
+            current_screen = "bedroom"
         if clicked and kitchenDoorRec.collidepoint(mouse_pos):
             current_screen = "kitchen"
         
-
     if current_screen == "bedroom": 
         screen.blit(bedroom, (0,0))
         storageDoorRec1 = pygame.Rect(86, 110 , 15, 45)
@@ -387,8 +390,9 @@ while running:
             if selected_slot_index == i and not selected_item_from_inventory:
                 color= "yellow"
             pygame.draw.rect(screen, color , slot, 3)
-            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
-            screen.blit(item_img, (slot.x, slot.y))
+            if current_storage_contents[i] is not None:  
+                item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+                screen.blit(item_img, (slot.x, slot.y))
 
     if current_screen == "storage2":    
         screen.blit(bg2, (0,0))
@@ -397,8 +401,9 @@ while running:
             if selected_slot_index == i and not selected_item_from_inventory:
                 color= "yellow"
             pygame.draw.rect(screen, color , slot, 3)
-            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
-            screen.blit(item_img, (slot.x, slot.y))
+            if current_storage_contents[i] is not None:  
+                item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+                screen.blit(item_img, (slot.x, slot.y))
 
     if current_screen == "storage3":    
         screen.blit(bg2, (0,0))
@@ -407,9 +412,9 @@ while running:
             if selected_slot_index == i and not selected_item_from_inventory:
                 color= "yellow"
             pygame.draw.rect(screen, color , slot, 3)
-            # if current_storage_contents[i] is not None:
-            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
-            screen.blit(item_img, (slot.x, slot.y))
+            if current_storage_contents[i] is not None:
+                item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+                screen.blit(item_img, (slot.x, slot.y))
 
     if current_screen == "kitchen": 
         screen.blit(kitchen, (0, 0))
