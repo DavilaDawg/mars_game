@@ -381,7 +381,6 @@ while running:
         screen.blit(playerImg, (player_pos.x, player_pos.y))
 
     if ufo_rect.colliderect(stationRect):  
-        last_screen = "game"
         pygame.draw.rect(screen, "black", enter_station_rect, 50)
         screen.blit(stationText, (enter_station_rect.x + 7, enter_station_rect.y + 10)) 
         keys = pygame.key.get_pressed()
@@ -389,6 +388,7 @@ while running:
             current_screen = "hall3"  
 
     if current_screen == "hall3":
+        last_screen = "game"
         screen.blit(hall3, (0, 0))
         firstDoorRec = pygame.Rect((screen_width / 2) - 70, (screen_height / 2) - 70, 160, 150)
         pygame.draw.rect(screen, (200, 0, 0), firstDoorRec, 3) 
