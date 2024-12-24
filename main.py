@@ -210,8 +210,17 @@ def add_to_inventory(item_name):
             inventory_contents[i] = item_name
             return True
     return False  # Inventory is full
-    
 
+def renderItems(storageSlots): 
+    for i, slot in enumerate(storageSlots):
+        color = "gray"
+        if selected_slot_index == i and not selected_item_from_inventory:
+            color= "yellow"
+        pygame.draw.rect(screen, color , slot, 3)
+        if current_storage_contents[i] is not None:  
+            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+            screen.blit(item_img, (slot.x, slot.y))
+    
 running = True 
 while running: 
     dt = clock.tick(60) / 1000
@@ -385,36 +394,15 @@ while running:
 
     if current_screen == "storage1":    
         screen.blit(bg2, (0,0))
-        for i, slot in enumerate(storageSlots):
-            color = "gray"
-            if selected_slot_index == i and not selected_item_from_inventory:
-                color= "yellow"
-            pygame.draw.rect(screen, color , slot, 3)
-            if current_storage_contents[i] is not None:  
-                item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
-                screen.blit(item_img, (slot.x, slot.y))
-
+        renderItems(storageSlots)
+        
     if current_screen == "storage2":    
         screen.blit(bg2, (0,0))
-        for i, slot in enumerate(storageSlots):
-            color = "gray"
-            if selected_slot_index == i and not selected_item_from_inventory:
-                color= "yellow"
-            pygame.draw.rect(screen, color , slot, 3)
-            if current_storage_contents[i] is not None:  
-                item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
-                screen.blit(item_img, (slot.x, slot.y))
+        renderItems(storageSlots)
 
     if current_screen == "storage3":    
         screen.blit(bg2, (0,0))
-        for i, slot in enumerate(storageSlots):
-            color = "gray"
-            if selected_slot_index == i and not selected_item_from_inventory:
-                color= "yellow"
-            pygame.draw.rect(screen, color , slot, 3)
-            if current_storage_contents[i] is not None:
-                item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
-                screen.blit(item_img, (slot.x, slot.y))
+        renderItems(storageSlots)
 
     if current_screen == "kitchen": 
         screen.blit(kitchen, (0, 0))
