@@ -60,7 +60,8 @@ selected_item_from_inventory = True
 mouse_pos = None
 
 
-back_rect = pygame.Rect(495, 620, 300, 80)
+back_rect1= pygame.Rect(495, 620, 300, 80)
+back_rect = pygame.Rect(18, 23, 100, 50)
 
 font = pygame.font.Font("MODERNA.ttf", 36)
 fontBig = pygame.font.Font("MODERNA.ttf", 70)
@@ -263,6 +264,8 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             clicked = True 
+            if back_rect.collidepoint(mouse_pos):  
+                current_screen = last_screen
             for i, slot in enumerate(inventory_slots):
                 if slot.collidepoint(mouse_pos):
                     if selected_slot_index is None:  
@@ -336,6 +339,7 @@ while running:
     player_pos.y = max(0, min(player_pos.y, screen_height - playerSize))
 
     if current_screen == "game":
+        last_screen = "game"
         # farmer logic 
         for farmer in farmers:
             # Wandering 
@@ -377,6 +381,7 @@ while running:
         screen.blit(playerImg, (player_pos.x, player_pos.y))
 
     if ufo_rect.colliderect(stationRect):  
+        last_screen = "game"
         pygame.draw.rect(screen, "black", enter_station_rect, 50)
         screen.blit(stationText, (enter_station_rect.x + 7, enter_station_rect.y + 10)) 
         keys = pygame.key.get_pressed()
@@ -392,12 +397,14 @@ while running:
 
     if current_screen == "hall6": 
         screen.blit(hall6, (0, 0))
+        last_screen = "hall3"
         secondDoorRec = pygame.Rect((screen_width / 4) - 30, (screen_height / 3)+40 , 70, 120)
         pygame.draw.rect(screen, (200, 0, 0), secondDoorRec, 3) 
         if clicked and secondDoorRec.collidepoint(mouse_pos):
             current_screen = "hall7"
 
     if current_screen == "hall7": 
+        last_screen = "hall6"
         screen.blit(hall7, (0, 0))
         bedDoorRec = pygame.Rect(125, 280 , 65, 65)
         pygame.draw.circle(screen, (255, 0, 0), (155, 315), 35, 3)
@@ -409,6 +416,7 @@ while running:
             current_screen = "kitchen"
         
     if current_screen == "bedroom": 
+        last_screen="hall7"
         screen.blit(bedroom, (0,0))
         storageDoorRec1 = pygame.Rect(86, 110 , 15, 45)
         pygame.draw.rect(screen, (255, 0, 0), storageDoorRec1, 2)
@@ -425,20 +433,25 @@ while running:
 
     if current_screen == "storage1":    
         screen.blit(bg2, (0,0))
+        last_screen="bedroom"
         renderItems(storageSlots)
         
     if current_screen == "storage2":    
         screen.blit(bg2, (0,0))
+        last_screen="bedroom"
         renderItems(storageSlots)
 
     if current_screen == "storage3":    
         screen.blit(bg2, (0,0))
+        last_screen="bedroom"
         renderItems(storageSlots)
 
     if current_screen == "kitchen": 
+        last_screen="hall7"
         screen.blit(kitchen, (0, 0))
     
     if current_screen == "insideCave1":
+        last_screen="game"
         screen.blit(insideCave1, (0, 0))
         screen.blit(playerImg, (player_pos.x, player_pos.y))
 
@@ -482,6 +495,11 @@ while running:
 
             item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
             screen.blit(item_img, (slot.x, slot.y))
+
+    pygame.draw.rect(screen, "black", back_rect, 50)
+    backText = font.render('BACK', True, (100, 100, 50))
+    screen.blit(backText, (25, 25))
+
 
     # game over page 
     if (game_over):   #??????
