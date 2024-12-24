@@ -8,17 +8,17 @@ music_files = {
     "background": "./sound/background1.mp3",
     "gameover": "gameover.mp3",
     "clock3" : "clock3.mp3",
+    "mine" : "./sound/mine.mp3",
 }
 
 def play_music(music_key, loop=True, volume=1):
     if music_key in music_files:
+        pygame.mixer.music.stop()
         pygame.mixer.music.load(music_files[music_key])
         pygame.mixer.music.set_volume(volume)
         pygame.mixer.music.play(-1 if loop else 0)
     else:
         print(f"Error: {music_key} not found in music_files.")
-
-play_music("background", loop=True, volume=2)
 
 screen = pygame.display.set_mode((1280, 720))
 pygame.display.set_caption("Mars game")
@@ -81,7 +81,8 @@ collectible_items = {
             "pos": pygame.Vector2(200, 200),  
             "goodImage": flippedBannana, 
             "badImage": badBannana,         
-            "name": "item1",                  
+            "goodName": "item1",    
+            "badName": "badBannana",                                
             "collected": False,
             "bad_after": 10              
         },
@@ -89,14 +90,16 @@ collectible_items = {
             "pos": pygame.Vector2(600, 400),
             "goodImage": badBannana,
             "badImage": None,         
-            "name": "badBannana",
+            "goodName": "badBannana",
+            "badName": None,
             "collected": False
         },
         {
             "pos": pygame.Vector2(100, 400),
             "goodImage": chocolate,
             "badImage": None,         
-            "name": "chocolate",
+            "goodName": "chocolate",
+            "badName": None,
             "collected": False    
         }
     ],
@@ -105,7 +108,8 @@ collectible_items = {
             "pos": pygame.Vector2(300, 300),
             "goodImage": pickAx,
             "badImage": None,         
-            "name": "pickAx",
+            "goodName": "pickAx",
+            "goodName": None,
             "collected": False    
         }
     ]
@@ -124,7 +128,7 @@ def check_item_collision(player_rect):
         if not item["collected"]:  
             item_rect = pygame.Rect(item["pos"].x, item["pos"].y, 40, 40)  
             if player_rect.colliderect(item_rect):  
-                if add_to_inventory(item["name"]): 
+                if add_to_inventory(item): 
                     item["collected"] = True  
 
 player_pos = pygame.Vector2(screen_width / 2, 10)
@@ -207,14 +211,23 @@ storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
 storage_contents3 = [None] * (storageRows * storageCols)
 
-current_storage_contents = storage_contents1 
+current_storage_contents = storage_contents1
 
-def add_to_inventory(item_name):
+inventory_timestamps = [None] * len(inventory_contents)
+
+def add_to_inventory(item):
     for i, content in enumerate(inventory_contents):
-        if content is None:  # Find the first empty slot
-            inventory_contents[i] = item_name
+        if content is None:  # first empty slot
+            if totalTime < item.get("bad_after", 0):
+                inventory_contents[i] = item["goodName"]
+                inventory_timestamps[i] = totalTime 
+            else:
+                if item["badName"] is not None:
+                    inventory_contents[i] = item["badName"]  
+                else: 
+                    inventory_contents[i] = item["goodName"]  
             return True
-    return False  # Inventory is full
+    return False  # Inventory full
 
 def renderItems(storageSlots): 
     for i, slot in enumerate(storageSlots):
@@ -226,6 +239,8 @@ def renderItems(storageSlots):
             item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
             screen.blit(item_img, (slot.x, slot.y))
     
+last_screen = None 
+
 running = True 
 while running: 
     dt = clock.tick(60) / 1000
@@ -283,13 +298,14 @@ while running:
                         selected_slot_index = None
                     break  
             
-    screen.blit(bg, (0, 0))
+    if current_screen != last_screen:
+        if current_screen == "game": 
+            play_music("background", loop=True, volume=2)
+        elif current_screen == "insideCave1": 
+            play_music("mine", loop=True, volume=2)
+        last_screen = current_screen
 
-    
-    # if totalTime < 10: # MAKE DISAPERE IF COLLECTED
-    #     screen.blit(flippedBannana, (200, 200))
-    # else:
-    #     screen.blit(badBannana, (200, 200))
+    screen.blit(bg, (0, 0))
 
     check_item_collision(ufo_rect)
 
@@ -450,7 +466,21 @@ while running:
             color= "yellow"
         pygame.draw.rect(screen, color , slot, 3)
         if inventory_contents[i] is not None:
-            item_img = pygame.transform.scale(item_images[inventory_contents[i]], (inventory_slot_size, inventory_slot_size))
+            item_name = inventory_contents[i]
+            item_time = inventory_timestamps[i]
+
+            for items in collectible_items.values():
+                for itm in items:
+                    if itm["goodName"] == item_name:
+                        # Check if the item has gone bad
+                        if item_time is not None and totalTime - item_time >= itm.get("bad_after", float("inf")):
+                            if itm["badName"] is not None:
+                                item_name = itm["badName"]
+                                inventory_contents[i] = item_name  
+                                inventory_timestamps[i] = None  
+                        break
+
+            item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
             screen.blit(item_img, (slot.x, slot.y))
 
     # game over page 
