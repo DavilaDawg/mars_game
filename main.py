@@ -36,7 +36,7 @@ hall7 = pygame.transform.scale(pygame.image.load("./icon/hall7.webp"), (screen_w
 bedroom = pygame.transform.scale(pygame.image.load("./icon/bedroom.jpg"), (screen_width, screen_height))
 kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_width, screen_height))
 tileSize = 40
-playerSize = 80
+playerSize = 70
 cowSize= 80
 farmerSize= 60
 
@@ -70,7 +70,7 @@ fontSmall = pygame.font.Font("MODERNA.ttf", 29)
 bannana = pygame.transform.scale(pygame.image.load('./icon/bannana.png'), (40, 40))
 flippedBannana = pygame.transform.flip(bannana, True, False)
 badBannana = pygame.transform.scale(pygame.image.load('./icon/badBannana.png'), (40, 40))
-rocket = pygame.transform.scale(pygame.image.load("./icon/rocket.png"), (150,150))
+station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
 table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
 chocolate =  pygame.transform.scale(pygame.image.load("./icon/chocolate-bar.png"), (50,50))
 pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
@@ -79,19 +79,23 @@ collectible_items = {
     "game": [
         {
             "pos": pygame.Vector2(200, 200),  
-            "image": flippedBannana,          
+            "goodImage": flippedBannana, 
+            "badImage": badBannana,         
             "name": "item1",                  
-            "collected": False                
+            "collected": False,
+            "bad_after": 10              
         },
         {
             "pos": pygame.Vector2(600, 400),
-            "image": badBannana,
+            "goodImage": badBannana,
+            "badImage": None,         
             "name": "badBannana",
             "collected": False
         },
         {
             "pos": pygame.Vector2(100, 400),
-            "image": chocolate,
+            "goodImage": chocolate,
+            "badImage": None,         
             "name": "chocolate",
             "collected": False    
         }
@@ -99,7 +103,8 @@ collectible_items = {
     "insideCave1": [
         {
             "pos": pygame.Vector2(300, 300),
-            "image": pickAx,
+            "goodImage": pickAx,
+            "badImage": None,         
             "name": "pickAx",
             "collected": False    
         }
@@ -280,18 +285,25 @@ while running:
             
     screen.blit(bg, (0, 0))
 
-    if totalTime < 10: # MAKE DISAPERE IF COLLECTED
-        screen.blit(flippedBannana, (200, 200))
-    else:
-        screen.blit(badBannana, (200, 200))
+    
+    # if totalTime < 10: # MAKE DISAPERE IF COLLECTED
+    #     screen.blit(flippedBannana, (200, 200))
+    # else:
+    #     screen.blit(badBannana, (200, 200))
 
     check_item_collision(ufo_rect)
 
     # Draw collectible items that are not yet collected
     for item in collectible_items.get(current_screen, []):
         if not item["collected"]:
-            screen.blit(item["image"], (item["pos"].x, item["pos"].y))
-            
+            if totalTime< item.get("bad_after", 0): 
+                screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
+            elif totalTime>item.get("bad_after", 0): 
+                if item["badImage"] is not None:
+                    screen.blit(item["badImage"], (item["pos"].x, item["pos"].y))
+                else: 
+                    screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
+
     # Player movement
     keys = pygame.key.get_pressed()
     if keys[pygame.K_a]:
@@ -323,7 +335,7 @@ while running:
 
             screen.blit(cowImg, (farmer["pos"].x, farmer["pos"].y))
 
-            screen.blit(rocket, (screen_width-200, 120))
+            screen.blit(station, (screen_width-200, 120))
         
             farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
             if ufo_rect.colliderect(farmer_rect):  
@@ -343,14 +355,14 @@ while running:
                 if keys[pygame.K_RETURN]:
                     current_screen = "insideCave1"  
 
-        enter_rocket_rect = pygame.Rect(screen_width-250, 100, 230, 60)  
-        rocketRect = pygame.Rect(screen_width-200, 120, 100,100)
-        rocketText = font.render('Enter rocket', True, (100, 100, 50)) 
+        enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
+        stationRect = pygame.Rect(screen_width-200, 120, 100,100)
+        stationText = font.render('Enter station', True, (100, 100, 50)) 
         screen.blit(playerImg, (player_pos.x, player_pos.y))
 
-    if ufo_rect.colliderect(rocketRect):  
-        pygame.draw.rect(screen, "black", enter_rocket_rect, 50)
-        screen.blit(rocketText, (enter_rocket_rect.x + 7, enter_rocket_rect.y + 10)) 
+    if ufo_rect.colliderect(stationRect):  
+        pygame.draw.rect(screen, "black", enter_station_rect, 50)
+        screen.blit(stationText, (enter_station_rect.x + 7, enter_station_rect.y + 10)) 
         keys = pygame.key.get_pressed()
         if keys[pygame.K_RETURN]:
             current_screen = "hall3"  
