@@ -13,7 +13,8 @@ music_files = {
 
 def play_music(music_key, loop=True, volume=1):
     if music_key in music_files:
-        pygame.mixer.music.stop()
+        # if pygame.mixer.music.get_busy():
+        #     pygame.mixer.music.stop()  # Stop the current music if any
         pygame.mixer.music.load(music_files[music_key])
         pygame.mixer.music.set_volume(volume)
         pygame.mixer.music.play(-1 if loop else 0)
@@ -42,11 +43,11 @@ farmerSize= 60
 
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
 cowImg = pygame.transform.scale(pygame.image.load('./icon/astronaut2.png'), (cowSize, cowSize))
-farmImg = pygame.transform.scale(pygame.image.load('./icon/farm.png'), (90, 90))
+farmImg = pygame.transform.scale(pygame.image.load('./icon/astronaut3.png'), (90, 90))
 cave1Img = pygame.transform.scale(pygame.image.load('./icon/cave1.png'), (100, 100))
 cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 100))
 
-numOfCows = 5
+numOfCows = 2
 numOfFarmers = 2
 numOfCaves = random.randint(0, 4)
 
@@ -58,7 +59,8 @@ selectedItem = "pickAx"
 selected_slot_index = None
 selected_item_from_inventory = True
 mouse_pos = None
-
+last_screen = None 
+inStorage= False
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
 back_rect = pygame.Rect(18, 23, 100, 50)
@@ -140,7 +142,7 @@ farmers= [
             random.randint(0, screen_width),
             random.randint(0, screen_height)
         ),
-    "speed": random.randint(2, 15),
+    "speed": random.randint(5, 15),
     "direction": pygame.Vector2(0, random.choice([-1, 1])),
     "time_since_last_change": 0,
     }
@@ -241,8 +243,6 @@ def renderItems(storageSlots):
         if current_storage_contents[i] is not None:  
             item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
             screen.blit(item_img, (slot.x, slot.y))
-    
-last_screen = None 
 
 running = True 
 while running: 
@@ -285,29 +285,34 @@ while running:
                                 current_storage_contents[selected_slot_index] = None
                             selected_slot_index = None
                     break
-
-            for i, slot in enumerate(storageSlots):
-                if slot.collidepoint(mouse_pos):  
-                    if selected_slot_index is None:  
-                        if current_storage_contents[i] is not None:
-                            selected_slot_index = i
-                            selected_item_from_inventory = False
-                    else:
-                        if current_storage_contents[i] is None:  # Empty slot
-                            if selected_item_from_inventory: # Inventory to storage
-                                current_storage_contents[i] = inventory_contents[selected_slot_index]
-                                inventory_contents[selected_slot_index] = None
-                            else: 
-                                current_storage_contents[i] = current_storage_contents[selected_slot_index]
-                                current_storage_contents[selected_slot_index] = None
-                        selected_slot_index = None
-                    break  
+            if inStorage:
+                print("in storage")
+                for i, slot in enumerate(storageSlots):
+                    if slot.collidepoint(mouse_pos):  
+                        if selected_slot_index is None:  
+                            if current_storage_contents[i] is not None:
+                                selected_slot_index = i
+                                selected_item_from_inventory = False
+                        else:
+                            if current_storage_contents[i] is None:  # Empty slot
+                                if selected_item_from_inventory: # Inventory to storage
+                                    current_storage_contents[i] = inventory_contents[selected_slot_index]
+                                    inventory_contents[selected_slot_index] = None
+                                else: 
+                                    current_storage_contents[i] = current_storage_contents[selected_slot_index]
+                                    current_storage_contents[selected_slot_index] = None
+                            selected_slot_index = None
+                        break  
             
+    #print(f"Current screen: {current_screen}, Last screen: {last_screen}")
     if current_screen != last_screen:
         if current_screen == "game": 
+            pygame.mixer.music.stop()  
             play_music("background", loop=True, volume=2)
         elif current_screen == "insideCave1": 
-            play_music("mine", loop=True, volume=2)
+            #print("Entering cave, playing mine sound.")
+            pygame.mixer.music.stop()  
+            play_music("mine", loop=True, volume=3)
         last_screen = current_screen
 
     screen.blit(bg, (0, 0))
@@ -340,7 +345,8 @@ while running:
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
     player_pos.y = max(0, min(player_pos.y, screen_height - playerSize))
 
-    if current_screen == "game":
+
+    if current_screen == "game":       
         # farmer logic 
         for farmer in farmers:
             # Wandering 
@@ -433,16 +439,19 @@ while running:
             current_screen = "storage3"
 
     if current_screen == "storage1":    
+        inStorage = True
         screen.blit(bg2, (0,0))
         last_screen="bedroom"
         renderItems(storageSlots)
         
     if current_screen == "storage2":    
+        inStorage = True
         screen.blit(bg2, (0,0))
         last_screen="bedroom"
         renderItems(storageSlots)
 
-    if current_screen == "storage3":    
+    if current_screen == "storage3":
+        inStorage = True    
         screen.blit(bg2, (0,0))
         last_screen="bedroom"
         renderItems(storageSlots)
@@ -453,7 +462,7 @@ while running:
     
     if current_screen == "insideCave1":
         last_screen="game"
-        screen.blit(insideCave1, (0, 0))
+        screen.blit(insideCave1, (0, 0))  
         screen.blit(playerImg, (player_pos.x, player_pos.y))
 
     # cows logic
