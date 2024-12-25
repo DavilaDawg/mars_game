@@ -39,11 +39,11 @@ kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_wi
 tileSize = 40
 playerSize = 70
 cowSize= 70
-farmerSize= 60
+farmerSize= 70
 
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
-cowImg = pygame.transform.scale(pygame.image.load('./icon/astronaut2.png'), (cowSize, cowSize))
-farmImg = pygame.transform.scale(pygame.image.load('./icon/astronaut3.png'), (90, 90))
+astroImg1 = pygame.transform.scale(pygame.image.load('./icon/astronaut3.png'), (cowSize, cowSize))
+astroImg2 = pygame.transform.scale(pygame.image.load('./icon/astronaut2.png'), (farmerSize, farmerSize))
 cave1Img = pygame.transform.scale(pygame.image.load('./icon/cave1.png'), (100, 100))
 cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 100))
 
@@ -61,6 +61,7 @@ selected_item_from_inventory = True
 mouse_pos = None
 last_screen = None 
 inStorage= False
+crewMessgae= "Hi there captin, go to your bedroom and find your pickax in the storage bin. Time to go mining!"
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
 back_rect = pygame.Rect(18, 23, 100, 50)
@@ -77,6 +78,7 @@ station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,1
 table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
 chocolate =  pygame.transform.scale(pygame.image.load("./icon/chocolate-bar.png"), (50,50))
 pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
+message = pygame.transform.scale(pygame.image.load('./icon/message.png'), (40,40))
 
 collectible_items = {
     "game": [
@@ -286,7 +288,6 @@ while running:
                             selected_slot_index = None
                     break
             if inStorage:
-                print("in storage")
                 for i, slot in enumerate(storageSlots):
                     if slot.collidepoint(mouse_pos):  
                         if selected_slot_index is None:  
@@ -360,13 +361,35 @@ while running:
             if farmer["pos"].y <= 0 or farmer["pos"].y >= screen_height - farmerSize:
                 farmer["direction"].y *= -1
 
-            screen.blit(cowImg, (farmer["pos"].x, farmer["pos"].y))
+            screen.blit(astroImg1, (farmer["pos"].x, farmer["pos"].y))
 
             screen.blit(station, (screen_width-200, 120))
         
             farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
             if ufo_rect.colliderect(farmer_rect):  
                 collisionTracked =True 
+        
+        # cows logic
+        for cow in cows:
+            cow["time_since_last_change"] += dt
+            if cow["time_since_last_change"] >= 2: 
+                cow["direction"] = pygame.Vector2(
+                    random.choice([-1, 1]),
+                    random.choice([-1, 1])
+                )
+                cow["time_since_last_change"] = 0
+
+            cow["pos"] += cow["direction"] * cow["speed"] * dt
+
+            # Reverse direction if hitting a wall
+            if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
+                cow["direction"].x *= -1
+            if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
+                cow["direction"].y *= -1
+
+            screen.blit(astroImg2, (cow["pos"].x, cow["pos"].y))
+            screen.blit(message, (cow["pos"].x +50, cow["pos"].y - 30))  
+
 
         for cave in caves:
             screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
@@ -464,24 +487,6 @@ while running:
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
         screen.blit(playerImg, (player_pos.x, player_pos.y))
-
-    # cows logic
-    for cow in cows:
-        cow["time_since_last_change"] += dt
-        if cow["time_since_last_change"] >= 2: 
-            cow["direction"] = pygame.Vector2(
-                random.choice([-1, 1]),
-                random.choice([-1, 1])
-            )
-            cow["time_since_last_change"] = 0
-
-        cow["pos"] += cow["direction"] * cow["speed"] * dt
-
-        # Reverse direction if hitting a wall
-        if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
-            cow["direction"].x *= -1
-        if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
-            cow["direction"].y *= -1
 
     for i, slot in enumerate(inventory_slots):
         color = "gray"
