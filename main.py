@@ -13,8 +13,6 @@ music_files = {
 
 def play_music(music_key, loop=True, volume=1):
     if music_key in music_files:
-        # if pygame.mixer.music.get_busy():
-        #     pygame.mixer.music.stop()  # Stop the current music if any
         pygame.mixer.music.load(music_files[music_key])
         pygame.mixer.music.set_volume(volume)
         pygame.mixer.music.play(-1 if loop else 0)
@@ -61,14 +59,15 @@ selected_item_from_inventory = True
 mouse_pos = None
 last_screen = None 
 inStorage= False
-crewMessgae= "Hi there captin, go to your bedroom and find your pickax in the storage bin. Time to go mining!"
+axObtained = False
+crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
 back_rect = pygame.Rect(18, 23, 100, 50)
 
 font = pygame.font.Font("MODERNA.ttf", 36)
 fontBig = pygame.font.Font("MODERNA.ttf", 70)
-fontSmall = pygame.font.Font("MODERNA.ttf", 29)
+fontSmall = pygame.font.Font("MODERNA.ttf", 25)
 
 # Icons 
 bannana = pygame.transform.scale(pygame.image.load('./icon/bannana.png'), (40, 40))
@@ -174,7 +173,8 @@ cows = [
         "time_since_last_change": 0,
         "time_since_last_jump": 0,
         "time_below": 0,
-        "sound_played": False
+        "sound_played": False,
+        "stopped": False
     }
     for _ in range(numOfCows)
 ]
@@ -271,8 +271,8 @@ while running:
             if back_rect.collidepoint(mouse_pos):  
                 current_screen = last_screen
             for i, slot in enumerate(inventory_slots):
-                if slot.collidepoint(mouse_pos):
-                    if selected_slot_index is None:  
+                if slot.collidepoint(mouse_pos): 
+                    if selected_slot_index is None: 
                         if inventory_contents[i] is not None:
                             selected_slot_index = i 
                             selected_item_from_inventory = True
@@ -281,7 +281,7 @@ while running:
                             if selected_item_from_inventory: 
                                 inventory_contents[i]= inventory_contents[selected_slot_index]
                                 inventory_contents[selected_slot_index]= None
-                            else:
+                            else: # storage to inventory 
                                 inventory_contents[i]= current_storage_contents[selected_slot_index]
                             if not selected_item_from_inventory:
                                 current_storage_contents[selected_slot_index] = None
@@ -294,14 +294,27 @@ while running:
                             if current_storage_contents[i] is not None:
                                 selected_slot_index = i
                                 selected_item_from_inventory = False
+                                if current_storage_contents[selected_slot_index] == "pickAx": 
+                                    axObtained = True
                         else:
                             if current_storage_contents[i] is None:  # Empty slot
                                 if selected_item_from_inventory: # Inventory to storage
                                     current_storage_contents[i] = inventory_contents[selected_slot_index]
                                     inventory_contents[selected_slot_index] = None
-                                else: 
+                                else: # move within storage
                                     current_storage_contents[i] = current_storage_contents[selected_slot_index]
                                     current_storage_contents[selected_slot_index] = None
+                            else: # Swap items if target slot is not empty
+                                if selected_item_from_inventory:
+                                    inventory_contents[selected_slot_index], current_storage_contents[i] = (
+                                        current_storage_contents[i],
+                                        inventory_contents[selected_slot_index],
+                                    )
+                                else:
+                                    current_storage_contents[selected_slot_index], current_storage_contents[i] = (
+                                        current_storage_contents[i],
+                                        current_storage_contents[selected_slot_index],
+                                    )
                             selected_slot_index = None
                         break  
             
@@ -370,26 +383,34 @@ while running:
                 collisionTracked =True 
         
         # cows logic
-        for cow in cows:
-            cow["time_since_last_change"] += dt
-            if cow["time_since_last_change"] >= 2: 
-                cow["direction"] = pygame.Vector2(
-                    random.choice([-1, 1]),
-                    random.choice([-1, 1])
-                )
-                cow["time_since_last_change"] = 0
+        for i, cow in enumerate(cows):
+            if not cow["stopped"] or axObtained:
+                cow["time_since_last_change"] += dt
+                if cow["time_since_last_change"] >= 2: 
+                    cow["direction"] = pygame.Vector2(
+                        random.choice([-1, 1]),
+                        random.choice([-1, 1])
+                    )
+                    cow["time_since_last_change"] = 0
 
-            cow["pos"] += cow["direction"] * cow["speed"] * dt
+                cow["pos"] += cow["direction"] * cow["speed"] * dt
 
-            # Reverse direction if hitting a wall
-            if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
-                cow["direction"].x *= -1
-            if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
-                cow["direction"].y *= -1
+                # Reverse direction if hitting a wall
+                if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
+                    cow["direction"].x *= -1
+                if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
+                    cow["direction"].y *= -1
 
             screen.blit(astroImg2, (cow["pos"].x, cow["pos"].y))
-            screen.blit(message, (cow["pos"].x +50, cow["pos"].y - 30))  
-
+            
+            if i == len(cows) - 1: 
+                if not axObtained: 
+                    cowRect = pygame.Rect(cow["pos"].x -40 , cow["pos"].y -40 , cowSize+20, cowSize+20)
+                    screen.blit(message, (cow["pos"].x +50, cow["pos"].y - 30))  
+                    if cowRect.collidepoint(player_pos): 
+                        cow["stopped"] = True
+                        crewText = fontSmall.render(crewMessage, True, (100, 100, 50)) 
+                        screen.blit(crewText, (40, screen_height/2)) 
 
         for cave in caves:
             screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
