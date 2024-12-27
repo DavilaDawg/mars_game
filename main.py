@@ -1,3 +1,28 @@
+# fix music 
+# fix clicking pickax and it goes inside the storage 
+# fix pickax moving slot randomly
+# deselect items and swap inside inventory 
+# fix music 
+# make messanger move after not being collided with 
+# make text background for message 
+# make mining abilities 
+# make hunger bar/ health bar/ thirst bar/ oxigen bar / Sleep bar / oxigen level bar 
+# make kitchen gadgets 
+# make stackable items for storage 
+# make fuel leak/ critical oxigen level for hallway 
+# make farming 
+# assignable tasks for crew 
+# skills for crew 
+# task list 
+# fix comms 
+# build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
+# make farm 
+
+# make mining abilities 
+# make farm 
+# make kitchen gadgets 
+
+
 import pygame
 import random
 
@@ -47,7 +72,10 @@ cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 1
 
 numOfCows = 2
 numOfFarmers = 2
-numOfCaves = random.randint(0, 4)
+numOfCaves = random.randint(1, 4)
+numOfFingers = random.randint(3, 6)
+xPosFinger = random.randint(0, screen_width)
+yPosFinger = random.randint(0, screen_height)
 
 # States
 game_over= False
@@ -78,11 +106,19 @@ table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100)
 chocolate =  pygame.transform.scale(pygame.image.load("./icon/chocolate-bar.png"), (50,50))
 pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
 message = pygame.transform.scale(pygame.image.load('./icon/message.png'), (40,40))
+purpleRock = pygame.transform.scale(pygame.image.load('./icon/rock1.png'), (40,40))
+iron = pygame.transform.scale(pygame.image.load('./icon/rock3.png'), (40,40))
+coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
+gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
+finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (40,40))
 
 collectible_items = {
     "game": [
         {
-            "pos": pygame.Vector2(200, 200),  
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width-50),
+            random.randint(0, screen_height-50)
+            ),  
             "goodImage": flippedBannana, 
             "badImage": badBannana,         
             "goodName": "item1",    
@@ -91,7 +127,10 @@ collectible_items = {
             "bad_after": 10              
         },
         {
-            "pos": pygame.Vector2(600, 400),
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            random.randint(0, screen_height)
+            ),
             "goodImage": badBannana,
             "badImage": None,         
             "goodName": "badBannana",
@@ -99,7 +138,10 @@ collectible_items = {
             "collected": False
         },
         {
-            "pos": pygame.Vector2(100, 400),
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            random.randint(0, screen_height)
+            ),
             "goodImage": chocolate,
             "badImage": None,         
             "goodName": "chocolate",
@@ -107,13 +149,62 @@ collectible_items = {
             "collected": False    
         }
     ],
-    "insideCave1": [
+    "bedroom": [
         {
-            "pos": pygame.Vector2(300, 300),
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            random.randint(0, screen_height)
+            ),
             "goodImage": pickAx,
             "badImage": None,         
             "goodName": "pickAx",
-            "goodName": None,
+            "badName": None,
+            "collected": False    
+        }
+    ],
+    "insideCave1": [
+        {
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            random.randint(0, screen_height)
+            ),
+            "goodImage": purpleRock,
+            "badImage": None,         
+            "goodName": "purpleRock",
+            "badName": None,
+            "collected": False    
+        },
+        {
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            random.randint(0, screen_height)
+            ),
+            "goodImage": iron,
+            "badImage": None,         
+            "goodName": "iron",
+            "badName": None,
+            "collected": False    
+        },
+        {
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            random.randint(0, screen_height)
+            ),
+            "goodImage": gold,
+            "badImage": None,         
+            "goodName": "gold",
+            "badName": None,
+            "collected": False    
+        },
+        {
+            "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            random.randint(0, screen_height)
+            ),
+            "goodImage": coal,
+            "badImage": None,         
+            "goodName": "coal",
+            "badName": None,
             "collected": False    
         }
     ]
@@ -124,6 +215,10 @@ item_images = {
     "badBannana": badBannana,
     "chocolate": chocolate,
     "pickAx": pickAx,
+    "purpleRock": purpleRock,
+    "iron": iron,
+    "gold": gold, 
+    "coal": coal, 
 }
 
 def check_item_collision(player_rect):
@@ -245,6 +340,7 @@ def renderItems(storageSlots):
         if current_storage_contents[i] is not None:  
             item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
             screen.blit(item_img, (slot.x, slot.y))
+play_music("background", loop=True, volume=2)
 
 running = True 
 while running: 
@@ -254,22 +350,23 @@ while running:
 
     mouse_pos = pygame.mouse.get_pos()
     clicked = False
+    
+    if current_screen == "storage1":
+        current_storage_contents = storage_contents1
+    elif current_screen == "storage2":
+        current_storage_contents = storage_contents2
+    elif current_screen == "storage3":
+        current_storage_contents = storage_contents3
 
     for event in pygame.event.get():
-
-        if current_screen == "storage1":
-            current_storage_contents = storage_contents1
-        elif current_screen == "storage2":
-            current_storage_contents = storage_contents2
-        elif current_screen == "storage3":
-            current_storage_contents = storage_contents3
-
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             clicked = True 
             if back_rect.collidepoint(mouse_pos):  
                 current_screen = last_screen
+                if current_screen == "game": 
+                    play_music("background", loop=True, volume=2)
             for i, slot in enumerate(inventory_slots):
                 if slot.collidepoint(mouse_pos): 
                     if selected_slot_index is None: 
@@ -317,18 +414,7 @@ while running:
                                     )
                             selected_slot_index = None
                         break  
-            
-    #print(f"Current screen: {current_screen}, Last screen: {last_screen}")
-    if current_screen != last_screen:
-        if current_screen == "game": 
-            pygame.mixer.music.stop()  
-            play_music("background", loop=True, volume=2)
-        elif current_screen == "insideCave1": 
-            #print("Entering cave, playing mine sound.")
-            pygame.mixer.music.stop()  
-            play_music("mine", loop=True, volume=3)
-        last_screen = current_screen
-
+       
     screen.blit(bg, (0, 0))
 
     check_item_collision(ufo_rect)
@@ -358,7 +444,6 @@ while running:
     # player bounds
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
     player_pos.y = max(0, min(player_pos.y, screen_height - playerSize))
-
 
     if current_screen == "game":       
         # farmer logic 
@@ -425,6 +510,7 @@ while running:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_RETURN]:
                     current_screen = "insideCave1"  
+                    play_music("mine", loop=True, volume=3)
 
         enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
         stationRect = pygame.Rect(screen_width-200, 120, 100,100)
@@ -508,6 +594,8 @@ while running:
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
         screen.blit(playerImg, (player_pos.x, player_pos.y))
+        screen.blit(finger, (xPosFinger, yPosFinger))
+
 
     for i, slot in enumerate(inventory_slots):
         color = "gray"
@@ -536,7 +624,6 @@ while running:
         pygame.draw.rect(screen, "black", back_rect, 50)
         backText = font.render('BACK', True, (100, 100, 50))
         screen.blit(backText, (25, 25))
-
 
     # game over page 
     if (game_over):   #??????
