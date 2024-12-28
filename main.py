@@ -2,7 +2,6 @@
 # fix clicking pickax and it goes inside the storage 
 # fix pickax moving slot randomly
 # deselect items and swap inside inventory 
-# fix music 
 # make messanger move after not being collided with 
 # make text background for message 
 # make mining abilities 
@@ -78,7 +77,7 @@ xPosFinger = random.randint(0, screen_width)
 yPosFinger = random.randint(0, screen_height)
 
 # States
-game_over= False
+game_over = False
 mining = False
 current_screen = "game" 
 selectedItem = "pickAx"
@@ -86,7 +85,8 @@ selected_slot_index = None
 selected_item_from_inventory = True
 mouse_pos = None
 last_screen = None 
-inStorage= False
+inStorage = False
+incraftFood = False
 axObtained = False
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 
@@ -101,16 +101,34 @@ fontSmall = pygame.font.Font("MODERNA.ttf", 25)
 bannana = pygame.transform.scale(pygame.image.load('./icon/bannana.png'), (40, 40))
 flippedBannana = pygame.transform.flip(bannana, True, False)
 badBannana = pygame.transform.scale(pygame.image.load('./icon/badBannana.png'), (40, 40))
-station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
-table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
 chocolate =  pygame.transform.scale(pygame.image.load("./icon/chocolate-bar.png"), (50,50))
+waffle =  pygame.transform.scale(pygame.image.load("./icon/waffle.png"), (50,50))
+soy =  pygame.transform.scale(pygame.image.load("./icon/soy.png"), (50,50))
+tofu =  pygame.transform.scale(pygame.image.load("./icon/tofu.png"), (50,50))
+oatMilk =  pygame.transform.scale(pygame.image.load("./icon/oatMilk.png"), (50,50))
+kale =  pygame.transform.scale(pygame.image.load("./icon/kale.png"), (50,50))
+salad =  pygame.transform.scale(pygame.image.load("./icon/greekSalad.png"), (50,50))
+flour =  pygame.transform.scale(pygame.image.load("./icon/flour.png"), (50,50))
+pepper =  pygame.transform.scale(pygame.image.load("./icon/chili-pepper.png"), (50,50))
+carrot =  pygame.transform.scale(pygame.image.load("./icon/carrot.png"), (50,50))
+sugar =  pygame.transform.scale(pygame.image.load("./icon/sugar.png"), (50,50))
+vanilla =  pygame.transform.scale(pygame.image.load("./icon/flavour.png"), (50,50))
+pancakes =  pygame.transform.scale(pygame.image.load("./icon/pancakes.png"), (50,50))
+table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
+station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
 pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
 message = pygame.transform.scale(pygame.image.load('./icon/message.png'), (40,40))
 purpleRock = pygame.transform.scale(pygame.image.load('./icon/rock1.png'), (40,40))
 iron = pygame.transform.scale(pygame.image.load('./icon/rock3.png'), (40,40))
 coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
 gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
-finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (40,40))
+finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (60,60))
+tomato = pygame.transform.scale(pygame.image.load('./icon/tomato1.png'), (40,40))
+tomatoTree = pygame.transform.scale(pygame.image.load('./icon/tomato.png'), (40,40))
+apple = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
+caramel = pygame.transform.scale(pygame.image.load('./icon/caramel.png'), (40,40))
+caramelApple = pygame.transform.scale(pygame.image.load('./icon/caramel-apple.png'), (40,40))
+grapes = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
 
 collectible_items = {
     "game": [
@@ -292,6 +310,16 @@ storageStartX= 335
 storageStartY = 120
 storageSlots = []
 
+# Craft Food 
+foodRows = 3
+foodCols = 3
+foodSlotSize = 70
+foodMargin= 15
+foodStartX= 520
+foodStartY = 210
+foodSlots = []
+
+# make these a function eventually: 
 for row in range(inventory_rows):
     for col in range(inventory_cols):
         x = inventory_start_x + col * (inventory_slot_size + inventory_margin)
@@ -304,6 +332,11 @@ for row in range(storageRows):
         y = storageStartY + row * (storageSlotSize + storageMargin)
         storageSlots.append(pygame.Rect(x, y, storageSlotSize, storageSlotSize))
 
+for row in range(foodRows):
+    for col in range(foodCols):
+        x = foodStartX + col * (foodSlotSize + foodMargin)
+        y = foodStartY + row * (foodSlotSize + foodMargin)
+        foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
 inventory_contents = [None, None, None, None, None, None, None, None]
 
@@ -314,6 +347,8 @@ storage_contents3 = [None] * (storageRows * storageCols)
 storage_contents1[0] = "pickAx"
 
 current_storage_contents = storage_contents1.copy()
+
+food_contents = [None] * (foodRows * foodCols)
 
 inventory_timestamps = [None] * len(inventory_contents)
 
@@ -331,15 +366,16 @@ def add_to_inventory(item):
             return True
     return False  # Inventory full
 
-def renderItems(storageSlots): 
-    for i, slot in enumerate(storageSlots):
+def renderItems(slots, contents, slot_size): 
+    for i, slot in enumerate(slots):
         color = "gray"
         if selected_slot_index == i and not selected_item_from_inventory:
             color= "yellow"
         pygame.draw.rect(screen, color , slot, 3)
-        if current_storage_contents[i] is not None:  
-            item_img = pygame.transform.scale(item_images[current_storage_contents[i]], (storageSlotSize, storageSlotSize))
+        if contents[i] is not None:  
+            item_img = pygame.transform.scale(item_images[contents[i]], (slot_size, slot_size))
             screen.blit(item_img, (slot.x, slot.y))
+
 play_music("background", loop=True, volume=2)
 
 running = True 
@@ -379,9 +415,14 @@ while running:
                                 inventory_contents[i]= inventory_contents[selected_slot_index]
                                 inventory_contents[selected_slot_index]= None
                             else: # storage to inventory 
-                                inventory_contents[i]= current_storage_contents[selected_slot_index]
-                            if not selected_item_from_inventory:
-                                current_storage_contents[selected_slot_index] = None
+                                if inStorage:
+                                    inventory_contents[i]= current_storage_contents[selected_slot_index]
+                                    if not selected_item_from_inventory:
+                                        current_storage_contents[selected_slot_index] = None
+                                if incraftFood: 
+                                    inventory_contents[i]= food_contents[selected_slot_index]
+                                    if not selected_item_from_inventory:
+                                        food_contents[selected_slot_index] = None
                             selected_slot_index = None
                     break
             if inStorage:
@@ -411,6 +452,34 @@ while running:
                                     current_storage_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         current_storage_contents[selected_slot_index],
+                                    )
+                            selected_slot_index = None
+                        break  
+            if incraftFood: 
+                for i, slot in enumerate(foodSlots):
+                    if slot.collidepoint(mouse_pos):  
+                        if selected_slot_index is None:  
+                            if food_contents[i] is not None:
+                                selected_slot_index = i
+                                selected_item_from_inventory = False
+                        else:
+                            if food_contents[i] is None:  # Empty slot
+                                if selected_item_from_inventory: # Inventory to storage
+                                    food_contents[i] = inventory_contents[selected_slot_index]
+                                    inventory_contents[selected_slot_index] = None
+                                else: # move within storage
+                                    food_contents[i] = food_contents[selected_slot_index]
+                                    food_contents[selected_slot_index] = None
+                            else: # Swap items if target slot is not empty
+                                if selected_item_from_inventory:
+                                    inventory_contents[selected_slot_index], food_contents[i] = (
+                                        food_contents[i],
+                                        inventory_contents[selected_slot_index],
+                                    )
+                                else:
+                                    food_contents[selected_slot_index], food_contents[i] = (
+                                        food_contents[i],
+                                        food_contents[selected_slot_index],
                                     )
                             selected_slot_index = None
                         break  
@@ -572,24 +641,36 @@ while running:
         inStorage = True
         screen.blit(bg2, (0,0))
         last_screen="bedroom"
-        renderItems(storageSlots)
+        renderItems(storageSlots, current_storage_contents, storageSlotSize)
         
     if current_screen == "storage2":    
         inStorage = True
         screen.blit(bg2, (0,0))
         last_screen="bedroom"
-        renderItems(storageSlots)
+        renderItems(storageSlots, current_storage_contents, storageSlotSize)
+
 
     if current_screen == "storage3":
         inStorage = True    
         screen.blit(bg2, (0,0))
         last_screen="bedroom"
-        renderItems(storageSlots)
+        renderItems(storageSlots, current_storage_contents, storageSlotSize)
 
     if current_screen == "kitchen": 
         last_screen="hall7"
         screen.blit(kitchen, (0, 0))
-    
+        craftFood = pygame.Rect(165, 570 , 35, 35)
+        pygame.draw.rect(screen, (255, 0, 0), craftFood, 2)
+        if clicked and craftFood.collidepoint(mouse_pos):
+            current_screen = "craftFood"
+
+    if current_screen == "craftFood": 
+        inStorage = False
+        incraftFood = True    
+        screen.blit(bg2, (0,0))
+        last_screen="kitchen"
+        renderItems(foodSlots, food_contents, foodSlotSize)
+
     if current_screen == "insideCave1":
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
