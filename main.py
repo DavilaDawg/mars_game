@@ -166,66 +166,52 @@ collectible_items = {
             "badName": None,
             "collected": False    
         }
-    ],
-    "bedroom": [
-        {
-            "pos": pygame.Vector2(
-            random.randint(0, screen_width),
-            random.randint(0, screen_height)
-            ),
-            "goodImage": pickAx,
-            "badImage": None,         
-            "goodName": "pickAx",
-            "badName": None,
-            "collected": False    
-        }
-    ],
-    "insideCave1": [
-        {
-            "pos": pygame.Vector2(
-            random.randint(0, screen_width),
-            random.randint(0, screen_height)
-            ),
-            "goodImage": purpleRock,
-            "badImage": None,         
-            "goodName": "purpleRock",
-            "badName": None,
-            "collected": False    
-        },
-        {
-            "pos": pygame.Vector2(
-            random.randint(0, screen_width),
-            random.randint(0, screen_height)
-            ),
-            "goodImage": iron,
-            "badImage": None,         
-            "goodName": "iron",
-            "badName": None,
-            "collected": False    
-        },
-        {
-            "pos": pygame.Vector2(
-            random.randint(0, screen_width),
-            random.randint(0, screen_height)
-            ),
-            "goodImage": gold,
-            "badImage": None,         
-            "goodName": "gold",
-            "badName": None,
-            "collected": False    
-        },
-        {
-            "pos": pygame.Vector2(
-            random.randint(0, screen_width),
-            random.randint(0, screen_height)
-            ),
-            "goodImage": coal,
-            "badImage": None,         
-            "goodName": "coal",
-            "badName": None,
-            "collected": False    
-        }
     ]
+    # "insideCave1": [
+    #     {
+    #         "pos": pygame.Vector2(
+    #         random.randint(0, screen_width),
+    #         random.randint(0, screen_height)
+    #         ),
+    #         "goodImage": purpleRock,
+    #         "badImage": None,         
+    #         "goodName": "purpleRock",
+    #         "badName": None,
+    #         "collected": False    
+    #     },
+    #     {
+    #         "pos": pygame.Vector2(
+    #         random.randint(0, screen_width),
+    #         random.randint(0, screen_height)
+    #         ),
+    #         "goodImage": iron,
+    #         "badImage": None,         
+    #         "goodName": "iron",
+    #         "badName": None,
+    #         "collected": False    
+    #     },
+    #     {
+    #         "pos": pygame.Vector2(
+    #         random.randint(0, screen_width),
+    #         random.randint(0, screen_height)
+    #         ),
+    #         "goodImage": gold,
+    #         "badImage": None,         
+    #         "goodName": "gold",
+    #         "badName": None,
+    #         "collected": False    
+    #     },
+    #     {
+    #         "pos": pygame.Vector2(
+    #         random.randint(0, screen_width),
+    #         random.randint(0, screen_height)
+    #         ),
+    #         "goodImage": coal,
+    #         "badImage": None,         
+    #         "goodName": "coal",
+    #         "badName": None,
+    #         "collected": False    
+    #     }
 }
 
 item_images = {
@@ -271,6 +257,17 @@ caves = [
         ),
     }
     for _ in range(numOfCaves)
+]
+
+fingers = [
+    {
+    "pos": pygame.Vector2(
+             random.randint(100, screen_width - 100),
+            random.randint(100, screen_height - 100) 
+        ),
+    "image": finger
+    }
+    for _ in range(numOfFingers)
 ]
 
 cows = [ 
@@ -375,6 +372,20 @@ def renderItems(slots, contents, slot_size):
         if contents[i] is not None:  
             item_img = pygame.transform.scale(item_images[contents[i]], (slot_size, slot_size))
             screen.blit(item_img, (slot.x, slot.y))
+
+def spawn_collectibles(current_screen):
+    if current_screen not in collectible_items:
+        return
+
+    for item in collectible_items[current_screen]:
+        if not item["collected"]:
+            if totalTime< item.get("bad_after", 0): 
+                screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
+            elif totalTime>item.get("bad_after", 0): 
+                if item["badImage"] is not None:
+                    screen.blit(item["badImage"], (item["pos"].x, item["pos"].y))
+                else: 
+                    screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
 
 play_music("background", loop=True, volume=2)
 
@@ -487,17 +498,6 @@ while running:
     screen.blit(bg, (0, 0))
 
     check_item_collision(ufo_rect)
-
-    # Draw collectible items that are not yet collected
-    for item in collectible_items.get(current_screen, []):
-        if not item["collected"]:
-            if totalTime< item.get("bad_after", 0): 
-                screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
-            elif totalTime>item.get("bad_after", 0): 
-                if item["badImage"] is not None:
-                    screen.blit(item["badImage"], (item["pos"].x, item["pos"].y))
-                else: 
-                    screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
 
     # Player movement
     keys = pygame.key.get_pressed()
@@ -622,6 +622,7 @@ while running:
             current_screen = "kitchen"
         
     if current_screen == "bedroom": 
+        inStorage = False
         last_screen="hall7"
         screen.blit(bedroom, (0,0))
         storageDoorRec1 = pygame.Rect(86, 110 , 15, 45)
@@ -649,7 +650,6 @@ while running:
         last_screen="bedroom"
         renderItems(storageSlots, current_storage_contents, storageSlotSize)
 
-
     if current_screen == "storage3":
         inStorage = True    
         screen.blit(bg2, (0,0))
@@ -675,8 +675,16 @@ while running:
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
         screen.blit(playerImg, (player_pos.x, player_pos.y))
-        screen.blit(finger, (xPosFinger, yPosFinger))
-
+        
+        for finger in fingers: 
+            finger_rect = pygame.Rect(finger["pos"].x - 100, finger["pos"].y -100, 100, 100)
+            if selected_item_from_inventory != "pickAx" and not finger_rect.collidepoint(mouse_pos):
+                screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y))
+            if finger_rect.collidepoint(player_pos): 
+                if selected_item_from_inventory == "pickAx" and finger_rect.collidepoint(mouse_pos):
+                    screen.blit(purpleRock, finger["pos"].x, finger["pos"].y)
+                
+    spawn_collectibles(current_screen)
 
     for i, slot in enumerate(inventory_slots):
         color = "gray"
