@@ -82,7 +82,7 @@ mining = False
 current_screen = "game" 
 selected_slot_index = None
 selected_item_from_inventory = True
-selectedItem = None
+item_name = None
 mouse_pos = None
 last_screen = None 
 inStorage = False
@@ -253,7 +253,7 @@ farmers= [
 caves = [
     {
     "pos": pygame.Vector2(
-             random.randint(0, screen_height - 200),
+             random.randint(100, screen_width),
             random.randint(0, screen_height - 200) 
         ),
     }
@@ -263,7 +263,7 @@ caves = [
 fingers = [
     {
     "pos": pygame.Vector2(
-             random.randint(0, screen_height - 200),
+             random.randint(100, screen_width),
             random.randint(0, screen_height - 200) 
         ),
     "clickCount": 0,
@@ -367,12 +367,8 @@ def add_to_inventory(item):
     return False  # Inventory full
 
 def renderItems(slots, contents, slot_size): 
-    global selectedItem 
-    selectedItem = None
     for i, slot in enumerate(slots):
         color = "gray"
-        if contents[i] == "pickAx": 
-            selectedItem = "pickAx"
         if selected_slot_index == i and not selected_item_from_inventory:
             color= "yellow"
         pygame.draw.rect(screen, color , slot, 3)
@@ -693,14 +689,13 @@ while running:
 
                 if finger_rect.collidepoint(mouse_pos):
                     # print("Mouse collided with finger rect")
-                    # selectedItem == "pickAx"
+                    if item_name == "pickAx" and selected_slot_index is not None and inventory_contents[selected_slot_index] == "pickAx":
+                        if clicked: 
+                            print("Mouse clicked")
+                            finger["clickCount"] += 1
 
-                    if clicked: 
-                        print("Mouse clicked")
-                        finger["clickCount"] += 1
-
-                    if finger["clickCount"] >= 10:
-                        finger["rockPresent"] = True  
+                        if finger["clickCount"] >= 3:
+                            finger["rockPresent"] = True  
 
             if finger["rockPresent"]: 
                 screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))
