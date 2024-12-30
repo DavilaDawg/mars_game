@@ -80,14 +80,15 @@ yPosFinger = random.randint(0, screen_height)
 game_over = False
 mining = False
 current_screen = "game" 
-selectedItem = "pickAx"
 selected_slot_index = None
 selected_item_from_inventory = True
+selectedItem = None
 mouse_pos = None
 last_screen = None 
 inStorage = False
 incraftFood = False
 axObtained = False
+rockPresent = False
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
@@ -364,8 +365,12 @@ def add_to_inventory(item):
     return False  # Inventory full
 
 def renderItems(slots, contents, slot_size): 
+    global selectedItem 
+    selectedItem = None
     for i, slot in enumerate(slots):
         color = "gray"
+        if contents[i] == "pickAx": 
+            selectedItem = "pickAx"
         if selected_slot_index == i and not selected_item_from_inventory:
             color= "yellow"
         pygame.draw.rect(screen, color , slot, 3)
@@ -677,13 +682,29 @@ while running:
         screen.blit(playerImg, (player_pos.x, player_pos.y))
         
         for finger in fingers: 
-            finger_rect = pygame.Rect(finger["pos"].x - 100, finger["pos"].y -100, 100, 100)
-            if selected_item_from_inventory != "pickAx" and not finger_rect.collidepoint(mouse_pos):
+            finger_rect = pygame.Rect(finger["pos"].x, finger["pos"].y, 100, 100)
+
+            if finger_rect.colliderect(ufo_rect): 
+                print("Player collided with finger rect")
+
+                mouse_pos = pygame.mouse.get_pos()  
+                print(f"Mouse Pos: {mouse_pos}")
+                print(f"Finger Rect: {finger_rect}")
+
+                if finger_rect.collidepoint(mouse_pos):
+                    print("Mouse collided with finger rect")
+                    # selectedItem == "pickAx"
+
+                    if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
+                        print("Mouse clicked")
+                        rockPresent = True
+
+            if rockPresent: 
+                screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))
+                print("rock drawn")
+            else: 
                 screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y))
-            if finger_rect.collidepoint(player_pos): 
-                if selected_item_from_inventory == "pickAx" and finger_rect.collidepoint(mouse_pos):
-                    screen.blit(purpleRock, finger["pos"].x, finger["pos"].y)
-                
+
     spawn_collectibles(current_screen)
 
     for i, slot in enumerate(inventory_slots):
