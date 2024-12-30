@@ -253,8 +253,8 @@ farmers= [
 caves = [
     {
     "pos": pygame.Vector2(
-             random.randint(100, screen_width - 100),
-            random.randint(100, screen_height - 100) 
+             random.randint(0, screen_height - 200),
+            random.randint(0, screen_height - 200) 
         ),
     }
     for _ in range(numOfCaves)
@@ -263,8 +263,8 @@ caves = [
 fingers = [
     {
     "pos": pygame.Vector2(
-             random.randint(100, screen_width - 100),
-            random.randint(100, screen_height - 100) 
+             random.randint(0, screen_height - 200),
+            random.randint(0, screen_height - 200) 
         ),
     "clickCount": 0,
     "rockPresent": False,
@@ -692,14 +692,14 @@ while running:
                 # print(f"Finger Rect: {finger_rect}")
 
                 if finger_rect.collidepoint(mouse_pos):
-                    print("Mouse collided with finger rect")
+                    # print("Mouse collided with finger rect")
                     # selectedItem == "pickAx"
 
-                    if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
+                    if clicked: 
                         print("Mouse clicked")
                         finger["clickCount"] += 1
 
-                    if finger["clickCount"] >=5:
+                    if finger["clickCount"] >= 10:
                         finger["rockPresent"] = True  
 
             if finger["rockPresent"]: 
