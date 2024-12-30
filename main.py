@@ -266,6 +266,8 @@ fingers = [
              random.randint(100, screen_width - 100),
             random.randint(100, screen_height - 100) 
         ),
+    "clickCount": 0,
+    "rockPresent": False,
     "image": finger
     }
     for _ in range(numOfFingers)
@@ -685,11 +687,9 @@ while running:
             finger_rect = pygame.Rect(finger["pos"].x, finger["pos"].y, 100, 100)
 
             if finger_rect.colliderect(ufo_rect): 
-                print("Player collided with finger rect")
-
                 mouse_pos = pygame.mouse.get_pos()  
-                print(f"Mouse Pos: {mouse_pos}")
-                print(f"Finger Rect: {finger_rect}")
+                # print(f"Mouse Pos: {mouse_pos}")
+                # print(f"Finger Rect: {finger_rect}")
 
                 if finger_rect.collidepoint(mouse_pos):
                     print("Mouse collided with finger rect")
@@ -697,11 +697,13 @@ while running:
 
                     if pygame.mouse.get_pressed()[0]:  # Left mouse button is pressed
                         print("Mouse clicked")
-                        rockPresent = True
+                        finger["clickCount"] += 1
 
-            if rockPresent: 
+                    if finger["clickCount"] >=5:
+                        finger["rockPresent"] = True  
+
+            if finger["rockPresent"]: 
                 screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))
-                print("rock drawn")
             else: 
                 screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y))
 
