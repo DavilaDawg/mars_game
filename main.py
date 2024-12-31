@@ -723,9 +723,9 @@ while running:
 
                 if elapsed_time < 1:
                     add_to_inventory(collectible_items["insideCave1"][0])
-                    if elapsed_time < 1000:
-                        print("Rock collected after 1 second")
-                        finger["rockCollected"] = True 
+                if elapsed_time > 500:
+                    print("Rock collected after 1 second")
+                    finger["rockCollected"] = True 
             elif not finger["rockCollected"]: 
                 screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y))
 
