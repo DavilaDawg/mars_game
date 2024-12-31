@@ -717,10 +717,14 @@ while running:
                 screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))
 
                 current_time = pygame.time.get_ticks()
+                
+                elapsed_time = current_time - finger.get("last_click_time", 0)
+                print(f"Elapsed Time: {elapsed_time} ms")
 
-                if not finger.get("rockCollected", False):
+                if elapsed_time < 1:
                     add_to_inventory(collectible_items["insideCave1"][0])
-                    if current_time - finger.get("last_click_time", 0) >= 1000:
+                    if elapsed_time < 1000:
+                        print("Rock collected after 1 second")
                         finger["rockCollected"] = True 
             elif not finger["rockCollected"]: 
                 screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y))
