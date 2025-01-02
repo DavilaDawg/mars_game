@@ -436,63 +436,62 @@ while running:
                     play_music("background", loop=True, volume=2)
             for i, slot in enumerate(inventory_slots):
                 if slot.collidepoint(mouse_pos): 
-                    if inventory_contents[i] is not None:
-                        if selected_slot_index is None:
-                            selected_slot_index = i 
-                            selected_item_from_inventory = True
-                        else:
-                            if inventory_contents[i] is None: 
-                                if selected_item_from_inventory: 
-                                    inventory_contents[i]= inventory_contents[selected_slot_index]
-                                    inventory_contents[selected_slot_index]= None
-                                else: # storage to inventory 
-                                    if inStorage:
-                                        inventory_contents[i]= current_storage_contents[selected_slot_index]
-                                        if not selected_item_from_inventory:
-                                            current_storage_contents[selected_slot_index] = None
-                                    if incraftFood: 
-                                        inventory_contents[i]= food_contents[selected_slot_index]
-                                        if not selected_item_from_inventory:
-                                            food_contents[selected_slot_index] = None
-                                selected_slot_index = None
-                        break
+                    if selected_slot_index is None and inventory_contents[i] is not None:
+                        selected_slot_index = i 
+                        selected_item_from_inventory = True
+                    else:
+                        if inventory_contents[i] is None and selected_slot_index is not None: 
+                            if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: 
+                                inventory_contents[i]= inventory_contents[selected_slot_index]
+                                inventory_contents[selected_slot_index]= None
+                            else: # storage to inventory 
+                                if inStorage and selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None:
+                                    inventory_contents[i]= current_storage_contents[selected_slot_index]
+                                    if not selected_item_from_inventory:
+                                        current_storage_contents[selected_slot_index] = None
+                                if incraftFood and selected_slot_index is not None and food_contents[selected_slot_index]: 
+                                    inventory_contents[i]= food_contents[selected_slot_index]
+                                    if not selected_item_from_inventory:
+                                        food_contents[selected_slot_index] = None
+                            selected_slot_index = None
+                    break
             if inStorage:
                 for i, slot in enumerate(storageSlots):
                     if slot.collidepoint(mouse_pos):  
-                        if current_storage_contents[i] is not None:
-                            if selected_slot_index is None:
-                                selected_slot_index = i
-                                selected_item_from_inventory = False
-                                if current_storage_contents[selected_slot_index] == "pickAx": 
-                                    axObtained = True
+                    
+                        if selected_slot_index is None and current_storage_contents[i] is not None:
+                            selected_slot_index = i
+                            selected_item_from_inventory = False
+                            if current_storage_contents[selected_slot_index] == "pickAx": 
+                                axObtained = True
+                        else:
+                            if current_storage_contents[i] is None and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None:  # Empty slot
+                                if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
+                                    current_storage_contents[i] = inventory_contents[selected_slot_index]
+                                    inventory_contents[selected_slot_index] = None
+                                else: # move within storage
+                                    current_storage_contents[i] = current_storage_contents[selected_slot_index]
+                                    current_storage_contents[selected_slot_index] = None
                             else:
-                                if current_storage_contents[i] is None:  # Empty slot
-                                    if selected_item_from_inventory: # Inventory to storage
-                                        current_storage_contents[i] = inventory_contents[selected_slot_index]
-                                        inventory_contents[selected_slot_index] = None
-                                    else: # move within storage
-                                        current_storage_contents[i] = current_storage_contents[selected_slot_index]
-                                        current_storage_contents[selected_slot_index] = None
-                                else:
-                                    if selected_item_from_inventory: # swap from inventory to storage
-                                        inventory_contents[selected_slot_index], current_storage_contents[i] = (
-                                            current_storage_contents[i],
-                                            inventory_contents[selected_slot_index],
-                                        )
-                                    else: # swap within storage
-                                        current_storage_contents[selected_slot_index], current_storage_contents[i] = (
-                                            current_storage_contents[i],
-                                            current_storage_contents[selected_slot_index],
-                                        )
-                                        # current_storage_contents[selected_slot_index] = current_storage_contents[i]
-                                        # current_storage_contents[i] = current_storage_contents[selected_slot_index]
-                                    # print("swwap")
-                                    # current_storage_contents[i], inventory_contents[selected_slot_index] = (
-                                    #     inventory_contents[selected_slot_index],
-                                    #     current_storage_contents[i],
-                                    # )
-                                selected_slot_index = None
-                            break  
+                                if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
+                                    inventory_contents[selected_slot_index], current_storage_contents[i] = (
+                                        current_storage_contents[i],
+                                        inventory_contents[selected_slot_index],
+                                    )
+                                elif selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None: # swap within storage
+                                    current_storage_contents[selected_slot_index], current_storage_contents[i] = (
+                                        current_storage_contents[i],
+                                        current_storage_contents[selected_slot_index],
+                                    )
+                                    # current_storage_contents[selected_slot_index] = current_storage_contents[i]
+                                    # current_storage_contents[i] = current_storage_contents[selected_slot_index]
+                                # print("swwap")
+                                # current_storage_contents[i], inventory_contents[selected_slot_index] = (
+                                #     inventory_contents[selected_slot_index],
+                                #     current_storage_contents[i],
+                                # )
+                            selected_slot_index = None
+                        break  
             if incraftFood: 
                 for i, slot in enumerate(foodSlots):
                     if slot.collidepoint(mouse_pos):  
