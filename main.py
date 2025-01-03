@@ -1,7 +1,6 @@
 # fix music 
 # fix clicking pickax and it goes inside the storage 
 # fix pickax moving slot randomly
-# deselect items and swap inside inventory 
 # stack items
 # make messanger move after not being collided with 
 # make text background for message 
@@ -472,13 +471,22 @@ while running:
                                         food_contents[selected_slot_index] = None
                             selected_slot_index = None
                         elif inventory_contents[i] is not None and selected_slot_index is not None: 
-                            #swap within inventory
-                            inventory_contents[i], inventory_contents[selected_slot_index] =(
+                            if not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None:
+                                # Swap from storage to inventory
+                                print("storage to inventory")
+                                inventory_contents[i], current_storage_contents[selected_slot_index] = (
+                                    current_storage_contents[selected_slot_index],
+                                    inventory_contents[i],
+                                )
+                            else:                   
+                                # swap within inventory          
+                                print("swap inventory")
+                                inventory_contents[i], inventory_contents[selected_slot_index] =(
                                 inventory_contents[selected_slot_index],
                                 inventory_contents[i]
                             )
                         else: 
-                            #deselect in inventory
+                            # deselect in inventory
                             continue
                         selected_slot_index = None
                     break
@@ -510,13 +518,6 @@ while running:
                                     current_storage_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         current_storage_contents[selected_slot_index],
-                                    )
-                                else:
-                                    # Swap from storage to inventory
-                                    print("storage to inventory")
-                                    inventory_contents[i], current_storage_contents[selected_slot_index] = (
-                                        current_storage_contents[selected_slot_index],
-                                        inventory_contents[i],
                                     )
                             selected_slot_index = None
                         break  
