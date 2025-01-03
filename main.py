@@ -1,6 +1,5 @@
 # fix music 
 # fix clicking pickax and it goes inside the storage 
-# fix pickax moving slot randomly
 # stack items
 # make messanger move after not being collided with 
 # make text background for message 
@@ -58,6 +57,7 @@ hall7 = pygame.transform.scale(pygame.image.load("./icon/hall7.webp"), (screen_w
 bedroom = pygame.transform.scale(pygame.image.load("./icon/bedroom.jpg"), (screen_width, screen_height))
 kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_width, screen_height))
 workshop = pygame.transform.scale(pygame.image.load('./icon/workshop.webp'), (screen_width, screen_height))
+workbench1 = pygame.transform.scale(pygame.image.load('./icon/workbench1.jpg'), (screen_width, screen_height))
 
 tileSize = 40
 playerSize = 70
@@ -146,6 +146,7 @@ purpleRock = pygame.transform.scale(pygame.image.load('./icon/rock1.png'), (40,4
 iron = pygame.transform.scale(pygame.image.load('./icon/rock3.png'), (40,40))
 coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
 gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
+spaceFood = pygame.transform.scale(pygame.image.load('./icon/spaceFood.png'), (40,40))
 
 collectible_items = {
     "game": [
@@ -248,6 +249,7 @@ item_images = {
     "iron": iron,
     "gold": gold, 
     "coal": coal, 
+    "spaceFood": spaceFood,
 }
 
 def check_item_collision(player_rect):
@@ -372,6 +374,12 @@ storage_contents2 = [None] * (storageRows * storageCols)
 storage_contents3 = [None] * (storageRows * storageCols)
 
 storage_contents1[0] = "pickAx"
+storage_contents1[1] = "spaceFood"
+storage_contents1[2] = "spaceFood"
+storage_contents1[3] = "spaceFood"
+storage_contents1[4] = "spaceFood"
+storage_contents1[5] = "spaceFood"
+storage_contents1[6] = "spaceFood"
 
 current_storage_contents = storage_contents1.copy()
 
@@ -741,7 +749,7 @@ while running:
     if current_screen == "bench":
         inBench = True
         last_screen="workshop"
-        screen.blit(bg2, (0, 0)) 
+        screen.blit(workbench1, (0, 0)) 
 
     if current_screen == "insideCave1":
         last_screen="game"
@@ -750,12 +758,8 @@ while running:
         
         for finger in fingers: 
             finger_rect = pygame.Rect(finger["pos"].x, finger["pos"].y, 100, 100)
-
             if finger_rect.colliderect(ufo_rect): 
                 mouse_pos = pygame.mouse.get_pos()  
-                # print(f"Mouse Pos: {mouse_pos}")
-                # print(f"Finger Rect: {finger_rect}")
-
                 if finger_rect.collidepoint(mouse_pos):
                     if item_name == "pickAx" and selected_slot_index is not None and inventory_contents[selected_slot_index] == "pickAx":
                         if clicked: 
