@@ -471,6 +471,16 @@ while running:
                                     if not selected_item_from_inventory:
                                         food_contents[selected_slot_index] = None
                             selected_slot_index = None
+                        elif inventory_contents[i] is not None and selected_slot_index is not None: 
+                            #swap within inventory
+                            inventory_contents[i], inventory_contents[selected_slot_index] =(
+                                inventory_contents[selected_slot_index],
+                                inventory_contents[i]
+                            )
+                        else: 
+                            #deselect in inventory
+                            continue
+                        selected_slot_index = None
                     break
             if inStorage:
                 for i, slot in enumerate(storageSlots):
