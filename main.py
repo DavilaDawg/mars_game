@@ -58,6 +58,8 @@ hall6 = pygame.transform.scale(pygame.image.load("./icon/hall6.jpg"), (screen_wi
 hall7 = pygame.transform.scale(pygame.image.load("./icon/hall7.webp"), (screen_width, screen_height))
 bedroom = pygame.transform.scale(pygame.image.load("./icon/bedroom.jpg"), (screen_width, screen_height))
 kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_width, screen_height))
+workshop = pygame.transform.scale(pygame.image.load('./icon/workshop.webp'), (screen_width, screen_height))
+
 tileSize = 40
 playerSize = 70
 cowSize= 70
@@ -94,6 +96,21 @@ crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the st
 back_rect1= pygame.Rect(495, 620, 300, 80)
 back_rect = pygame.Rect(18, 23, 100, 50)
 
+x_offset = 150  # Move to the right
+y_offset = 20  # Move down
+
+rect_points = [
+    (screen_width // 2 +2 + x_offset, screen_height // 2 -2 + y_offset),  # Top-left
+    (screen_width // 2 + 112 + x_offset, screen_height // 2 + 2 + y_offset),  # Top-right
+    (screen_width // 2 + 32 + x_offset, screen_height // 2 + 55 + y_offset),  # Bottom-right
+    (screen_width // 2 - 130 + x_offset, screen_height // 2 + 38 + y_offset)   # Bottom-left
+]
+
+x_coords = [point[0] for point in rect_points]
+y_coords = [point[1] for point in rect_points]
+min_x, min_y = min(x_coords), min(y_coords)
+max_x, max_y = max(x_coords), max(y_coords)
+
 font = pygame.font.Font("MODERNA.ttf", 36)
 fontBig = pygame.font.Font("MODERNA.ttf", 70)
 fontSmall = pygame.font.Font("MODERNA.ttf", 25)
@@ -115,6 +132,13 @@ carrot =  pygame.transform.scale(pygame.image.load("./icon/carrot.png"), (50,50)
 sugar =  pygame.transform.scale(pygame.image.load("./icon/sugar.png"), (50,50))
 vanilla =  pygame.transform.scale(pygame.image.load("./icon/flavour.png"), (50,50))
 pancakes =  pygame.transform.scale(pygame.image.load("./icon/pancakes.png"), (50,50))
+tomato = pygame.transform.scale(pygame.image.load('./icon/tomato1.png'), (40,40))
+tomatoTree = pygame.transform.scale(pygame.image.load('./icon/tomato.png'), (40,40))
+apple = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
+caramel = pygame.transform.scale(pygame.image.load('./icon/caramel.png'), (40,40))
+caramelApple = pygame.transform.scale(pygame.image.load('./icon/caramel-apple.png'), (40,40))
+grapes = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
+finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (60,60))
 table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
 station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
 pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
@@ -123,13 +147,6 @@ purpleRock = pygame.transform.scale(pygame.image.load('./icon/rock1.png'), (40,4
 iron = pygame.transform.scale(pygame.image.load('./icon/rock3.png'), (40,40))
 coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
 gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
-finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (60,60))
-tomato = pygame.transform.scale(pygame.image.load('./icon/tomato1.png'), (40,40))
-tomatoTree = pygame.transform.scale(pygame.image.load('./icon/tomato.png'), (40,40))
-apple = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
-caramel = pygame.transform.scale(pygame.image.load('./icon/caramel.png'), (40,40))
-caramelApple = pygame.transform.scale(pygame.image.load('./icon/caramel-apple.png'), (40,40))
-grapes = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
 
 collectible_items = {
     "game": [
@@ -458,38 +475,39 @@ while running:
             if inStorage:
                 for i, slot in enumerate(storageSlots):
                     if slot.collidepoint(mouse_pos):  
-                    
                         if selected_slot_index is None and current_storage_contents[i] is not None:
                             selected_slot_index = i
                             selected_item_from_inventory = False
                             if current_storage_contents[selected_slot_index] == "pickAx": 
                                 axObtained = True
                         else:
-                            if current_storage_contents[i] is None and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None:  # Empty slot
+                            if current_storage_contents[i] is None and selected_slot_index is not None:
                                 if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
                                     current_storage_contents[i] = inventory_contents[selected_slot_index]
                                     inventory_contents[selected_slot_index] = None
-                                else: # move within storage
+                                elif not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None: # move within storage
                                     current_storage_contents[i] = current_storage_contents[selected_slot_index]
                                     current_storage_contents[selected_slot_index] = None
                             else:
                                 if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
+                                    print("inventory to storage")
                                     inventory_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         inventory_contents[selected_slot_index],
                                     )
-                                elif selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None: # swap within storage
+                                elif not selected_item_from_inventory and selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None and not inventory_contents[i]: # swap within storage
+                                    print("swap within")
                                     current_storage_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         current_storage_contents[selected_slot_index],
                                     )
-                                    # current_storage_contents[selected_slot_index] = current_storage_contents[i]
-                                    # current_storage_contents[i] = current_storage_contents[selected_slot_index]
-                                # print("swwap")
-                                # current_storage_contents[i], inventory_contents[selected_slot_index] = (
-                                #     inventory_contents[selected_slot_index],
-                                #     current_storage_contents[i],
-                                # )
+                                else:
+                                    # Swap from storage to inventory
+                                    print("storage to inventory")
+                                    inventory_contents[i], current_storage_contents[selected_slot_index] = (
+                                        current_storage_contents[selected_slot_index],
+                                        inventory_contents[i],
+                                    )
                             selected_slot_index = None
                         break  
             if incraftFood: 
@@ -642,10 +660,14 @@ while running:
         pygame.draw.circle(screen, (255, 0, 0), (155, 315), 35, 3)
         kitchenDoorRec= pygame.Rect(screen_width-73, 275 , 70, 70)
         pygame.draw.circle(screen, (255, 0, 0), (screen_width-40, 310), 37, 3)
+        workshopDoorRec = pygame.Rect(30, 200 , 70, 70)
+        pygame.draw.rect(screen, (200, 0, 0), workshopDoorRec, 3) 
         if clicked and bedDoorRec.collidepoint(mouse_pos):
             current_screen = "bedroom"
         if clicked and kitchenDoorRec.collidepoint(mouse_pos):
             current_screen = "kitchen"
+        if clicked and workshopDoorRec.collidepoint(mouse_pos): 
+            current_screen = "workshop"
         
     if current_screen == "bedroom": 
         inStorage = False
@@ -697,6 +719,19 @@ while running:
         last_screen="kitchen"
         renderItems(foodSlots, food_contents, foodSlotSize)
 
+    if current_screen == "workshop": 
+        last_screen="hall7"
+        screen.blit(workshop, (0, 0)) 
+        benchRec = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
+        pygame.draw.polygon(screen, (255, 0, 0), rect_points, 4) 
+        if clicked and benchRec.collidepoint(mouse_pos):
+            current_screen = "bench"
+
+    if current_screen == "bench":
+        inBench = True
+        last_screen="workshop"
+        screen.blit(bg2, (0, 0)) 
+
     if current_screen == "insideCave1":
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
@@ -733,7 +768,7 @@ while running:
                     print("Rock collected after 1 second")
                     finger["rockCollected"] = True 
             elif not finger["rockCollected"]: 
-                screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y))
+                screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y)) 
 
     spawn_collectibles(current_screen)
 
