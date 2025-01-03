@@ -495,7 +495,7 @@ while running:
                                         current_storage_contents[i],
                                         inventory_contents[selected_slot_index],
                                     )
-                                elif not selected_item_from_inventory and selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None and not inventory_contents[i]: # swap within storage
+                                elif selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None: # swap within storage
                                     print("swap within")
                                     current_storage_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
