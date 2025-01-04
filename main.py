@@ -22,6 +22,7 @@
 
 import pygame
 import random
+import time
 
 pygame.mixer.init()
 pygame.init()
@@ -114,6 +115,39 @@ font = pygame.font.Font("MODERNA.ttf", 36)
 fontBig = pygame.font.Font("MODERNA.ttf", 70)
 fontSmall = pygame.font.Font("MODERNA.ttf", 25)
 
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+MAGENTA = (255, 0, 255)
+YELLOW = (255, 255, 0)
+CYAN = (0, 255, 255)
+MARS_RED = (194, 59, 34) 
+DUST_BROWN = (133, 94, 66) 
+SANDY_YELLOW = (242, 206, 129)
+SUNSET_ORANGE = (255, 140, 0)
+NEON_BLUE = (0, 255, 180)        # Oxygen tank glow
+NEON_GREEN = (57, 255, 20)       # Suit battery indicator
+ELECTRIC_PURPLE = (191, 0, 255)  # Futuristic tools
+CYBER_YELLOW = (255, 223, 0)
+GOLD = (255, 215, 0)             # Rare resources
+BRONZE = (205, 127, 50)          # Metals
+SILVER = (192, 192, 192)         # Electronics or conduits
+LAVA_RED = (255, 69, 0) 
+
+BAR_WIDTH, BAR_HEIGHT = 150, 20
+healthPos = (300, 30)
+HUNGER_POS = (500, 30)
+THIRST_POS = (700, 30)
+ENERGY_POS= (900, 30)
+
+health = 100
+hunger = 100
+thirst = 100  
+energy = 100 
+DECAY_RATE = 1
+
 # Icons 
 bannana = pygame.transform.scale(pygame.image.load('./icon/bannana.png'), (40, 40))
 flippedBannana = pygame.transform.flip(bannana, True, False)
@@ -147,6 +181,13 @@ iron = pygame.transform.scale(pygame.image.load('./icon/rock3.png'), (40,40))
 coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
 gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
 spaceFood = pygame.transform.scale(pygame.image.load('./icon/spaceFood.png'), (40,40))
+hammer = pygame.transform.scale(pygame.image.load('./icon/hammer.png'), (40,40))
+nail = pygame.transform.scale(pygame.image.load('./icon/nail.png'), (40,40))
+saw = pygame.transform.scale(pygame.image.load('./icon/saw.png'), (40,40))
+thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (40,40))
+forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (40,40))
+healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (40,40))
+energyImg = pygame.transform.scale(pygame.image.load('./icon/energy.png'), (40,40))
 
 collectible_items = {
     "game": [
@@ -256,8 +297,8 @@ bench_items = {
     "hammer" : hammer,
     "nail": nail, 
     "saw": saw, 
-    "hoe": hoe, 
-    "wrench": wrench,
+    # "hoe": hoe, 
+    # "wrench": wrench,
     # "generator": generator, 
     # "solarPanel": solarPanel, 
     # "backpack": backpack,
@@ -321,7 +362,6 @@ terraform_images = {
     # "marineEcosystemStarterKit": marineEcosystemStarterKit,
     # "asteroidRedirector":asteroidRedirector,
 }
-
 
 def check_item_collision(player_rect):
     current_items = collectible_items.get(current_screen, [])
@@ -505,6 +545,7 @@ def spawn_collectibles(current_screen):
 play_music("background", loop=True, volume=2)
 
 running = True 
+last_update_time = time.time()
 while running: 
     dt = clock.tick(60) / 1000
     totalTime += dt 
@@ -512,7 +553,14 @@ while running:
 
     mouse_pos = pygame.mouse.get_pos()
     clicked = False
-    
+
+    current_time = time.time()
+    if current_time - last_update_time >= 1: 
+        hunger = max(0, hunger - DECAY_RATE) # Compares the result of hunger - DECAY_RATE with 0 and returns the greater of the two
+        thirst = max(0, thirst - DECAY_RATE)
+        energy = max(0, energy - DECAY_RATE)
+        last_update_time = current_time
+
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
     elif current_screen == "storage2":
@@ -887,6 +935,28 @@ while running:
         pygame.draw.rect(screen, "black", back_rect, 50)
         backText = font.render('BACK', True, (100, 100, 50))
         screen.blit(backText, (25, 25))
+
+    # health bar
+    pygame.draw.rect(screen, RED, (healthPos[0], healthPos[1], health * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (healthPos[0], healthPos[1], BAR_WIDTH, BAR_HEIGHT), 2)  
+    screen.blit(healthImg, (healthPos[0] - 45 , healthPos[1] -15)) 
+
+    # hunger bar
+    pygame.draw.rect(screen, MAGENTA, (HUNGER_POS[0], HUNGER_POS[1], hunger * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (HUNGER_POS[0], HUNGER_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
+    screen.blit(forkAndKnife, (HUNGER_POS[0] - 35 , HUNGER_POS[1] -15)) 
+
+    # thirst bar
+    pygame.draw.rect(screen, BLUE, (THIRST_POS[0], THIRST_POS[1], thirst * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (THIRST_POS[0], THIRST_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
+    screen.blit(thirsty, (THIRST_POS[0] - 35 , THIRST_POS[1] -15)) 
+
+
+    # energy bar
+    pygame.draw.rect(screen, GREEN, (ENERGY_POS[0], ENERGY_POS[1], energy * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
+    screen.blit(energyImg, (ENERGY_POS[0] - 35 , ENERGY_POS[1] -15)) 
+
 
     # game over page 
     if (game_over):   #??????
