@@ -252,6 +252,77 @@ item_images = {
     "spaceFood": spaceFood,
 }
 
+bench_items = {
+    "hammer" : hammer,
+    "nail": nail, 
+    "saw": saw, 
+    "hoe": hoe, 
+    "wrench": wrench,
+    # "generator": generator, 
+    # "solarPanel": solarPanel, 
+    # "backpack": backpack,
+    # "workbenchUpgradeKit": workbenchUpgradeKit,
+    # "repairKit": repairKit, 
+    # "automatedHarvester": automatedHarvester,
+    # "miningDrone": miningDrone,
+    # "waterPurifier": waterPurifier,
+    # "irrigationSystem": irrigationSystem,
+    # "portableGenerator": portableGenerator,
+    # "lunarRover": lunarRover,
+    # "habitatModule": habitatModule,
+    # "waterRecyclingUnit": waterRecyclingUnit,
+    # "satelliteUplink": satelliteUplink,
+    # "satelliteDownlink": satelliteDownlink,
+    # "communicationAntenna": communicationAntenna,
+    # "wasteManagementSystem": wasteManagementSystem,
+    # "personalHygieneModule":personalHygieneModule,
+    # "entertainmentSystem": entertainmentSystem,
+    # "atmosphericWaterExtractor":atmosphericWaterExtractor,
+    # "geodome":geodome,
+    # "rocketLaunchPad":rocketLaunchPad,
+    # "spaceportTerminal":spaceportTerminal,
+    # "orbitalShuttleDock":orbitalShuttleDock,
+    # "landingBeacon": landingBeacon,
+    # "refuelingStation":refuelingStation,
+    # "passengerBridge":passengerBridge,
+    # "quarantineStation": quarantineStation,
+    # "customsImmigrationTerminal":customsImmigrationTerminal,
+    # "employmentAssignmentDesk":employmentAssignmentDesk,
+} 
+
+terraform_images = {
+    # "climateControlUnit": climateControlUnit,
+    # "oxygenGenerator": oxygenGenerator,
+    # "atmosphericProcessor":atmosphericProcessor,
+    # "iceMelterUnit": iceMelterUnit,
+    # "atmosphericProcessor": atmosphericProcessor,
+    # "thermalRegulator": thermalRegulator,
+    # "radiationShielding": radiationShielding,
+    # "hydrologicalCycleSimulator": hydrologicalCycleSimulator,
+    # "desalinationPlant":desalinationPlant,
+    # "oceanTemperatureRegulator":oceanTemperatureRegulator,
+    # "CO2Scrubber":CO2Scrubber,
+    # "oxygenGenerationTower": oxygenGenerationTower,
+    # "nitrogenBalancer": nitrogenBalancer,
+    # "magnetosphereGenerator":magnetosphereGenerator,
+    # "methaneReleaseUnit":methaneReleaseUnit,
+    # "pressureStabilizer":pressureStabilizer,
+    # "windPatternSimulator": windPatternSimulator,
+    # "seedDispersalDrone": seedDispersalDrone,
+    # "geneticallyModifiedTreeSeeds": geneticallyModifiedTreeSeeds,
+    # "soilEnrichmentModule": soilEnrichmentModule,
+    # "treeGrowthAccelerator":treeGrowthAccelerator,
+    # "algaeGrowthChamber": algaeGrowthChamber,
+    # "radiationShieldGenerator":radiationShieldGenerator,
+    # "solarReflectorArray": solarReflectorArray,
+    # "terraformCommandCenter": terraformCommandCenter,
+    # "terraformCrafting": terraformCrafting
+    # "pollinatorDrone": pollinatorDrone,
+    # "marineEcosystemStarterKit": marineEcosystemStarterKit,
+    # "asteroidRedirector":asteroidRedirector,
+}
+
+
 def check_item_collision(player_rect):
     current_items = collectible_items.get(current_screen, [])
     for item in current_items:
@@ -750,6 +821,8 @@ while running:
         inBench = True
         last_screen="workshop"
         screen.blit(workbench1, (0, 0)) 
+
+
 
     if current_screen == "insideCave1":
         last_screen="game"
