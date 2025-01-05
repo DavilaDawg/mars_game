@@ -150,7 +150,12 @@ health = 100
 hunger = 100
 thirst = 100  
 energy = 100 
-DECAY_RATE = 0.5
+DECAY_RATE = 3
+
+increaseHunger = 20 
+increaseThirtst= 30
+increaseEnergy = 30
+increaseHealth = 30
 
 # Icons 
 bannana = pygame.transform.scale(pygame.image.load('./icon/bannana.png'), (40, 40))
@@ -692,7 +697,8 @@ while running:
                 holding = False
                 hold_duration = pygame.time.get_ticks() - holdStartTime 
                 if hold_duration >= minHoldTime:
-                    print("Click and hold detected!")
+                    if 100 >= hunger + increaseHunger:
+                        hunger += increaseHunger
                 else:
                     print("Short click detected.")
 
@@ -791,9 +797,6 @@ while running:
         if currentInventoryItem: 
             smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
             screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
-
-        if holding:
-            print("Holding...")
 
     if ufo_rect.colliderect(stationRect):  
         pygame.draw.rect(screen, "black", enter_station_rect, 50)
