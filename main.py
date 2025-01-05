@@ -92,6 +92,9 @@ inStorage = False
 incraftFood = False
 axObtained = False
 rockPresent = False
+holding = False
+minHoldTime = 1000
+holdStartTime = 0
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
@@ -147,7 +150,7 @@ health = 100
 hunger = 100
 thirst = 100  
 energy = 100 
-DECAY_RATE = 1
+DECAY_RATE = 0.5
 
 # Icons 
 bannana = pygame.transform.scale(pygame.image.load('./icon/bannana.png'), (40, 40))
@@ -563,6 +566,9 @@ while running:
         energy = max(0, energy - DECAY_RATE)
         last_update_time = current_time
 
+    if hunger == 0 or thirst ==0 or health ==0: 
+        game_over=True
+
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
     elif current_screen == "storage2":
@@ -575,6 +581,10 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             clicked = True 
+            if event.button == 1:  
+                holding = True
+                holdStartTime = pygame.time.get_ticks()
+
             if back_rect.collidepoint(mouse_pos):  
                 current_screen = last_screen
                 if current_screen == "game": 
@@ -615,7 +625,8 @@ while running:
                                 inventory_contents[selected_slot_index],
                                 inventory_contents[i]
                             )
-                        selected_slot_index = None
+                        selected_slot_index = None 
+                        currentInventoryItem = None
                     break
             if inStorage:
                 for i, slot in enumerate(storageSlots):
@@ -676,6 +687,15 @@ while running:
                                         )
                                 selected_slot_index = None
                             break  
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1: 
+                holding = False
+                hold_duration = pygame.time.get_ticks() - holdStartTime 
+                if hold_duration >= minHoldTime:
+                    print("Click and hold detected!")
+                else:
+                    print("Short click detected.")
+
        
     screen.blit(bg, (0, 0))
 
@@ -771,9 +791,9 @@ while running:
         if currentInventoryItem: 
             smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
             screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
-        else: 
-            print("noo display")
 
+        if holding:
+            print("Holding...")
 
     if ufo_rect.colliderect(stationRect):  
         pygame.draw.rect(screen, "black", enter_station_rect, 50)
