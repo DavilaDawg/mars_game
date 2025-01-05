@@ -86,6 +86,7 @@ selected_slot_index = None
 selected_item_from_inventory = True
 item_name = None
 mouse_pos = None
+currentInventoryItem = None
 last_screen = None 
 inStorage = False
 incraftFood = False
@@ -174,7 +175,8 @@ grapes = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
 finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (60,60))
 table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
 station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
-pickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
+flippedpickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
+pickAx = pygame.transform.flip(flippedpickAx, True, False)
 message = pygame.transform.scale(pygame.image.load('./icon/message.png'), (40,40))
 purpleRock = pygame.transform.scale(pygame.image.load('./icon/rock1.png'), (40,40))
 iron = pygame.transform.scale(pygame.image.load('./icon/rock3.png'), (40,40))
@@ -198,7 +200,7 @@ collectible_items = {
             ),  
             "goodImage": flippedBannana, 
             "badImage": badBannana,         
-            "goodName": "item1",    
+            "goodName": "flippedBannana",    
             "badName": "badBannana",                                
             "collected": False,
             "bad_after": 10, 
@@ -282,7 +284,7 @@ collectible_items = {
 }
 
 item_images = {
-    "item1": flippedBannana, 
+    "flippedBannana": flippedBannana, 
     "badBannana": badBannana,
     "chocolate": chocolate,
     "pickAx": pickAx,
@@ -372,7 +374,7 @@ def check_item_collision(player_rect):
                 if add_to_inventory(item): 
                     item["collected"] = True  
 
-player_pos = pygame.Vector2(screen_width / 2, 10)
+player_pos = pygame.Vector2(screen_width / 2 - 20, screen_height/2 - 20)
 
 farmers= [
     {
@@ -582,6 +584,7 @@ while running:
                     if selected_slot_index is None and inventory_contents[i] is not None:
                         selected_slot_index = i 
                         selected_item_from_inventory = True
+                        currentInventoryItem= item_images[inventory_contents[i]]
                     else:
                         if inventory_contents[i] is None and selected_slot_index is not None: 
                             if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: 
@@ -606,15 +609,12 @@ while running:
                                     inventory_contents[i],
                                 )
                             else:                   
-                                # swap within inventory          
+                                # swap/deselect within inventory          
                                 print("swap inventory")
                                 inventory_contents[i], inventory_contents[selected_slot_index] =(
                                 inventory_contents[selected_slot_index],
                                 inventory_contents[i]
                             )
-                        else: 
-                            # deselect in inventory
-                            continue
                         selected_slot_index = None
                     break
             if inStorage:
@@ -767,6 +767,13 @@ while running:
         stationRect = pygame.Rect(screen_width-200, 120, 100,100)
         stationText = font.render('Enter station', True, (100, 100, 50)) 
         screen.blit(playerImg, (player_pos.x, player_pos.y))
+
+        if currentInventoryItem: 
+            smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
+            screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
+        else: 
+            print("noo display")
+
 
     if ufo_rect.colliderect(stationRect):  
         pygame.draw.rect(screen, "black", enter_station_rect, 50)
