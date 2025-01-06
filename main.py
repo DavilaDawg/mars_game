@@ -15,8 +15,6 @@
 # make random roocks generate, make finger generration unique/independent per cave 
 # mining broken
 # add new view if hit boarder 
-# 
-
 
 import pygame
 import random
@@ -83,6 +81,7 @@ current_screen = "game"
 selected_slot_index = None
 selected_item_from_inventory = True
 item_name = None
+heldItem = None
 mouse_pos = None
 currentInventoryItem = None
 last_screen = None 
@@ -933,7 +932,9 @@ while running:
             if finger_rect.colliderect(ufo_rect): 
                 mouse_pos = pygame.mouse.get_pos()  
                 if finger_rect.collidepoint(mouse_pos):
-                    if item_name == "pickAx" and selected_slot_index is not None and inventory_contents[selected_slot_index] == "pickAx":
+                    print("collide")
+                    if heldItem == "pickAx":
+                        print("waiting for click")
                         if clicked: 
                             print("Mouse clicked")
                             finger["clickCount"] += 1
@@ -967,6 +968,9 @@ while running:
         if inventory_contents[i] is not None:
             item_name = inventory_contents[i]
             item_time = inventory_timestamps[i]
+
+            if selected_slot_index == i:
+                heldItem = inventory_contents[selected_slot_index]
 
             for items in collectible_items.values():
                 for itm in items:
