@@ -1,9 +1,7 @@
-# fix music 
-# fix clicking pickax and it goes inside the storage 
 # stack items
 # make messanger move after not being collided with 
 # make text background for message 
-# make hunger bar/ health bar/ thirst bar/ oxigen bar / Sleep bar / oxigen level bar 
+# finish hunger bar (fix)/ health bar/ thirst bar/ 
 # make kitchen gadgets 
 # make stackable items for storage 
 # make fuel leak/ critical oxigen level for hallway 
@@ -15,9 +13,9 @@
 # build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
 # make farm 
 # make random roocks generate, make finger generration unique/independent per cave 
-
-# make farm 
-# make kitchen gadgets 
+# mining broken
+# add new view if hit boarder 
+# 
 
 
 import pygame
@@ -610,7 +608,8 @@ while running:
             if back_rect.collidepoint(mouse_pos):  
                 current_screen = last_screen
                 if current_screen == "game": 
-                    play_music("background", loop=True, volume=2)
+                    if not muted:
+                        play_music("background", loop=True, volume=2)
             for i, slot in enumerate(inventory_slots):
                 if slot.collidepoint(mouse_pos): 
                     if selected_slot_index is None and inventory_contents[i] is not None:
@@ -804,7 +803,8 @@ while running:
                 keys = pygame.key.get_pressed()
                 if keys[pygame.K_RETURN]:
                     current_screen = "insideCave1"  
-                    play_music("mine", loop=True, volume=3)
+                    if not muted:
+                        play_music("mine", loop=True, volume=3)
 
         enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
         stationRect = pygame.Rect(screen_width-200, 120, 100,100)
@@ -1007,7 +1007,6 @@ while running:
     pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
     screen.blit(energyImg, (ENERGY_POS[0] - 35 , ENERGY_POS[1] -15)) 
 
-
     if mutedRec.collidepoint(mouse_pos) and clicked: 
         muted = not muted
         if muted:
@@ -1015,7 +1014,7 @@ while running:
         else:
             pygame.mixer.music.unpause()
 
-    if not muted:
+    if not muted: 
         screen.blit(volume, (screen_width-50, 10))
     else:
         screen.blit(mute, (screen_width-50, 10))
