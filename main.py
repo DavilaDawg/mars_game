@@ -13,8 +13,8 @@
 # build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
 # make farm 
 # make random roocks generate, make finger generration unique/independent per cave 
-# mining broken
 # add new view if hit boarder 
+# add hint if player trys to mine without pickax
 
 import pygame
 import random
@@ -149,7 +149,7 @@ health = 100
 hunger = 100
 thirst = 100  
 energy = 100 
-DECAY_RATE = 0.5
+DECAY_RATE = 3
 
 increaseHunger = 20 
 increaseThirtst= 30
@@ -305,11 +305,42 @@ item_images = {
 }
 
 food_images = {
-    "flippedBannana": flippedBannana, 
-    "badBannana": badBannana,
-    "chocolate": chocolate,
-    "spaceFood": spaceFood,
+    "flippedBannana": {
+        "image": flippedBannana,
+        "type": "food",
+        "increase_hunger": 10
+    },
+    "badBannana": {
+        "image": badBannana,
+        "type": "food",
+        "increase_hunger": 5
+    },
+    "chocolate": {
+        "image": chocolate,
+        "type": "food",
+        "increase_hunger": 20
+    },
+    "spaceFood": {
+        "image": spaceFood,
+        "type": "food",
+        "increase_hunger": 15
+    }
 }
+
+# food_images = [
+#     {"flippedBannana": flippedBannana, 
+#      "increase_hunger": 20,
+#      }, 
+#     {"badBannana": badBannana, 
+#      "increase_hunger": 5
+#      },
+#     {"chocolate": chocolate, 
+#      "increase_hunger": 5,
+#      },
+#     {"spaceFood": spaceFood,
+#      "increase_hunger": 40,
+#      },
+# ]
 
 bench_items = {
     "hammer" : hammer,
@@ -712,11 +743,11 @@ while running:
                 holding = False
                 hold_duration = pygame.time.get_ticks() - holdStartTime 
                 if hold_duration >= minHoldTime:
-                    if 100 >= hunger + increaseHunger: # CHECK IF ITEM IS FOOD 
-                        #and food_images[currentInventoryItem]
-                        hunger += increaseHunger
-                    else: 
-                        hunger = 100
+                    if heldItem in food_images:
+                        if 100 >= hunger + increaseHunger:
+                            hunger += increaseHunger
+                        else: 
+                            hunger = 100
 
     screen.blit(bg, (0, 0))
 
