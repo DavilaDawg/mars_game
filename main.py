@@ -93,6 +93,8 @@ incraftFood = False
 axObtained = False
 rockPresent = False
 holding = False
+muted = False
+
 minHoldTime = 1000
 holdStartTime = 0
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
@@ -150,7 +152,7 @@ health = 100
 hunger = 100
 thirst = 100  
 energy = 100 
-DECAY_RATE = 3
+DECAY_RATE = 0.5
 
 increaseHunger = 20 
 increaseThirtst= 30
@@ -198,6 +200,8 @@ thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (40,40
 forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (40,40))
 healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (40,40))
 energyImg = pygame.transform.scale(pygame.image.load('./icon/energy.png'), (40,40))
+volume = pygame.transform.scale(pygame.image.load('./icon/volume.png'), (40,40))
+mute = pygame.transform.scale(pygame.image.load('./icon/volumeOff.png'), (40,40))
 
 collectible_items = {
     "game": [
@@ -303,6 +307,13 @@ item_images = {
     "spaceFood": spaceFood,
 }
 
+food_images = {
+    "flippedBannana": flippedBannana, 
+    "badBannana": badBannana,
+    "chocolate": chocolate,
+    "spaceFood": spaceFood,
+}
+
 bench_items = {
     "hammer" : hammer,
     "nail": nail, 
@@ -312,8 +323,8 @@ bench_items = {
     # "generator": generator, 
     # "solarPanel": solarPanel, 
     # "backpack": backpack,
-    # "workbenchUpgradeKit": workbenchUpgradeKit,
     # "repairKit": repairKit, 
+    # "workbenchUpgradeKit": workbenchUpgradeKit,
     # "automatedHarvester": automatedHarvester,
     # "miningDrone": miningDrone,
     # "waterPurifier": waterPurifier,
@@ -551,8 +562,14 @@ def spawn_collectibles(current_screen):
                         screen.blit(item["badImage"], (item["pos"].x, item["pos"].y))
                     else: 
                         screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
+        
 
 play_music("background", loop=True, volume=2)
+
+mutedRec = pygame.Rect(screen_width-50, 10 , 50, 50)
+
+if muted:
+    pygame.mixer.music.stop()  
 
 running = True 
 last_update_time = time.time()
@@ -697,12 +714,12 @@ while running:
                 holding = False
                 hold_duration = pygame.time.get_ticks() - holdStartTime 
                 if hold_duration >= minHoldTime:
-                    if 100 >= hunger + increaseHunger:
+                    if 100 >= hunger + increaseHunger: # CHECK IF ITEM IS FOOD 
+                        #and food_images[currentInventoryItem]
                         hunger += increaseHunger
-                else:
-                    print("Short click detected.")
+                    else: 
+                        hunger = 100
 
-       
     screen.blit(bg, (0, 0))
 
     check_item_collision(ufo_rect)
@@ -906,6 +923,10 @@ while running:
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
         screen.blit(playerImg, (player_pos.x, player_pos.y))
+
+        if currentInventoryItem: 
+            smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
+            screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
         
         for finger in fingers: 
             finger_rect = pygame.Rect(finger["pos"].x, finger["pos"].y, 100, 100)
@@ -981,12 +1002,23 @@ while running:
     pygame.draw.rect(screen, WHITE, (THIRST_POS[0], THIRST_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
     screen.blit(thirsty, (THIRST_POS[0] - 35 , THIRST_POS[1] -15)) 
 
-
     # energy bar
     pygame.draw.rect(screen, GREEN, (ENERGY_POS[0], ENERGY_POS[1], energy * (BAR_WIDTH / 100), BAR_HEIGHT))
     pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
     screen.blit(energyImg, (ENERGY_POS[0] - 35 , ENERGY_POS[1] -15)) 
 
+
+    if mutedRec.collidepoint(mouse_pos) and clicked: 
+        muted = not muted
+        if muted:
+            pygame.mixer.music.pause()  
+        else:
+            pygame.mixer.music.unpause()
+
+    if not muted:
+        screen.blit(volume, (screen_width-50, 10))
+    else:
+        screen.blit(mute, (screen_width-50, 10))
 
     # game over page 
     if (game_over):   #??????
