@@ -46,6 +46,10 @@ totalTime = 0
 
 screen_width, screen_height = screen.get_size()
 bg = pygame.transform.scale(pygame.image.load("./icon/background.webp"), (screen_width, screen_height))
+topRight = pygame.transform.scale(pygame.image.load("./icon/topRight.png"), (screen_width, screen_height))
+topLeft = pygame.transform.scale(pygame.image.load("./icon/topLeft.png"), (screen_width, screen_height))
+bottomRight = pygame.transform.scale(pygame.image.load("./icon/bottomRight.png"), (screen_width, screen_height))
+bottomLeft = pygame.transform.scale(pygame.image.load("./icon/bottomLeft.png"), (screen_width, screen_height))
 bg2 = pygame.transform.scale(pygame.image.load("./icon/black.png"), (screen_width, screen_height))
 insideCave1 = pygame.transform.scale(pygame.image.load("./icon/cav1_.webp"), (screen_width, screen_height))
 hall3 = pygame.transform.scale(pygame.image.load("./icon/hall3.jpg"), (screen_width, screen_height))
@@ -78,6 +82,7 @@ yPosFinger = random.randint(0, screen_height)
 game_over = False
 mining = False
 current_screen = "game" 
+currentBackground= "topRight"
 selected_slot_index = None
 selected_item_from_inventory = True
 item_name = None
@@ -90,9 +95,9 @@ incraftFood = False
 axObtained = False
 rockPresent = False
 holding = False
-muted = False
+muted = False 
 
-minHoldTime = 1000
+minHoldTime = 900
 holdStartTime = 0
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 
@@ -149,7 +154,7 @@ health = 100
 hunger = 100
 thirst = 100  
 energy = 100 
-DECAY_RATE = 3
+DECAY_RATE = 0.5
 
 increaseHunger = 20 
 increaseThirtst= 30
@@ -365,8 +370,6 @@ bench_items = {
     # "satelliteDownlink": satelliteDownlink,
     # "communicationAntenna": communicationAntenna,
     # "wasteManagementSystem": wasteManagementSystem,
-    # "personalHygieneModule":personalHygieneModule,
-    # "entertainmentSystem": entertainmentSystem,
     # "atmosphericWaterExtractor":atmosphericWaterExtractor,
     # "geodome":geodome,
     # "rocketLaunchPad":rocketLaunchPad,
@@ -403,7 +406,6 @@ terraform_images = {
     # "soilEnrichmentModule": soilEnrichmentModule,
     # "treeGrowthAccelerator":treeGrowthAccelerator,
     # "algaeGrowthChamber": algaeGrowthChamber,
-    # "radiationShieldGenerator":radiationShieldGenerator,
     # "solarReflectorArray": solarReflectorArray,
     # "terraformCommandCenter": terraformCommandCenter,
     # "terraformCrafting": terraformCrafting
@@ -590,7 +592,11 @@ def spawn_collectibles(current_screen):
                         screen.blit(item["badImage"], (item["pos"].x, item["pos"].y))
                     else: 
                         screen.blit(item["goodImage"], (item["pos"].x, item["pos"].y))
-        
+
+def change_background(new_background):
+    global currentBackground
+    if currentBackground != new_background:
+        currentBackground = new_background
 
 play_music("background", loop=True, volume=2)
 
@@ -749,7 +755,39 @@ while running:
                         else: 
                             hunger = 100
 
-    screen.blit(bg, (0, 0))
+    if currentBackground == "topRight":
+        screen.blit(topRight, (0,0))
+        if ufo_rect.left == 0:  
+            change_background("topLeft")
+        elif ufo_rect.bottom >= screen_height:  
+            change_background("bottomRight")
+
+    elif currentBackground == "topLeft":
+        if ufo_rect.right >= screen_width: 
+            change_background("topRight")
+        elif ufo_rect.bottom >= screen_height:  
+            change_background("bottomLeft")
+
+    elif currentBackground == "bottomRight":
+        if ufo_rect.left == 0:  
+            change_background("bottomLeft")
+        elif ufo_rect.top == 0: 
+            change_background("topRight")
+
+    elif currentBackground == "bottomLeft":
+        if ufo_rect.right >= screen_width:  
+            change_background("bottomRight")
+        elif ufo_rect.top == 0: 
+            change_background("topLeft")
+
+    if currentBackground == "topRight":
+        screen.blit(topRight, (0,0))
+    elif currentBackground == "topLeft":
+        screen.blit(topLeft, (0,0))
+    elif currentBackground == "bottomRight":
+        screen.blit(bottomRight, (0,0))
+    elif currentBackground == "bottomLeft":
+        screen.blit(bottomLeft, (0,0))
 
     check_item_collision(ufo_rect)
 
@@ -769,88 +807,87 @@ while running:
     player_pos.y = max(0, min(player_pos.y, screen_height - playerSize))
 
     if current_screen == "game":       
-        # farmer logic 
-        for farmer in farmers:
-            # Wandering 
-            farmer["time_since_last_change"] += dt
-            if farmer["time_since_last_change"] >= 6:
-                farmer["direction"] = pygame.Vector2(random.choice([-1, 1]), random.choice([-1, 1]))
-                farmer["time_since_last_change"] = 0
-
-            farmer["pos"] += farmer["direction"] * farmer["speed"] * dt
-            farmer["direction"].x *= -1
-            if farmer["pos"].y <= 0 or farmer["pos"].y >= screen_height - farmerSize:
-                farmer["direction"].y *= -1
-
-            screen.blit(astroImg1, (farmer["pos"].x, farmer["pos"].y))
-
-            screen.blit(station, (screen_width-200, 120))
-        
-            farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
-            if ufo_rect.colliderect(farmer_rect):  
-                collisionTracked =True 
-        
-        # cows logic
-        for i, cow in enumerate(cows):
-            if not cow["stopped"] or axObtained:
-                cow["time_since_last_change"] += dt
-                if cow["time_since_last_change"] >= 2: 
-                    cow["direction"] = pygame.Vector2(
-                        random.choice([-1, 1]),
-                        random.choice([-1, 1])
-                    )
-                    cow["time_since_last_change"] = 0
-
-                cow["pos"] += cow["direction"] * cow["speed"] * dt
-
-                # Reverse direction if hitting a wall
-                if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
-                    cow["direction"].x *= -1
-                if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
-                    cow["direction"].y *= -1
-
-            screen.blit(astroImg2, (cow["pos"].x, cow["pos"].y))
-            
-            if i == len(cows) - 1: 
-                if not axObtained: 
-                    cowRect = pygame.Rect(cow["pos"].x -40 , cow["pos"].y -40 , cowSize+20, cowSize+20)
-                    screen.blit(message, (cow["pos"].x +50, cow["pos"].y - 30))  
-                    if cowRect.collidepoint(player_pos): 
-                        cow["stopped"] = True
-                        crewText = fontSmall.render(crewMessage, True, (100, 100, 50)) 
-                        screen.blit(crewText, (40, screen_height/2)) 
-
-        for cave in caves:
-            screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
-            enter_cave_rect = pygame.Rect(cave["pos"].x - 50, cave["pos"].y - 40, 200, 60)  
-            mineText = font.render('Enter cave', True, (100, 100, 50)) 
-            cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
-        
-            if ufo_rect.colliderect(cave_rect):  
-                mining = True 
-                pygame.draw.rect(screen, "black", enter_cave_rect, 50)
-                screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
-                keys = pygame.key.get_pressed()
-                if keys[pygame.K_RETURN]:
-                    current_screen = "insideCave1"  
-                    if not muted:
-                        play_music("mine", loop=True, volume=3)
-
-        enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
-        stationRect = pygame.Rect(screen_width-200, 120, 100,100)
-        stationText = font.render('Enter station', True, (100, 100, 50)) 
         screen.blit(playerImg, (player_pos.x, player_pos.y))
+        if currentBackground == "topRight":
+            for farmer in farmers:
+                # Wandering 
+                farmer["time_since_last_change"] += dt
+                if farmer["time_since_last_change"] >= 6:
+                    farmer["direction"] = pygame.Vector2(random.choice([-1, 1]), random.choice([-1, 1]))
+                    farmer["time_since_last_change"] = 0
 
-        if currentInventoryItem: 
-            smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
-            screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
+                farmer["pos"] += farmer["direction"] * farmer["speed"] * dt
+                farmer["direction"].x *= -1
+                if farmer["pos"].y <= 0 or farmer["pos"].y >= screen_height - farmerSize:
+                    farmer["direction"].y *= -1
 
-    if ufo_rect.colliderect(stationRect):  
-        pygame.draw.rect(screen, "black", enter_station_rect, 50)
-        screen.blit(stationText, (enter_station_rect.x + 7, enter_station_rect.y + 10)) 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_RETURN]:
-            current_screen = "hall3"  
+                screen.blit(astroImg1, (farmer["pos"].x, farmer["pos"].y))
+
+                screen.blit(station, (screen_width-200, 120))
+            
+                farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
+
+            # cows logic
+            for i, cow in enumerate(cows):
+                if not cow["stopped"] or axObtained:
+                    cow["time_since_last_change"] += dt
+                    if cow["time_since_last_change"] >= 2: 
+                        cow["direction"] = pygame.Vector2(
+                            random.choice([-1, 1]),
+                            random.choice([-1, 1])
+                        )
+                        cow["time_since_last_change"] = 0
+
+                    cow["pos"] += cow["direction"] * cow["speed"] * dt
+
+                    # Reverse direction if hitting a wall
+                    if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
+                        cow["direction"].x *= -1
+                    if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
+                        cow["direction"].y *= -1
+
+                screen.blit(astroImg2, (cow["pos"].x, cow["pos"].y))
+                
+                if i == len(cows) - 1: 
+                    if not axObtained: 
+                        cowRect = pygame.Rect(cow["pos"].x -40 , cow["pos"].y -40 , cowSize+20, cowSize+20)
+                        screen.blit(message, (cow["pos"].x +50, cow["pos"].y - 30))  
+                        if cowRect.collidepoint(player_pos): 
+                            cow["stopped"] = True
+                            crewText = fontSmall.render(crewMessage, True, (100, 100, 50)) 
+                            screen.blit(crewText, (40, screen_height/2)) 
+
+            for cave in caves:
+                screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
+                enter_cave_rect = pygame.Rect(cave["pos"].x - 50, cave["pos"].y - 40, 200, 60)  
+                mineText = font.render('Enter cave', True, (100, 100, 50)) 
+                cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
+            
+                if ufo_rect.colliderect(cave_rect):  
+                    mining = True 
+                    pygame.draw.rect(screen, "black", enter_cave_rect, 50)
+                    screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_RETURN]:
+                        current_screen = "insideCave1"  
+                        if not muted:
+                            play_music("mine", loop=True, volume=3)
+
+            enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
+            stationRect = pygame.Rect(screen_width-200, 120, 100,100)
+            stationText = font.render('Enter station', True, (100, 100, 50)) 
+            screen.blit(playerImg, (player_pos.x, player_pos.y))
+
+        if ufo_rect.colliderect(stationRect):  
+            pygame.draw.rect(screen, "black", enter_station_rect, 50)
+            screen.blit(stationText, (enter_station_rect.x + 7, enter_station_rect.y + 10)) 
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_RETURN]:
+                current_screen = "hall3"  
+
+    if currentInventoryItem: 
+        smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
+        screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
 
     if current_screen == "hall3":
         last_screen = "game"
@@ -947,8 +984,6 @@ while running:
         last_screen="workshop"
         screen.blit(workbench1, (0, 0)) 
 
-
-
     if current_screen == "insideCave1":
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
@@ -989,7 +1024,8 @@ while running:
             elif not finger["rockCollected"]: 
                 screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y)) 
 
-    spawn_collectibles(current_screen)
+    if currentBackground == "topRight":
+        spawn_collectibles(current_screen)
 
     for i, slot in enumerate(inventory_slots):
         color = "gray"
@@ -1130,6 +1166,7 @@ while running:
             screen.blit(backText, (595, screen_height-80))
             pygame.display.update()
 
-    pygame.display.update()
+    pygame.display.flip()
+
 pygame.mixer.music.stop()
 pygame.quit()
