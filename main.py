@@ -1,7 +1,8 @@
 # stack items
 # make messanger move after not being collided with 
 # make text background for message 
-# finish hunger bar (fix)/ health bar/ thirst bar
+# finish health bar/ thirst bar/radiation 
+# population and teraform info
 # fix if eat food disapeer
 # make kitchen gadgets 
 # make stackable items for storage 
@@ -197,14 +198,8 @@ coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
 gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
 spaceFood = pygame.transform.scale(pygame.image.load('./icon/spaceFood.png'), (40,40))
 hammer = pygame.transform.scale(pygame.image.load('./icon/hammer.png'), (40,40))
-transHammer = pygame.transform.scale(pygame.image.load('./icon/hammer.png'), (40,40)).convert_alpha()
-transHammer.set_alpha(55)
 nail = pygame.transform.scale(pygame.image.load('./icon/nail.png'), (40,40))
-transNail = pygame.transform.scale(pygame.image.load('./icon/nail.png'), (40,40)).convert_alpha()
-transNail.set_alpha(100)
 saw = pygame.transform.scale(pygame.image.load('./icon/saw.png'), (40,40))
-transSaw = pygame.transform.scale(pygame.image.load('./icon/saw.png'), (40,40)).convert_alpha()
-transSaw.set_alpha(100)
 thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (40,40))
 forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (40,40))
 healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (40,40))
@@ -213,6 +208,13 @@ volume = pygame.transform.scale(pygame.image.load('./icon/volume.png'), (40,40))
 mute = pygame.transform.scale(pygame.image.load('./icon/volumeOff.png'), (40,40))
 leftArrow = pygame.transform.scale(pygame.image.load('./icon/leftArrow.png'), (80,80))
 rightArrow = pygame.transform.scale(pygame.image.load('./icon/rightArrow.png'), (80,80))
+hoe =pygame.transform.scale(pygame.image.load('./icon/hoe.png'), (40,40))
+wrench =pygame.transform.scale(pygame.image.load('./icon/wrench.png'), (40,40))
+solarPanel = pygame.transform.scale(pygame.image.load('./icon/solarPanel.png'), (80,80))
+oven = pygame.transform.scale(pygame.image.load('./icon/oven.png'), (110,110))
+ice = pygame.transform.scale(pygame.image.load('./icon/ice.png'), (49,49))
+iceMelterUnit = pygame.transform.scale(pygame.image.load('./icon/iceMelterUnit.png'), (49,49))
+waterStorage = pygame.transform.scale(pygame.image.load('./icon/waterStorage.png'), (49,49))
 
 collectible_items = {
     "game": [
@@ -359,78 +361,173 @@ food_images = {
 bench_items = [
     {"image" : hammer,
      "name": "hammer",
+     "display": "waste Management System",
     "materialsNeeded" : [iron, iron],
      },
     {"image": nail,
      "name": "nail",
+    "display": "Nail",
     "materialsNeeded" : [iron],
      }, 
     {"image": saw,
      "name": "saw",
+    "display": "Saw",
     "materialsNeeded" : [iron, purpleRock],
      }, 
-    # "hoe": hoe, 
-    # "wrench": wrench,
-    # "generator": generator, 
-    # "solarPanel": solarPanel, 
-    # "backpack": backpack,
-    # "repairKit": repairKit, 
-    # "workbenchUpgradeKit": workbenchUpgradeKit,
-    # "automatedHarvester": automatedHarvester,
-    # "miningDrone": miningDrone,
-    # "waterPurifier": waterPurifier,
-    # "irrigationSystem": irrigationSystem,
-    # "portableGenerator": portableGenerator,
-    # "lunarRover": lunarRover,
-    # "habitatModule": habitatModule,
-    # "waterRecyclingUnit": waterRecyclingUnit,
-    # "satelliteUplink": satelliteUplink,
-    # "satelliteDownlink": satelliteDownlink,
-    # "communicationAntenna": communicationAntenna,
-    # "wasteManagementSystem": wasteManagementSystem,
-    # "atmosphericWaterExtractor":atmosphericWaterExtractor,
-    # "geodome":geodome,
-    # "rocketLaunchPad":rocketLaunchPad,
-    # "spaceportTerminal":spaceportTerminal,
-    # "orbitalShuttleDock":orbitalShuttleDock,
-    # "landingBeacon": landingBeacon,
+     {"image": hoe,
+     "name": "hoe",
+    "display": "Hoe",
+    "materialsNeeded" : [iron],
+    },
+      {"image": wrench,
+     "name": "wrench",
+    "display": "Wrench", 
+    "materialsNeeded" : [purpleRock, purpleRock],
+     },
+     {"image": solarPanel, # to power tech
+     "name": "solarPanel",
+    "display": "Solar Panel",
+    "materialsNeeded" : [purpleRock, purpleRock],
+     },
+      {"image": iceMelterUnit,
+     "name": "iceMelterUnit",
+     "display": "Ice Melter Unit",
+    "materialsNeeded" : [purpleRock],
+     }, 
+      {"image": waterStorage,
+     "name": "waterStorage",
+     "display": "Water Storage",
+    "materialsNeeded" : [purpleRock],
+     }, 
+    #   {"image": upgradedWorkbench,
+    #  "name": "workbenchUpgradeKit",
+    # "materialsNeeded" : [purpleRock, purpleRock],
+    #  }, 
+]
+
+    # upgradedBench = [
+    #     {
+    #         "image": generator,
+    #         "name": "generator", 
+    #         "display": "Generator", 
+    #         "meaterialsNeeded": [purpleRock],
+    #     },{
+    #         "image": backpack,
+    #         "name": "backpack",
+    #         "display": "Backpack"
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": backpack,
+    #         "name": "backpack",
+    #         "display": "Backpack"
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": atmosphericWaterExtractor,
+    #         "name": "atmosphericWaterExtractor",
+    #         "materialsNeeded" : [purpleRock, purpleRock],
+    #     },{
+    #         "image": automatedHarvester,
+    #         "name": "Automated Harvester",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": miningDrone,
+    #         "name": "Mining Drone",
+    #         "materialsNeeded" : [purpleRock],
+    #     ,{
+    #         "image": irrigationSystem,
+    #         "name": "Irrigation System",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": irrigationSystem,
+    #         "name": "Irrigation System",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": PortableGenerator,
+    #         "name": "Portable Generator",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": exploration Rover,
+    #         "name": "Exploration Rover",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": exploration Rover,
+    #         "name": "Exploration Rover",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": waterRecyclingUnit,
+    #         "name": "Water Recycling Unit",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": wasteManagementSystem,
+    #         "name": "Waste Management System",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": rocketLandingPad,
+    #         "name": "Rocket Landng Pad",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": orbitalShuttleDock,
+    #         "name": "Orbital Shuttle Dock",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": landingBeacon,
+    #         "name": "Landing Beacon",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": spaceportTerminal,
+    #         "name": "Spaceport Terminal",
+    #         "materialsNeeded" : [purpleRock],
+    #     },{
+    #         "image": terraformCrafting,
+    #         "name": "Terraform Crafting Staton",
+    #         "materialsNeeded" : [purpleRock],
+    #     },
+    # ]
+
     # "refuelingStation":refuelingStation,
+        # "habitatModule": habitatModule,
+
     # "passengerBridge":passengerBridge,
     # "quarantineStation": quarantineStation,
     # "customsImmigrationTerminal":customsImmigrationTerminal,
     # "employmentAssignmentDesk":employmentAssignmentDesk,
-]
+    # , 
+    #   {"image": communicationAntenna,
+    #  "name": "communicationAntenna",
+    # "materialsNeeded" : [purpleRock],
+    #  }, 
+      
 
-terraform_images = {
-    # "climateControlUnit": climateControlUnit,
-    # "oxygenGenerator": oxygenGenerator,
-    # "atmosphericProcessor":atmosphericProcessor,
-    # "iceMelterUnit": iceMelterUnit,
-    # "atmosphericProcessor": atmosphericProcessor,
-    # "thermalRegulator": thermalRegulator,
-    # "radiationShielding": radiationShielding,
-    # "hydrologicalCycleSimulator": hydrologicalCycleSimulator,
-    # "desalinationPlant":desalinationPlant,
-    # "oceanTemperatureRegulator":oceanTemperatureRegulator,
-    # "CO2Scrubber":CO2Scrubber,
-    # "oxygenGenerationTower": oxygenGenerationTower,
-    # "nitrogenBalancer": nitrogenBalancer,
-    # "magnetosphereGenerator":magnetosphereGenerator,
-    # "methaneReleaseUnit":methaneReleaseUnit,
-    # "pressureStabilizer":pressureStabilizer,
-    # "windPatternSimulator": windPatternSimulator,
-    # "seedDispersalDrone": seedDispersalDrone,
-    # "geneticallyModifiedTreeSeeds": geneticallyModifiedTreeSeeds,
-    # "soilEnrichmentModule": soilEnrichmentModule,
-    # "treeGrowthAccelerator":treeGrowthAccelerator,
-    # "algaeGrowthChamber": algaeGrowthChamber,
-    # "solarReflectorArray": solarReflectorArray,
-    # "terraformCommandCenter": terraformCommandCenter,
-    # "terraformCrafting": terraformCrafting
-    # "pollinatorDrone": pollinatorDrone,
-    # "marineEcosystemStarterKit": marineEcosystemStarterKit,
-    # "asteroidRedirector":asteroidRedirector,
-}
+
+# terraform_images = {
+#     # "climateControlUnit": climateControlUnit,
+#     # "oxygenGenerator": oxygenGenerator,
+#     # "atmosphericProcessor":atmosphericProcessor,
+#     # "atmosphericProcessor": atmosphericProcessor,
+#     # "thermalRegulator": thermalRegulator,
+#     # "radiationShielding": radiationShielding,
+#     # "hydrologicalCycleSimulator": hydrologicalCycleSimulator,
+#     # "desalinationPlant":desalinationPlant,
+#     # "oceanTemperatureRegulator":oceanTemperatureRegulator,
+#     # "CO2Scrubber":CO2Scrubber,
+#     # "oxygenGenerationTower": oxygenGenerationTower,
+#     # "nitrogenBalancer": nitrogenBalancer,
+#     # "magnetosphereGenerator":magnetosphereGenerator,
+#     # "methaneReleaseUnit":methaneReleaseUnit,
+#     # "pressureStabilizer":pressureStabilizer,
+#     # "windPatternSimulator": windPatternSimulator,
+#     # "seedDispersalDrone": seedDispersalDrone,
+#     # "geneticallyModifiedTreeSeeds": geneticallyModifiedTreeSeeds,
+#     # "soilEnrichmentModule": soilEnrichmentModule,
+#     # "treeGrowthAccelerator":treeGrowthAccelerator,
+#     # "algaeGrowthChamber": algaeGrowthChamber,
+#     # "solarReflectorArray": solarReflectorArray,
+#     # "terraformCommandCenter": terraformCommandCenter,
+#     # "terraformCrafting": terraformCrafting
+#     # "pollinatorDrone": pollinatorDrone,
+#     # "marineEcosystemStarterKit": marineEcosystemStarterKit,
+#     # "asteroidRedirector":asteroidRedirector,
+# }
 
 def check_item_collision(player_rect):
     current_items = collectible_items.get(current_screen, [])
@@ -636,18 +733,67 @@ def showCraftableItems():
     itemData = bench_items[current_item_index]
     itemImg = itemData["image"]
     itemName = itemData["name"]
-    itemText = font.render(itemName, True, (255, 255, 255)) 
+    displayName= itemData["display"]
+    itemText = font.render(displayName, True, (255, 255, 255)) 
+    textWidth, textHeight = font.size(displayName)
+    arrowSpace = (screen_width / 2 + 132) - (screen_width / 2 - 211)
+
+    if textWidth > arrowSpace:
+        words = displayName.split()
+        if len(words) > 1:
+            first_line = words[0]
+            second_line = " ".join(words[1:])
+            
+            first_line_text = font.render(first_line, True, (255, 255, 255))
+            second_line_text = font.render(second_line, True, (255, 255, 255))
+            
+            first_line_width1, _ = font.size(first_line)
+            second_line_width1, _ = font.size(second_line)
+
+            if first_line_width1 <= arrowSpace and second_line_width1 <= arrowSpace:
+                first_line_x = screen_width / 2 - first_line_width1 / 2
+                second_line_x = screen_width / 2 - second_line_width1 / 2
+                
+                first_line_y = 180
+                second_line_y = 201 + textHeight - 45
+            
+                screen.blit(first_line_text, (first_line_x, first_line_y))
+                screen.blit(second_line_text, (second_line_x, second_line_y))
+            else:
+                first_line = " ".join(words[:2])
+                second_line = " ".join(words[2:])
+
+                first_line_width, _ = font.size(first_line)
+                second_line_width, _ = font.size(second_line)
+                first_line_x = screen_width / 2 - first_line_width / 2
+                second_line_x = screen_width / 2 - second_line_width / 2
+
+                first_line_y = 180
+                second_line_y = 201 + textHeight - 45
+                
+                if first_line_width or second_line_width <= arrowSpace: # FIX
+                    print("here")
+                    screen.blit(first_line_text, (first_line_x, first_line_y))
+                    screen.blit(second_line_text, (second_line_x, second_line_y))
+                else:
+                    print("here2")
+                    text_x = screen_width / 2 - textWidth / 2
+                    itemText = fontSmall.render(displayName, True, (255, 255, 255)) 
+                    screen.blit(itemText, (text_x, 201))
+    else:
+        text_x = screen_width / 2 - textWidth / 2
+        screen.blit(itemText, (text_x, 201))
+
     materials = itemData["materialsNeeded"]
     transItem = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (40,40)).convert_alpha()
-    transItem.set_alpha(80)
-    itemRect = pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
+    transItem.set_alpha(90)
+    itemRect = pygame.Rect(screen_width/2 - 51 , screen_height/2 + 76, 90, 90)
     leftRect = pygame.Rect(screen_width/2 - 210, 185, 90, 90)
-    rightRrect = pygame.Rect(screen_width/2 - 68+ 210, 185, 90, 90)
+    rightRrect = pygame.Rect(screen_width/2 + 132, 185, 90, 90)
     pygame.draw.rect(screen,(24, 116, 205),itemRect,4)
     scaledItemImg = pygame.transform.scale(transItem, (80, 80))
-    screen.blit(itemText, (screen_width/2 - 72, 201)) 
-    screen.blit(leftArrow, (screen_width/2 - 210, 185)) 
-    screen.blit(rightArrow, (screen_width/2 - 68+ 210, 185)) 
+    screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
+    screen.blit(rightArrow, (screen_width/2 + 132, 185)) 
     screen.blit(scaledItemImg, (screen_width/2 -45,screen_height/2 + 80))
 
     if rightRrect.collidepoint(mouse_pos) and clicked: 
