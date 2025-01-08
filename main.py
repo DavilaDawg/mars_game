@@ -1,7 +1,8 @@
 # stack items
 # make messanger move after not being collided with 
 # make text background for message 
-# finish hunger bar (fix)/ health bar/ thirst bar/ 
+# finish hunger bar (fix)/ health bar/ thirst bar
+# fix if eat food disapeer
 # make kitchen gadgets 
 # make stackable items for storage 
 # make fuel leak/ critical oxigen level for hallway 
@@ -196,14 +197,22 @@ coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
 gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
 spaceFood = pygame.transform.scale(pygame.image.load('./icon/spaceFood.png'), (40,40))
 hammer = pygame.transform.scale(pygame.image.load('./icon/hammer.png'), (40,40))
+transHammer = pygame.transform.scale(pygame.image.load('./icon/hammer.png'), (40,40)).convert_alpha()
+transHammer.set_alpha(55)
 nail = pygame.transform.scale(pygame.image.load('./icon/nail.png'), (40,40))
+transNail = pygame.transform.scale(pygame.image.load('./icon/nail.png'), (40,40)).convert_alpha()
+transNail.set_alpha(100)
 saw = pygame.transform.scale(pygame.image.load('./icon/saw.png'), (40,40))
+transSaw = pygame.transform.scale(pygame.image.load('./icon/saw.png'), (40,40)).convert_alpha()
+transSaw.set_alpha(100)
 thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (40,40))
 forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (40,40))
 healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (40,40))
 energyImg = pygame.transform.scale(pygame.image.load('./icon/energy.png'), (40,40))
 volume = pygame.transform.scale(pygame.image.load('./icon/volume.png'), (40,40))
 mute = pygame.transform.scale(pygame.image.load('./icon/volumeOff.png'), (40,40))
+leftArrow = pygame.transform.scale(pygame.image.load('./icon/leftArrow.png'), (80,80))
+rightArrow = pygame.transform.scale(pygame.image.load('./icon/rightArrow.png'), (80,80))
 
 collectible_items = {
     "game": [
@@ -347,10 +356,19 @@ food_images = {
 #      },
 # ]
 
-bench_items = {
-    "hammer" : hammer,
-    "nail": nail, 
-    "saw": saw, 
+bench_items = [
+    {"image" : hammer,
+     "name": "hammer",
+    "materialsNeeded" : [iron, iron],
+     },
+    {"image": nail,
+     "name": "nail",
+    "materialsNeeded" : [iron],
+     }, 
+    {"image": saw,
+     "name": "saw",
+    "materialsNeeded" : [iron, purpleRock],
+     }, 
     # "hoe": hoe, 
     # "wrench": wrench,
     # "generator": generator, 
@@ -381,7 +399,7 @@ bench_items = {
     # "quarantineStation": quarantineStation,
     # "customsImmigrationTerminal":customsImmigrationTerminal,
     # "employmentAssignmentDesk":employmentAssignmentDesk,
-} 
+]
 
 terraform_images = {
     # "climateControlUnit": climateControlUnit,
@@ -510,6 +528,15 @@ foodStartX= 520
 foodStartY = 210
 foodSlots = []
 
+# Craft items
+craftRows = 1
+craftCols = 5
+craftSlotSize = 70
+craftMargin= 15
+craftStartX= 520
+craftStartY = 210
+craftSlots = []
+
 # make these a function eventually: 
 for row in range(inventory_rows):
     for col in range(inventory_cols):
@@ -597,6 +624,25 @@ def change_background(new_background):
     global currentBackground
     if currentBackground != new_background:
         currentBackground = new_background
+
+def makeTransparent(item, level=80):
+    transItem = pygame.transform.scale(pygame.image.load(f'./icon/{item}.png'), (40,40)).convert_alpha()
+    transItem.set_alpha(level)
+
+def showCraftableItems(itemData):
+    itemImg = itemData["image"]
+    itemName = itemData["name"]
+    itemText = font.render(itemName, True, (255, 255, 255)) 
+    materials = itemData["materialsNeeded"]
+    transItem = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (40,40)).convert_alpha()
+    transItem.set_alpha(80)
+    itemRect= pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
+    pygame.draw.rect(screen,(24, 116, 205),itemRect,4)
+    scaledItemImg = pygame.transform.scale(transItem, (80, 80))
+    screen.blit(itemText, (screen_width/2 - 72, 201)) 
+    screen.blit(leftArrow, (screen_width/2 - 210, 185)) 
+    screen.blit(rightArrow, (screen_width/2 - 68+ 210, 185)) 
+    screen.blit(scaledItemImg, (screen_width/2 -45,screen_height/2 + 80))
 
 play_music("background", loop=True, volume=2)
 
@@ -983,6 +1029,8 @@ while running:
         inBench = True
         last_screen="workshop"
         screen.blit(workbench1, (0, 0)) 
+        for i, itemData in enumerate(bench_items):
+            showCraftableItems(itemData)
 
     if current_screen == "insideCave1":
         last_screen="game"
