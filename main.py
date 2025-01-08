@@ -629,20 +629,31 @@ def makeTransparent(item, level=80):
     transItem = pygame.transform.scale(pygame.image.load(f'./icon/{item}.png'), (40,40)).convert_alpha()
     transItem.set_alpha(level)
 
-def showCraftableItems(itemData):
+current_item_index = 0
+
+def showCraftableItems():
+    global current_item_index
+    itemData = bench_items[current_item_index]
     itemImg = itemData["image"]
     itemName = itemData["name"]
     itemText = font.render(itemName, True, (255, 255, 255)) 
     materials = itemData["materialsNeeded"]
     transItem = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (40,40)).convert_alpha()
     transItem.set_alpha(80)
-    itemRect= pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
+    itemRect = pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
+    leftRect = pygame.Rect(screen_width/2 - 210, 185, 90, 90)
+    rightRrect = pygame.Rect(screen_width/2 - 68+ 210, 185, 90, 90)
     pygame.draw.rect(screen,(24, 116, 205),itemRect,4)
     scaledItemImg = pygame.transform.scale(transItem, (80, 80))
     screen.blit(itemText, (screen_width/2 - 72, 201)) 
     screen.blit(leftArrow, (screen_width/2 - 210, 185)) 
     screen.blit(rightArrow, (screen_width/2 - 68+ 210, 185)) 
     screen.blit(scaledItemImg, (screen_width/2 -45,screen_height/2 + 80))
+
+    if rightRrect.collidepoint(mouse_pos) and clicked: 
+        current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
+    elif leftRect.collidepoint(mouse_pos) and clicked:
+        current_item_index = (current_item_index + 1) % len(bench_items)
 
 play_music("background", loop=True, volume=2)
 
@@ -1029,8 +1040,7 @@ while running:
         inBench = True
         last_screen="workshop"
         screen.blit(workbench1, (0, 0)) 
-        for i, itemData in enumerate(bench_items):
-            showCraftableItems(itemData)
+        showCraftableItems()
 
     if current_screen == "insideCave1":
         last_screen="game"
