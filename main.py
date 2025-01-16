@@ -124,6 +124,8 @@ max_x, max_y = max(x_coords), max(y_coords)
 font = pygame.font.Font("MODERNA.ttf", 36)
 fontBig = pygame.font.Font("MODERNA.ttf", 70)
 fontSmall = pygame.font.Font("MODERNA.ttf", 25)
+fontSmall2 = pygame.font.Font("MODERNA.ttf", 23)
+fontSmaller = pygame.font.Font("MODERNA.ttf", 20)
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -361,7 +363,7 @@ food_images = {
 bench_items = [
     {"image" : hammer,
      "name": "hammer",
-     "display": "waste Management System",
+     "display": "waste managment System",
     "materialsNeeded" : [iron, iron],
      },
     {"image": nail,
@@ -497,7 +499,6 @@ bench_items = [
     # "materialsNeeded" : [purpleRock],
     #  }, 
       
-
 
 # terraform_images = {
 #     # "climateControlUnit": climateControlUnit,
@@ -751,6 +752,12 @@ def showCraftableItems():
             second_line_width1, _ = font.size(second_line)
 
             if first_line_width1 <= arrowSpace and second_line_width1 <= arrowSpace:
+                # First line has 1 word then the rest on second
+                print("First line has 1 word then the rest on second")
+
+                second_line_text = fontSmall2.render(second_line, True, (255, 255, 255))
+                second_line_width1, _ = fontSmall2.size(second_line)
+
                 first_line_x = screen_width / 2 - first_line_width1 / 2
                 second_line_x = screen_width / 2 - second_line_width1 / 2
                 
@@ -763,24 +770,45 @@ def showCraftableItems():
                 first_line = " ".join(words[:2])
                 second_line = " ".join(words[2:])
 
+                first_line_text = font.render(first_line, True, (255, 255, 255))
+                second_line_text = font.render(second_line, True, (255, 255, 255))
+            
                 first_line_width, _ = font.size(first_line)
                 second_line_width, _ = font.size(second_line)
-                first_line_x = screen_width / 2 - first_line_width / 2
-                second_line_x = screen_width / 2 - second_line_width / 2
 
-                first_line_y = 180
-                second_line_y = 201 + textHeight - 45
+                first_line_y = 193
+                second_line_y = 213 + textHeight - 45
+
+                if first_line_width <= arrowSpace and second_line_width <= arrowSpace:
+                    # first line has two words then the rest on the second 
+                    first_line_x = screen_width / 2 - first_line_width / 2
+                    second_line_x = screen_width / 2 - second_line_width / 2
                 
-                if first_line_width or second_line_width <= arrowSpace: # FIX
-                    print("here")
+                    print("first line has two words then the rest on the second")
                     screen.blit(first_line_text, (first_line_x, first_line_y))
                     screen.blit(second_line_text, (second_line_x, second_line_y))
                 else:
-                    print("here2")
-                    text_x = screen_width / 2 - textWidth / 2
-                    itemText = fontSmall.render(displayName, True, (255, 255, 255)) 
-                    screen.blit(itemText, (text_x, 201))
+                    # first line has two words then the rest on the second but smaller
+                    print("first line has two words then the rest on the second but smaller")
+                    first_line_text = fontSmall.render(first_line, True, (255, 255, 255))
+                    second_line_text = fontSmall.render(second_line, True, (255, 255, 255))
+
+                    first_line_width, _ = fontSmall.size(first_line) 
+                    second_line_width, _ = fontSmall.size(second_line) 
+
+                    first_line_x = screen_width / 2 - first_line_width / 2
+                    second_line_x = screen_width / 2 - second_line_width / 2
+
+                    screen.blit(first_line_text, (first_line_x, first_line_y))
+                    screen.blit(second_line_text, (second_line_x, second_line_y))
+        else:
+            # Single-word but smaller
+            print("Single-word but smaller")
+            itemText = fontSmaller.render(displayName, True, (255, 255, 255))
+            text_x = screen_width / 2 - 130
+            screen.blit(itemText, (text_x, 201))
     else:
+        # fits as is 
         text_x = screen_width / 2 - textWidth / 2
         screen.blit(itemText, (text_x, 201))
 
@@ -996,13 +1024,13 @@ while running:
 
     # Player movement
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_a]:
+    if keys[pygame.K_LEFT]:
         player_pos.x -= 400 * dt
-    if keys[pygame.K_d]:
+    if keys[pygame.K_RIGHT]:
         player_pos.x += 400 * dt
-    if keys[pygame.K_w]:
+    if keys[pygame.K_UP]:
         player_pos.y -= 400 * dt
-    if keys[pygame.K_s]:
+    if keys[pygame.K_DOWN]:
         player_pos.y += 400 * dt
 
     # player bounds
