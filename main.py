@@ -217,6 +217,7 @@ oven = pygame.transform.scale(pygame.image.load('./icon/oven.png'), (110,110))
 ice = pygame.transform.scale(pygame.image.load('./icon/ice.png'), (49,49))
 iceMelterUnit = pygame.transform.scale(pygame.image.load('./icon/iceMelterUnit.png'), (49,49))
 waterStorage = pygame.transform.scale(pygame.image.load('./icon/waterStorage.png'), (49,49))
+upgradedWorkbench = pygame.transform.scale(pygame.image.load('./icon/3d.png'), (49,49))
 
 collectible_items = {
     "game": [
@@ -401,10 +402,11 @@ bench_items = [
      "display": "Water Storage",
     "materialsNeeded" : [purpleRock],
      }, 
-    #   {"image": upgradedWorkbench,
-    #  "name": "workbenchUpgradeKit",
-    # "materialsNeeded" : [purpleRock, purpleRock],
-    #  }, 
+    {"image": upgradedWorkbench,
+      "name": "3d",
+      "display": "Upgraded Workbench",
+     "materialsNeeded" : [purpleRock, purpleRock],
+     }, 
 ]
 
     # upgradedBench = [
@@ -753,7 +755,6 @@ def showCraftableItems():
 
             if first_line_width1 <= arrowSpace and second_line_width1 <= arrowSpace:
                 # First line has 1 word then the rest on second
-                print("First line has 1 word then the rest on second")
 
                 second_line_text = fontSmall2.render(second_line, True, (255, 255, 255))
                 second_line_width1, _ = fontSmall2.size(second_line)
@@ -762,7 +763,7 @@ def showCraftableItems():
                 second_line_x = screen_width / 2 - second_line_width1 / 2
                 
                 first_line_y = 180
-                second_line_y = 201 + textHeight - 45
+                second_line_y = 220 + textHeight - 45
             
                 screen.blit(first_line_text, (first_line_x, first_line_y))
                 screen.blit(second_line_text, (second_line_x, second_line_y))
@@ -784,11 +785,9 @@ def showCraftableItems():
                     first_line_x = screen_width / 2 - first_line_width / 2
                     second_line_x = screen_width / 2 - second_line_width / 2
                 
-                    print("first line has two words then the rest on the second")
                     screen.blit(first_line_text, (first_line_x, first_line_y))
                     screen.blit(second_line_text, (second_line_x, second_line_y))
                 else:
-                    # first line has two words then the rest on the second but smaller
                     print("first line has two words then the rest on the second but smaller")
                     first_line_text = fontSmall.render(first_line, True, (255, 255, 255))
                     second_line_text = fontSmall.render(second_line, True, (255, 255, 255))
@@ -803,7 +802,6 @@ def showCraftableItems():
                     screen.blit(second_line_text, (second_line_x, second_line_y))
         else:
             # Single-word but smaller
-            print("Single-word but smaller")
             itemText = fontSmaller.render(displayName, True, (255, 255, 255))
             text_x = screen_width / 2 - 130
             screen.blit(itemText, (text_x, 201))
