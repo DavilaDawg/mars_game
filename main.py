@@ -195,7 +195,7 @@ flippedpickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (4
 pickAx = pygame.transform.flip(flippedpickAx, True, False)
 message = pygame.transform.scale(pygame.image.load('./icon/message.png'), (40,40))
 purpleRock = pygame.transform.scale(pygame.image.load('./icon/rock1.png'), (40,40))
-iron = pygame.transform.scale(pygame.image.load('./icon/rock3.png'), (40,40))
+iron = pygame.transform.scale(pygame.image.load('./icon/iron.png'), (40,40))
 coal = pygame.transform.scale(pygame.image.load('./icon/rock2.png'), (40,40))
 gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
 spaceFood = pygame.transform.scale(pygame.image.load('./icon/spaceFood.png'), (40,40))
@@ -364,7 +364,7 @@ food_images = {
 bench_items = [
     {"image" : hammer,
      "name": "hammer",
-     "display": "waste managment System",
+     "display": "Hammer",
     "materialsNeeded" : [iron, iron],
      },
     {"image": nail,
@@ -755,15 +755,14 @@ def showCraftableItems():
 
             if first_line_width1 <= arrowSpace and second_line_width1 <= arrowSpace:
                 # First line has 1 word then the rest on second
-
                 second_line_text = fontSmall2.render(second_line, True, (255, 255, 255))
                 second_line_width1, _ = fontSmall2.size(second_line)
 
                 first_line_x = screen_width / 2 - first_line_width1 / 2
                 second_line_x = screen_width / 2 - second_line_width1 / 2
                 
-                first_line_y = 180
-                second_line_y = 220 + textHeight - 45
+                first_line_y = 185
+                second_line_y = 220 + textHeight - 50
             
                 screen.blit(first_line_text, (first_line_x, first_line_y))
                 screen.blit(second_line_text, (second_line_x, second_line_y))
@@ -810,22 +809,39 @@ def showCraftableItems():
         text_x = screen_width / 2 - textWidth / 2
         screen.blit(itemText, (text_x, 201))
 
-    materials = itemData["materialsNeeded"]
     transItem = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (40,40)).convert_alpha()
     transItem.set_alpha(90)
-    itemRect = pygame.Rect(screen_width/2 - 51 , screen_height/2 + 76, 90, 90)
+    itemRect = pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
     leftRect = pygame.Rect(screen_width/2 - 210, 185, 90, 90)
     rightRrect = pygame.Rect(screen_width/2 + 132, 185, 90, 90)
-    pygame.draw.rect(screen,(24, 116, 205),itemRect,4)
+    pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
     scaledItemImg = pygame.transform.scale(transItem, (80, 80))
     screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
     screen.blit(rightArrow, (screen_width/2 + 132, 185)) 
     screen.blit(scaledItemImg, (screen_width/2 -45,screen_height/2 + 80))
 
-    if rightRrect.collidepoint(mouse_pos) and clicked: 
+    if leftRect.collidepoint(mouse_pos) and clicked: 
         current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
-    elif leftRect.collidepoint(mouse_pos) and clicked:
+    elif rightRrect.collidepoint(mouse_pos) and clicked:
         current_item_index = (current_item_index + 1) % len(bench_items)
+    
+    materials = itemData["materialsNeeded"]
+    material_box_width, material_box_height = 80, 50
+    gap = 20
+
+    total_width = len(materials) * (material_box_width + gap) - gap
+    start_x = (screen_width - total_width) // 2
+    start_y = 285
+
+    for i, material in enumerate(materials):
+        transMat = material.convert_alpha()
+        transMat.set_alpha(150)
+        box_x = start_x + i * (material_box_width + gap)
+        box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
+
+        pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
+        screen.blit(transMat, (box_x + gap, start_y + 4))
+    
 
 play_music("background", loop=True, volume=2)
 
@@ -899,14 +915,12 @@ while running:
                         elif inventory_contents[i] is not None and selected_slot_index is not None: 
                             if not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None:
                                 # Swap from storage to inventory
-                                print("storage to inventory")
                                 inventory_contents[i], current_storage_contents[selected_slot_index] = (
                                     current_storage_contents[selected_slot_index],
                                     inventory_contents[i],
                                 )
                             else:                   
                                 # swap/deselect within inventory          
-                                print("swap inventory")
                                 inventory_contents[i], inventory_contents[selected_slot_index] =(
                                 inventory_contents[selected_slot_index],
                                 inventory_contents[i]
