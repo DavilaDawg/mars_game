@@ -1141,7 +1141,7 @@ while running:
         pygame.draw.circle(screen, (255, 0, 0), (155, 315), 35, 3)
         kitchenDoorRec= pygame.Rect(screen_width-73, 275 , 70, 70)
         pygame.draw.circle(screen, (255, 0, 0), (screen_width-40, 310), 37, 3)
-        workshopDoorRec = pygame.Rect(30, 200 , 70, 70)
+        workshopDoorRec = pygame.Rect(420, 350 , 20, 40)
         pygame.draw.rect(screen, (200, 0, 0), workshopDoorRec, 3) 
         if clicked and bedDoorRec.collidepoint(mouse_pos):
             current_screen = "bedroom"
