@@ -98,10 +98,12 @@ axObtained = False
 rockPresent = False
 holding = False
 muted = False 
+showHint = False 
 
 minHoldTime = 900
 holdStartTime = 0
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
+hintMessage= 'You need a pickax to mine. Go to your bedroom storage for it.'
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
 back_rect = pygame.Rect(18, 23, 100, 50)
@@ -894,6 +896,8 @@ while running:
 
             if back_rect.collidepoint(mouse_pos):  
                 current_screen = last_screen
+                if last_screen == "game": 
+                    showHint = False
                 if current_screen == "game": 
                     if not muted:
                         play_music("background", loop=True, volume=2)
@@ -1233,7 +1237,7 @@ while running:
         last_screen="workshop"
         screen.blit(workbench1, (0, 0)) 
         showCraftableItems()
-
+    
     if current_screen == "insideCave1":
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
@@ -1257,7 +1261,10 @@ while running:
                             finger["last_click_time"] = pygame.time.get_ticks() 
                         if finger["clickCount"] >= 3:
                             finger["rockPresent"] = True  
-                
+                    else: 
+                        if clicked: 
+                            showHint = True
+
             if finger["rockPresent"] and not finger["rockCollected"]: 
                 screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))
 
@@ -1273,6 +1280,11 @@ while running:
                     finger["rockCollected"] = True 
             elif not finger["rockCollected"]: 
                 screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y)) 
+
+        if showHint: 
+            pygame.draw.rect(screen, "black", (250, 350, 880, 60), 50)
+            hintText = fontSmall.render(hintMessage, True, RED) 
+            screen.blit(hintText, (300, screen_height/2 +2)) 
 
     if currentBackground == "topRight":
         spawn_collectibles(current_screen)
