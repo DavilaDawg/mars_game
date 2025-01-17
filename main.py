@@ -201,6 +201,7 @@ gold = pygame.transform.scale(pygame.image.load('./icon/rock4.png'), (40,40))
 spaceFood = pygame.transform.scale(pygame.image.load('./icon/spaceFood.png'), (40,40))
 hammer = pygame.transform.scale(pygame.image.load('./icon/hammer.png'), (40,40))
 nail = pygame.transform.scale(pygame.image.load('./icon/nail.png'), (40,40))
+bolt = pygame.transform.scale(pygame.image.load('./icon/bolt.png'), (40,40))
 saw = pygame.transform.scale(pygame.image.load('./icon/saw.png'), (40,40))
 thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (40,40))
 forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (40,40))
@@ -380,32 +381,37 @@ bench_items = [
      {"image": hoe,
      "name": "hoe",
     "display": "Hoe",
-    "materialsNeeded" : [iron],
+    "materialsNeeded" : [iron, iron],
     },
       {"image": wrench,
      "name": "wrench",
     "display": "Wrench", 
-    "materialsNeeded" : [purpleRock, purpleRock],
+    "materialsNeeded" : [iron, purpleRock],
      },
-     {"image": solarPanel, # to power tech
+      {"image": bolt,
+     "name": "bolt",
+    "display": "Bolt", 
+    "materialsNeeded" : [iron],
+     },
+     {"image": solarPanel, 
      "name": "solarPanel",
     "display": "Solar Panel",
-    "materialsNeeded" : [purpleRock, purpleRock],
+    "materialsNeeded" : [iron, purpleRock, saw, hammer, nail, nail, nail, nail],
      },
       {"image": iceMelterUnit,
      "name": "iceMelterUnit",
      "display": "Ice Melter Unit",
-    "materialsNeeded" : [purpleRock],
+    "materialsNeeded" : [purpleRock, purpleRock, iron,iron, saw, hammer, nail, nail, nail],
      }, 
       {"image": waterStorage,
      "name": "waterStorage",
      "display": "Water Storage",
-    "materialsNeeded" : [purpleRock],
+    "materialsNeeded" : [purpleRock, wrench, bolt, bolt, bolt],
      }, 
     {"image": upgradedWorkbench,
       "name": "3d",
       "display": "Upgraded Workbench",
-     "materialsNeeded" : [purpleRock, purpleRock],
+     "materialsNeeded" : [purpleRock, iron , iron,wrench, bolt, bolt, saw, hammer, nail, nail],
      }, 
 ]
 
@@ -818,7 +824,7 @@ def showCraftableItems():
     scaledItemImg = pygame.transform.scale(transItem, (80, 80))
     screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
     screen.blit(rightArrow, (screen_width/2 + 132, 185)) 
-    screen.blit(scaledItemImg, (screen_width/2 -45,screen_height/2 + 80))
+    screen.blit(scaledItemImg, (screen_width/2 -40,screen_height/2 + 80))
 
     if leftRect.collidepoint(mouse_pos) and clicked: 
         current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
@@ -826,8 +832,8 @@ def showCraftableItems():
         current_item_index = (current_item_index + 1) % len(bench_items)
     
     materials = itemData["materialsNeeded"]
-    material_box_width, material_box_height = 80, 50
-    gap = 20
+    material_box_width, material_box_height = 55, 55
+    gap = 15
 
     total_width = len(materials) * (material_box_width + gap) - gap
     start_x = (screen_width - total_width) // 2
@@ -840,7 +846,7 @@ def showCraftableItems():
         box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
 
         pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
-        screen.blit(transMat, (box_x + gap, start_y + 4))
+        screen.blit(transMat, (box_x + gap - 8 , start_y + 6))
     
 
 play_music("background", loop=True, volume=2)
