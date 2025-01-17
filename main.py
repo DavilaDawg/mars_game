@@ -1079,6 +1079,27 @@ while running:
                 screen.blit(station, (screen_width-200, 120))
             
                 farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
+            
+            for cave in caves:
+                screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
+                enter_cave_rect = pygame.Rect(cave["pos"].x - 50, cave["pos"].y - 40, 200, 60)  
+                mineText = font.render('Enter cave', True, (100, 100, 50)) 
+                cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
+            
+                if ufo_rect.colliderect(cave_rect):  
+                    mining = True 
+                    pygame.draw.rect(screen, "black", enter_cave_rect, 50)
+                    screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_RETURN]:
+                        current_screen = "insideCave1"  
+                        if not muted:
+                            play_music("mine", loop=True, volume=3)
+
+            enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
+            stationRect = pygame.Rect(screen_width-200, 120, 100,100)
+            stationText = font.render('Enter station', True, (100, 100, 50)) 
+            screen.blit(playerImg, (player_pos.x, player_pos.y)) 
 
             # cows logic
             for i, cow in enumerate(cows):
@@ -1108,28 +1129,8 @@ while running:
                         if cowRect.collidepoint(player_pos): 
                             cow["stopped"] = True
                             crewText = fontSmall.render(crewMessage, True, (100, 100, 50)) 
-                            screen.blit(crewText, (40, screen_height/2)) 
-
-            for cave in caves:
-                screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
-                enter_cave_rect = pygame.Rect(cave["pos"].x - 50, cave["pos"].y - 40, 200, 60)  
-                mineText = font.render('Enter cave', True, (100, 100, 50)) 
-                cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
-            
-                if ufo_rect.colliderect(cave_rect):  
-                    mining = True 
-                    pygame.draw.rect(screen, "black", enter_cave_rect, 50)
-                    screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
-                    keys = pygame.key.get_pressed()
-                    if keys[pygame.K_RETURN]:
-                        current_screen = "insideCave1"  
-                        if not muted:
-                            play_music("mine", loop=True, volume=3)
-
-            enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
-            stationRect = pygame.Rect(screen_width-200, 120, 100,100)
-            stationText = font.render('Enter station', True, (100, 100, 50)) 
-            screen.blit(playerImg, (player_pos.x, player_pos.y))
+                            pygame.draw.rect(screen, "black", (20, 350, screen_width-40, 60), 50)
+                            screen.blit(crewText, (45, screen_height/2 +3)) 
 
         if ufo_rect.colliderect(stationRect):  
             pygame.draw.rect(screen, "black", enter_station_rect, 50)
@@ -1238,6 +1239,9 @@ while running:
         screen.blit(workbench1, (0, 0)) 
         showCraftableItems()
     
+    if currentBackground == "topRight":
+        spawn_collectibles(current_screen)
+
     if current_screen == "insideCave1":
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
@@ -1282,12 +1286,9 @@ while running:
                 screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y)) 
 
         if showHint: 
-            pygame.draw.rect(screen, "black", (250, 350, 880, 60), 50)
+            pygame.draw.rect(screen, "black", (200, 350, 880, 60), 50)
             hintText = fontSmall.render(hintMessage, True, RED) 
-            screen.blit(hintText, (300, screen_height/2 +2)) 
-
-    if currentBackground == "topRight":
-        spawn_collectibles(current_screen)
+            screen.blit(hintText, (250, screen_height/2 +2)) 
 
     for i, slot in enumerate(inventory_slots):
         color = "gray"
