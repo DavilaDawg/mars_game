@@ -14,6 +14,7 @@
 # make farm 
 # make random roocks generate, make finger generration unique/independent per cave 
 # fix mining glitch if click a lot
+# add pause 
 
 import pygame
 import random
@@ -549,6 +550,11 @@ placable_item = ["solarPanel", "iceMelterUnit", "waterStorage", "upgradedWorkben
 placed_items = []
 MIN_DISTANCE = 50
 
+last_emission_times = {}
+emission_interval = 3
+emitted_bolts_count = 0
+bolts_emitted = {}
+
 def distance_between(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
@@ -870,6 +876,14 @@ mutedRec = pygame.Rect(screen_width-50, 10 , 50, 50)
 if muted:
     pygame.mixer.music.stop()  
 
+
+######################################################################################
+######################################################################################
+######################################################################################
+######################################################################################
+######################################################################################
+######################################################################################
+
 running = True 
 last_update_time = time.time()
 while running: 
@@ -889,6 +903,14 @@ while running:
 
     if hunger == 0 or thirst ==0 or health ==0: 
         game_over=True
+
+    # Emit bolts for each solar panel placed
+    for item in placed_items:
+        if item["item"] == "solarPanel":
+            last_emission_time = last_emission_times.get(item["position"], 0)
+            if current_time - last_emission_time >= emission_interval:
+                emitted_bolts_count += 3  # Increment the total emitted bolts count
+                last_emission_times[item["position"]] = current_time
 
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
@@ -926,7 +948,7 @@ while running:
                     placed_items.append({
                         "background": currentBackground, 
                         "position": centered_pos, 
-                        "item": heldItem      
+                        "item": heldItem
                     })
             if back_rect.collidepoint(mouse_pos):
                 current_screen = last_screen
@@ -1392,7 +1414,8 @@ while running:
     # Stats bar
     pygame.draw.rect(screen, "black", (0,0, screen_width, 40), 50)
     screen.blit(energyImg, (20, 5))
-
+    count_text = font2.render(f"{emitted_bolts_count}", True, (255, 255, 255))
+    screen.blit(count_text, (50, 5))
 
     if mutedRec.collidepoint(mouse_pos) and clicked: 
         muted = not muted
