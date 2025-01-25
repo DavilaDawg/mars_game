@@ -102,7 +102,7 @@ crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the st
 hintMessage= 'You need a pickax to mine. Go to your bedroom storage for it.'
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
-back_rect = pygame.Rect(18, 23, 100, 50)
+back_rect = pygame.Rect(6, 45, 100, 50)
 
 x_offset = 150  # Move to the right
 y_offset = 20  # Move down
@@ -1004,39 +1004,48 @@ while running:
                         else: 
                             hunger = 100
 
-    if currentBackground == "topRight":
-        screen.blit(topRight, (0,0))
-        if ufo_rect.left == 0:  
-            change_background("topLeft")
-        elif ufo_rect.bottom >= screen_height:  
-            change_background("bottomRight")
+    if current_screen == "game":       
+        if currentBackground == "topRight":
+            screen.blit(topRight, (0,0))
+            if ufo_rect.left == 0:  
+                change_background("topLeft")
+                player_pos.x = screen_width - playerSize
+            elif ufo_rect.bottom >= screen_height:  
+                change_background("bottomRight")
+                player_pos.y = 35
 
-    elif currentBackground == "topLeft":
-        if ufo_rect.right >= screen_width: 
-            change_background("topRight")
-        elif ufo_rect.bottom >= screen_height:  
-            change_background("bottomLeft")
+        elif currentBackground == "topLeft":
+            if ufo_rect.right >= screen_width: 
+                change_background("topRight")
+                player_pos.x = 0
+            elif ufo_rect.bottom >= screen_height:  
+                change_background("bottomLeft")
+                player_pos.y = 35
 
-    elif currentBackground == "bottomRight":
-        if ufo_rect.left == 0:  
-            change_background("bottomLeft")
-        elif ufo_rect.top == 35: 
-            change_background("topRight")
+        elif currentBackground == "bottomRight":
+            if ufo_rect.left == 0:  
+                change_background("bottomLeft")
+                player_pos.x = screen_width - playerSize
+            elif ufo_rect.top == 35: 
+                change_background("topRight")
+                player_pos.y = screen_height - playerSize
 
-    elif currentBackground == "bottomLeft":
-        if ufo_rect.right >= screen_width:  
-            change_background("bottomRight")
-        elif ufo_rect.top == 35: 
-            change_background("topLeft")
+        elif currentBackground == "bottomLeft":
+            if ufo_rect.right >= screen_width:  
+                change_background("bottomRight")
+                player_pos.x = 0
+            elif ufo_rect.top == 35: 
+                change_background("topLeft")
+                player_pos.y = screen_height - playerSize
 
-    if currentBackground == "topRight":
-        screen.blit(topRight, (0,0))
-    elif currentBackground == "topLeft":
-        screen.blit(topLeft, (0,0))
-    elif currentBackground == "bottomRight":
-        screen.blit(bottomRight, (0,0))
-    elif currentBackground == "bottomLeft":
-        screen.blit(bottomLeft, (0,0))
+        if currentBackground == "topRight":
+            screen.blit(topRight, (0,0))
+        elif currentBackground == "topLeft":
+            screen.blit(topLeft, (0,0))
+        elif currentBackground == "bottomRight":
+            screen.blit(bottomRight, (0,0))
+        elif currentBackground == "bottomLeft":
+            screen.blit(bottomLeft, (0,0))
 
     check_item_collision(ufo_rect)
 
@@ -1315,7 +1324,7 @@ while running:
     if current_screen is not "game":
         pygame.draw.rect(screen, "black", back_rect, 50)
         backText = font.render('BACK', True, (100, 100, 50))
-        screen.blit(backText, (25, 25))
+        screen.blit(backText, (12, 47))
 
     # health bar
     pygame.draw.rect(screen, RED, (healthPos[0], healthPos[1] +5, health * (BAR_WIDTH / 100), BAR_HEIGHT))
