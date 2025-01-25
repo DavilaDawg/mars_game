@@ -13,6 +13,7 @@
 # build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
 # make farm 
 # make random roocks generate, make finger generration unique/independent per cave 
+# fix mining glitch if click a lot
 
 import pygame
 import random
@@ -123,7 +124,10 @@ font = pygame.font.Font("MODERNA.ttf", 36)
 fontBig = pygame.font.Font("MODERNA.ttf", 70)
 fontSmall = pygame.font.Font("MODERNA.ttf", 25)
 fontSmall2 = pygame.font.Font("MODERNA.ttf", 23)
-fontSmaller = pygame.font.Font("MODERNA.ttf", 20)
+fontSmaller = pygame.font.Font("MODERNA.ttf", 25)
+
+font_path = pygame.font.match_font("arial")  # Use Arial or a similar font
+font2 = pygame.font.Font(font_path, 27)
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -150,17 +154,17 @@ BAR_WIDTH, BAR_HEIGHT = 150, 20
 healthPos = (300, 45)
 HUNGER_POS = (500, 45)
 THIRST_POS = (700, 45)
-ENERGY_POS= (900, 45)
+# ENERGY_POS= (900, 45)
 
 health = 100
 hunger = 100
 thirst = 100  
-energy = 100 
+# energy = 100 
 DECAY_RATE = 0.5
 
 increaseHunger = 20 
 increaseThirtst= 30
-increaseEnergy = 30
+# increaseEnergy = 30
 increaseHealth = 30
 
 # Icons 
@@ -320,6 +324,10 @@ item_images = {
     "gold": gold, 
     "coal": coal, 
     "spaceFood": spaceFood,
+    "solarPanel": solarPanel,
+    "iceMelterUnit": iceMelterUnit,
+    "waterStorage": waterStorage,
+    "upgradedWorkbench": upgradedWorkbench
 }
 
 food_images = {
@@ -536,6 +544,9 @@ bench_items = [
 #     # "asteroidRedirector":asteroidRedirector,
 # }
 
+placable_item = ["solarPanel", "iceMelterUnit", "waterStorage", "upgradedWorkbench"] 
+placed_items = []
+
 def check_item_collision(player_rect):
     current_items = collectible_items.get(current_screen, [])
     for item in current_items:
@@ -660,7 +671,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = [None, None, None, None, None, None, None, None]
+inventory_contents = ["solarPanel", None, None, None, None, None, None, None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -868,7 +879,7 @@ while running:
     if current_time - last_update_time >= 1: 
         hunger = max(0, hunger - DECAY_RATE) # Compares the result of hunger - DECAY_RATE with 0 and returns the greater of the two
         thirst = max(0, thirst - DECAY_RATE)
-        energy = max(0, energy - DECAY_RATE)
+        # energy = max(0, energy - DECAY_RATE)
         last_update_time = current_time
 
     if hunger == 0 or thirst ==0 or health ==0: 
@@ -886,11 +897,16 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             clicked = True 
-            if event.button == 1:  
+            if event.button == 1:
                 holding = True
                 holdStartTime = pygame.time.get_ticks()
-
-            if back_rect.collidepoint(mouse_pos):  
+                if heldItem in placable_item:
+                    placed_items.append({
+                        "background": currentBackground, 
+                        "position": mouse_pos, 
+                        "item": heldItem      
+                    })
+            if back_rect.collidepoint(mouse_pos):
                 current_screen = last_screen
                 if last_screen == "game": 
                     showHint = False
@@ -1144,6 +1160,13 @@ while running:
             if keys[pygame.K_RETURN]:
                 current_screen = "hall3"  
 
+
+        for item in placed_items:
+            if item["background"] == currentBackground:
+                image = item_images[item["item"]]
+                screen.blit(image, item["position"])
+
+
     if currentInventoryItem: 
         smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
         screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
@@ -1341,13 +1364,15 @@ while running:
     pygame.draw.rect(screen, WHITE, (THIRST_POS[0], THIRST_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
     screen.blit(thirsty, (THIRST_POS[0] - 30 , THIRST_POS[1])) 
 
-    # energy bar
-    pygame.draw.rect(screen, GREEN, (ENERGY_POS[0], ENERGY_POS[1]+5, energy * (BAR_WIDTH / 100), BAR_HEIGHT))
-    pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
-    screen.blit(energyImg, (ENERGY_POS[0] - 30 , ENERGY_POS[1])) 
+    # # energy bar
+    # pygame.draw.rect(screen, GREEN, (ENERGY_POS[0], ENERGY_POS[1]+5, energy * (BAR_WIDTH / 100), BAR_HEIGHT))
+    # pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
+    # screen.blit(energyImg, (ENERGY_POS[0] - 30 , ENERGY_POS[1])) 
 
     # Stats bar
     pygame.draw.rect(screen, "black", (0,0, screen_width, 40), 50)
+    screen.blit(energyImg, (20, 5))
+
 
     if mutedRec.collidepoint(mouse_pos) and clicked: 
         muted = not muted
