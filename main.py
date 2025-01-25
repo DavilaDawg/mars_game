@@ -18,6 +18,7 @@
 import pygame
 import random
 import time
+import math
 
 pygame.mixer.init()
 pygame.init()
@@ -546,6 +547,10 @@ bench_items = [
 
 placable_item = ["solarPanel", "iceMelterUnit", "waterStorage", "upgradedWorkbench"] 
 placed_items = []
+MIN_DISTANCE = 50
+
+def distance_between(p1, p2):
+    return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
 
 def check_item_collision(player_rect):
     current_items = collectible_items.get(current_screen, [])
@@ -900,10 +905,27 @@ while running:
             if event.button == 1:
                 holding = True
                 holdStartTime = pygame.time.get_ticks()
-                if heldItem in placable_item:
+
+                is_valid_position = True
+
+                if heldItem and heldItem in item_images:
+                    image = item_images[heldItem] 
+                    image_width, image_height = image.get_size() 
+                    centered_pos = (mouse_pos[0] - image_width // 2, mouse_pos[1] - image_height // 2)
+
+                for item in placed_items:
+                    if distance_between(centered_pos, item["position"]) < MIN_DISTANCE:
+                        centered_pos = (centered_pos[0] + 40, centered_pos[1] + 40)
+                
+                for item in placed_items:
+                    if distance_between(centered_pos, item["position"]) < MIN_DISTANCE:
+                        is_valid_position = False
+                        break
+
+                if is_valid_position and heldItem in placable_item:
                     placed_items.append({
                         "background": currentBackground, 
-                        "position": mouse_pos, 
+                        "position": centered_pos, 
                         "item": heldItem      
                     })
             if back_rect.collidepoint(mouse_pos):
@@ -1160,12 +1182,10 @@ while running:
             if keys[pygame.K_RETURN]:
                 current_screen = "hall3"  
 
-
         for item in placed_items:
             if item["background"] == currentBackground:
                 image = item_images[item["item"]]
                 screen.blit(image, item["position"])
-
 
     if currentInventoryItem: 
         smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
