@@ -1,6 +1,4 @@
 # stack items
-# make messanger move after not being collided with 
-# make text background for message 
 # finish health bar/ thirst bar/radiation 
 # population and teraform info
 # fix if eat food disapeer
@@ -15,8 +13,6 @@
 # build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
 # make farm 
 # make random roocks generate, make finger generration unique/independent per cave 
-# add new view if hit boarder 
-# add hint if player trys to mine without pickax
 
 import pygame
 import random
@@ -151,10 +147,10 @@ SILVER = (192, 192, 192)         # Electronics or conduits
 LAVA_RED = (255, 69, 0) 
 
 BAR_WIDTH, BAR_HEIGHT = 150, 20
-healthPos = (300, 30)
-HUNGER_POS = (500, 30)
-THIRST_POS = (700, 30)
-ENERGY_POS= (900, 30)
+healthPos = (300, 45)
+HUNGER_POS = (500, 45)
+THIRST_POS = (700, 45)
+ENERGY_POS= (900, 45)
 
 health = 100
 hunger = 100
@@ -205,10 +201,10 @@ hammer = pygame.transform.scale(pygame.image.load('./icon/hammer.png'), (40,40))
 nail = pygame.transform.scale(pygame.image.load('./icon/nail.png'), (40,40))
 bolt = pygame.transform.scale(pygame.image.load('./icon/bolt.png'), (40,40))
 saw = pygame.transform.scale(pygame.image.load('./icon/saw.png'), (40,40))
-thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (40,40))
-forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (40,40))
-healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (40,40))
-energyImg = pygame.transform.scale(pygame.image.load('./icon/energy.png'), (40,40))
+thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (30,30))
+forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (30,30))
+healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (30,30))
+energyImg = pygame.transform.scale(pygame.image.load('./icon/energy.png'), (30,30))
 volume = pygame.transform.scale(pygame.image.load('./icon/volume.png'), (40,40))
 mute = pygame.transform.scale(pygame.image.load('./icon/volumeOff.png'), (40,40))
 leftArrow = pygame.transform.scale(pygame.image.load('./icon/leftArrow.png'), (80,80))
@@ -1024,13 +1020,13 @@ while running:
     elif currentBackground == "bottomRight":
         if ufo_rect.left == 0:  
             change_background("bottomLeft")
-        elif ufo_rect.top == 0: 
+        elif ufo_rect.top == 35: 
             change_background("topRight")
 
     elif currentBackground == "bottomLeft":
         if ufo_rect.right >= screen_width:  
             change_background("bottomRight")
-        elif ufo_rect.top == 0: 
+        elif ufo_rect.top == 35: 
             change_background("topLeft")
 
     if currentBackground == "topRight":
@@ -1057,7 +1053,7 @@ while running:
 
     # player bounds
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
-    player_pos.y = max(0, min(player_pos.y, screen_height - playerSize))
+    player_pos.y = max(35, min(player_pos.y, screen_height - playerSize))
 
     if current_screen == "game":       
         screen.blit(playerImg, (player_pos.x, player_pos.y))
@@ -1322,24 +1318,27 @@ while running:
         screen.blit(backText, (25, 25))
 
     # health bar
-    pygame.draw.rect(screen, RED, (healthPos[0], healthPos[1], health * (BAR_WIDTH / 100), BAR_HEIGHT))
-    pygame.draw.rect(screen, WHITE, (healthPos[0], healthPos[1], BAR_WIDTH, BAR_HEIGHT), 2)  
-    screen.blit(healthImg, (healthPos[0] - 45 , healthPos[1] -15)) 
+    pygame.draw.rect(screen, RED, (healthPos[0], healthPos[1] +5, health * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (healthPos[0], healthPos[1]+ 5, BAR_WIDTH, BAR_HEIGHT), 2)  
+    screen.blit(healthImg, (healthPos[0] - 32 , healthPos[1])) 
 
     # hunger bar
-    pygame.draw.rect(screen, MAGENTA, (HUNGER_POS[0], HUNGER_POS[1], hunger * (BAR_WIDTH / 100), BAR_HEIGHT))
-    pygame.draw.rect(screen, WHITE, (HUNGER_POS[0], HUNGER_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
-    screen.blit(forkAndKnife, (HUNGER_POS[0] - 35 , HUNGER_POS[1] -15)) 
+    pygame.draw.rect(screen, MAGENTA, (HUNGER_POS[0], HUNGER_POS[1]+5, hunger * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (HUNGER_POS[0], HUNGER_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
+    screen.blit(forkAndKnife, (HUNGER_POS[0] - 30 , HUNGER_POS[1])) 
 
     # thirst bar
-    pygame.draw.rect(screen, BLUE, (THIRST_POS[0], THIRST_POS[1], thirst * (BAR_WIDTH / 100), BAR_HEIGHT))
-    pygame.draw.rect(screen, WHITE, (THIRST_POS[0], THIRST_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
-    screen.blit(thirsty, (THIRST_POS[0] - 35 , THIRST_POS[1] -15)) 
+    pygame.draw.rect(screen, BLUE, (THIRST_POS[0], THIRST_POS[1]+5, thirst * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (THIRST_POS[0], THIRST_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
+    screen.blit(thirsty, (THIRST_POS[0] - 30 , THIRST_POS[1])) 
 
     # energy bar
-    pygame.draw.rect(screen, GREEN, (ENERGY_POS[0], ENERGY_POS[1], energy * (BAR_WIDTH / 100), BAR_HEIGHT))
-    pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1], BAR_WIDTH, BAR_HEIGHT), 2)
-    screen.blit(energyImg, (ENERGY_POS[0] - 35 , ENERGY_POS[1] -15)) 
+    pygame.draw.rect(screen, GREEN, (ENERGY_POS[0], ENERGY_POS[1]+5, energy * (BAR_WIDTH / 100), BAR_HEIGHT))
+    pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
+    screen.blit(energyImg, (ENERGY_POS[0] - 30 , ENERGY_POS[1])) 
+
+    # Stats bar
+    pygame.draw.rect(screen, "black", (0,0, screen_width, 40), 50)
 
     if mutedRec.collidepoint(mouse_pos) and clicked: 
         muted = not muted
