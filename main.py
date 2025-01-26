@@ -929,27 +929,29 @@ while running:
                 holdStartTime = pygame.time.get_ticks()
 
                 is_valid_position = True
+                if current_screen == "game": 
+                    if heldItem and heldItem in item_images:
+                        image = item_images[heldItem] 
+                        image_width, image_height = image.get_size() 
+                        centered_pos = (mouse_pos[0] - image_width // 2, mouse_pos[1] - image_height // 2)
 
-                if heldItem and heldItem in item_images:
-                    image = item_images[heldItem] 
-                    image_width, image_height = image.get_size() 
-                    centered_pos = (mouse_pos[0] - image_width // 2, mouse_pos[1] - image_height // 2)
+                        items_on_current_bg = [item for item in placed_items if item["background"] == currentBackground]
 
-                for item in placed_items:
-                    if distance_between(centered_pos, item["position"]) < MIN_DISTANCE:
-                        centered_pos = (centered_pos[0] + 40, centered_pos[1] + 40)
-                
-                for item in placed_items:
-                    if distance_between(centered_pos, item["position"]) < MIN_DISTANCE:
-                        is_valid_position = False
-                        break
+                        for item in items_on_current_bg:
+                            if distance_between(centered_pos, item["position"]) < MIN_DISTANCE:
+                                centered_pos = (centered_pos[0] + 40, centered_pos[1] + 40)
+                        
+                        for item in items_on_current_bg:
+                            if distance_between(centered_pos, item["position"]) < MIN_DISTANCE:
+                                is_valid_position = False
+                                break
 
-                if is_valid_position and heldItem in placable_item:
-                    placed_items.append({
-                        "background": currentBackground, 
-                        "position": centered_pos, 
-                        "item": heldItem
-                    })
+                        if is_valid_position and heldItem in placable_item:
+                            placed_items.append({
+                                "background": currentBackground, 
+                                "position": centered_pos, 
+                                "item": heldItem,
+                            })
             if back_rect.collidepoint(mouse_pos):
                 current_screen = last_screen
                 if last_screen == "game": 
