@@ -1,5 +1,5 @@
 # stack items
-# finish health bar/ thirst bar/radiation 
+# finish health bar/radiation 
 # population and teraform info
 # fix if eat food disapeer
 # make kitchen gadgets 
@@ -11,10 +11,10 @@
 # task list 
 # fix comms 
 # build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
-# make farm 
 # make random roocks generate, make finger generration unique/independent per cave 
 # fix mining glitch if click a lot
-# add pause 
+# add pause + leaderboard + main page 
+# fix clickng to new object and not placing thee placable one at the same time
 
 import pygame
 import random
@@ -75,7 +75,7 @@ cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 1
 numOfCows = 2
 numOfFarmers = 2
 numOfCaves = random.randint(1, 4)
-numOfFingers = random.randint(3, 6)
+numOfFingers = random.randint(7, 11)
 xPosFinger = random.randint(0, screen_width)
 yPosFinger = random.randint(0, screen_height)
 
@@ -99,7 +99,7 @@ holding = False
 muted = False 
 showHint = False 
 
-minHoldTime = 900
+minHoldTime = 750
 holdStartTime = 0
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 hintMessage= 'You need a pickax to mine. Go to your bedroom storage for it.'
@@ -162,10 +162,10 @@ health = 100
 hunger = 100
 thirst = 100  
 # energy = 100 
-DECAY_RATE = 0.5
+DECAY_RATE = 5
 
 increaseHunger = 20 
-increaseThirtst= 30
+increaseThirst= 30
 # increaseEnergy = 30
 increaseHealth = 30
 
@@ -682,7 +682,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["solarPanel", None, None, None, None, None, None, None]
+inventory_contents = ["solarPanel", "waterStorage", None, None, None, None, None, None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -906,11 +906,22 @@ while running:
 
     # Emit bolts for each solar panel placed
     for item in placed_items:
+        last_emission_time = last_emission_times.get(item["position"], 0)
+
         if item["item"] == "solarPanel":
-            last_emission_time = last_emission_times.get(item["position"], 0)
             if current_time - last_emission_time >= emission_interval:
                 emitted_bolts_count += 3  # Increment the total emitted bolts count
                 last_emission_times[item["position"]] = current_time
+
+        if item["item"] == "waterStorage":
+            if current_time - last_emission_time >= emission_interval:
+                if 100 >= thirst + increaseThirst:
+                    thirst += increaseThirst
+                    last_emission_times[item["position"]] = current_time
+                else: 
+                    thirst = 100
+                    last_emission_times[item["position"]] = current_time
+
 
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
