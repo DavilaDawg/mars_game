@@ -14,7 +14,7 @@
 # make random roocks generate, make finger generration unique/independent per cave 
 # fix mining glitch if click a lot
 # add pause + leaderboard + main page 
-# fix clickng to new object and not placing thee placable one at the same time
+# if Inventory full make thgs nt dIsapre
 
 import pygame
 import random
@@ -160,12 +160,12 @@ THIRST_POS = (700, 45)
 
 health = 100
 hunger = 100
-thirst = 100  
+thirst = 100  #city builds, increase decay for this 1
 # energy = 100 
-DECAY_RATE = 5
+DECAY_RATE = 1
 
 increaseHunger = 20 
-increaseThirst= 30
+increaseThirst= 5 # as 
 # increaseEnergy = 30
 increaseHealth = 30
 
@@ -547,7 +547,7 @@ bench_items = [
 # }
 
 placable_item = ["solarPanel", "iceMelterUnit", "waterStorage", "upgradedWorkbench"] 
-placed_items = []
+placed_items = [] # f here, remove from inventrry
 MIN_DISTANCE = 50
 
 last_emission_times = {}
@@ -922,7 +922,6 @@ while running:
                     thirst = 100
                     last_emission_times[item["position"]] = current_time
 
-
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
     elif current_screen == "storage2":
@@ -961,8 +960,15 @@ while running:
                             placed_items.append({
                                 "background": currentBackground, 
                                 "position": centered_pos, 
-                                "item": heldItem,
+                                "item": heldItem, 
                             })
+                        if heldItem in inventory_contents and heldItem in placable_item:
+                            item_index = inventory_contents.index(heldItem) 
+                            inventory_contents[item_index] = None  
+                            heldItem = None
+                            selected_slot_index= None
+                            currentInventoryItem = None
+
             if back_rect.collidepoint(mouse_pos):
                 current_screen = last_screen
                 if last_screen == "game": 
@@ -1006,6 +1012,7 @@ while running:
                             )
                         selected_slot_index = None 
                         currentInventoryItem = None
+                        selected_item_from_inventory = False
                     break
             if inStorage:
                 for i, slot in enumerate(storageSlots):
@@ -1076,6 +1083,12 @@ while running:
                             hunger += increaseHunger
                         else: 
                             hunger = 100
+                        item_index = inventory_contents.index(heldItem) 
+                        inventory_contents[item_index] = None  
+                        heldItem = None
+                        currentInventoryItem = None 
+                        selected_slot_index= None
+                        currentInventoryItem = None
 
     if current_screen == "game":       
         if currentBackground == "topRight":
@@ -1222,7 +1235,7 @@ while running:
                 image = item_images[item["item"]]
                 screen.blit(image, item["position"])
 
-    if currentInventoryItem: 
+    if currentInventoryItem and heldItem in inventory_contents: 
         smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
         screen.blit(smaller_item,(player_pos.x-7, player_pos.y+30))
 
