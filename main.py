@@ -847,16 +847,21 @@ def showCraftableItems():
         text_x = screen_width / 2 - textWidth / 2
         screen.blit(itemText, (text_x, 201))
 
-    transItem = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (40,40)).convert_alpha()
+    transItem = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (80,80)).convert_alpha()
     transItem.set_alpha(90)
     itemRect = pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
     leftRect = pygame.Rect(screen_width/2 - 210, 185, 90, 90)
     rightRect = pygame.Rect(screen_width/2 + 132, 185, 90, 90)
     pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
-    scaledItemImg = pygame.transform.scale(transItem, (80, 80))
     screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
     screen.blit(rightArrow, (screen_width/2 + 132, 185)) 
-    screen.blit(scaledItemImg, (screen_width/2 -40,screen_height/2 + 80))
+    if None not in bench_contents: 
+        item = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (80,80))
+        screen.blit(item, (screen_width/2 -40,screen_height/2 + 80))
+        print("gd")
+    else:
+        screen.blit(transItem, (screen_width/2 -40,screen_height/2 + 80))
+        print("bad")
 
     if leftRect.collidepoint(mouse_pos) and clicked: 
         current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
@@ -886,7 +891,7 @@ def showCraftableItems():
                 for k, materialNeededName in enumerate(materialsNeededName):
                     if content == materialNeededName:
                         box_x = start_x + j * (material_box_width + gap)
-                        screen.blit(material, (box_x + gap - 8 , start_y + 6))
+                        screen.blit(material, (box_x + gap - 8 , start_y + 6))            
 
 play_music("background", loop=True, volume=2)
 
