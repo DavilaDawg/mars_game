@@ -15,6 +15,7 @@
 # fix mining glitch if click a lot
 # add pause + leaderboard + main page 
 # if Inventory full make thgs nt dIsapre
+# fast forward while sleeping 
 
 import pygame
 import random
@@ -92,12 +93,15 @@ mouse_pos = None
 currentInventoryItem = None
 last_screen = None 
 inStorage = False
+inBench = False
 incraftFood = False
 axObtained = False
 rockPresent = False
 holding = False
 muted = False 
 showHint = False 
+
+box_rects = []
 
 minHoldTime = 750
 holdStartTime = 0
@@ -162,9 +166,10 @@ health = 100
 hunger = 100
 thirst = 100  #city builds, increase decay for this 1
 # energy = 100 
-DECAY_RATE = 1
+DECAY_RATE = .5
+DECAY_RATE_THIRST = 0.6
 
-increaseHunger = 20 
+increaseHunger = 40
 increaseThirst= 5 # as 
 # increaseEnergy = 30
 increaseHealth = 30
@@ -404,22 +409,17 @@ bench_items = [
      {"image": solarPanel, 
      "name": "solarPanel",
     "display": "Solar Panel",
-    "materialsNeeded" : [iron, purpleRock, saw, hammer, nail, nail, nail, nail],
+    "materialsNeeded" : [iron, purpleRock, hammer, nail, nail, nail, nail],
      },
-      {"image": iceMelterUnit,
-     "name": "iceMelterUnit",
-     "display": "Ice Melter Unit",
-    "materialsNeeded" : [purpleRock, purpleRock, iron,iron, saw, hammer, nail, nail, nail],
-     }, 
       {"image": waterStorage,
      "name": "waterStorage",
-     "display": "Water Storage",
+     "display": "Water Pump",
     "materialsNeeded" : [purpleRock, wrench, bolt, bolt, bolt],
      }, 
     {"image": upgradedWorkbench,
       "name": "3d",
       "display": "Upgraded Workbench",
-     "materialsNeeded" : [purpleRock, iron , iron,wrench, bolt, bolt, saw, hammer, nail, nail],
+     "materialsNeeded" : [purpleRock, iron ,iron, wrench, bolt, bolt, saw, hammer, nail, nail],
      }, 
 ]
 
@@ -546,8 +546,8 @@ bench_items = [
 #     # "asteroidRedirector":asteroidRedirector,
 # }
 
-placable_item = ["solarPanel", "iceMelterUnit", "waterStorage", "upgradedWorkbench"] 
-placed_items = [] # f here, remove from inventrry
+placable_item = ["solarPanel", "waterStorage", "upgradedWorkbench"] 
+placed_items = [] # if here, remove from inventrry
 MIN_DISTANCE = 50
 
 last_emission_times = {}
@@ -663,6 +663,8 @@ craftStartX= 520
 craftStartY = 210
 craftSlots = []
 
+benchSlots = []
+
 # make these a function eventually: 
 for row in range(inventory_rows):
     for col in range(inventory_cols):
@@ -682,7 +684,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["solarPanel", "waterStorage", None, None, None, None, None, None]
+inventory_contents = ["solarPanel", "waterStorage", "iron", "iron", "purpleRock", None, None, None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -839,7 +841,7 @@ def showCraftableItems():
     transItem.set_alpha(90)
     itemRect = pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
     leftRect = pygame.Rect(screen_width/2 - 210, 185, 90, 90)
-    rightRrect = pygame.Rect(screen_width/2 + 132, 185, 90, 90)
+    rightRect = pygame.Rect(screen_width/2 + 132, 185, 90, 90)
     pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
     scaledItemImg = pygame.transform.scale(transItem, (80, 80))
     screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
@@ -848,7 +850,7 @@ def showCraftableItems():
 
     if leftRect.collidepoint(mouse_pos) and clicked: 
         current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
-    elif rightRrect.collidepoint(mouse_pos) and clicked:
+    elif rightRect.collidepoint(mouse_pos) and clicked:
         current_item_index = (current_item_index + 1) % len(bench_items)
     
     materials = itemData["materialsNeeded"]
@@ -859,14 +861,22 @@ def showCraftableItems():
     start_x = (screen_width - total_width) // 2
     start_y = 285
 
+    bench_contents = [None] * len(materials)
+
     for i, material in enumerate(materials):
         transMat = material.convert_alpha()
         transMat.set_alpha(150)
         box_x = start_x + i * (material_box_width + gap)
         box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
-
+        box_rects.append(box_rect)
         pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
         screen.blit(transMat, (box_x + gap - 8 , start_y + 6))
+
+    # if itemRect.collidepoint(mouse_pos) and clicked: 
+
+
+
+    
     
 
 play_music("background", loop=True, volume=2)
@@ -890,14 +900,13 @@ while running:
     dt = clock.tick(60) / 1000
     totalTime += dt 
     ufo_rect = pygame.Rect(player_pos.x, player_pos.y, playerSize, playerSize)
-
     mouse_pos = pygame.mouse.get_pos()
     clicked = False
 
     current_time = time.time()
     if current_time - last_update_time >= 1: 
         hunger = max(0, hunger - DECAY_RATE) # Compares the result of hunger - DECAY_RATE with 0 and returns the greater of the two
-        thirst = max(0, thirst - DECAY_RATE)
+        thirst = max(0, thirst - DECAY_RATE_THIRST)
         # energy = max(0, energy - DECAY_RATE)
         last_update_time = current_time
 
@@ -1032,7 +1041,6 @@ while running:
                                     current_storage_contents[selected_slot_index] = None
                             else:
                                 if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
-                                    print("inventory to storage")
                                     inventory_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         inventory_contents[selected_slot_index],
@@ -1045,7 +1053,7 @@ while running:
                                     )
                             selected_slot_index = None
                         break  
-            if incraftFood: 
+            if incraftFood: # doesnt work
                 for i, slot in enumerate(foodSlots):
                     if slot.collidepoint(mouse_pos):  
                         if food_contents[i] is not None:
@@ -1072,7 +1080,39 @@ while running:
                                             food_contents[selected_slot_index],
                                         )
                                 selected_slot_index = None
-                            break  
+                            break   
+            if inBench:
+                for i, slot in enumerate(box_rects):
+                    if slot.collidepoint(mouse_pos):  
+                        if selected_slot_index is None and bench_contents[i] is not None:
+                            selected_slot_index = i
+                            selected_item_from_inventory = False
+                        else:
+                            if bench_contents[i] is None and selected_slot_index is not None:
+                                if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
+                                    print("inventory to storage")
+                                    bench_contents[i] = inventory_contents[selected_slot_index]
+                                    inventory_contents[selected_slot_index] = None
+                                elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None: # move within storage
+                                    bench_contents[i] = bench_contents[selected_slot_index]
+                                    bench_contents[selected_slot_index] = None
+                            else:
+                                if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
+                                    print("swap from inventory to storage")
+                                    inventory_contents[selected_slot_index], bench_contents[i] = (
+                                        bench_contents[i],
+                                        inventory_contents[selected_slot_index],
+                                    )
+                                elif selected_slot_index is not None and bench_contents[selected_slot_index] is not None: # swap within storage
+                                    print("swap within")
+                                    bench_contents[selected_slot_index], bench_contents[i] = (
+                                        bench_contents[i],
+                                        bench_contents[selected_slot_index],
+                                    )
+                            selected_slot_index = None
+                        break 
+
+
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1: 
                 holding = False
@@ -1333,7 +1373,15 @@ while running:
         inBench = True
         last_screen="workshop"
         screen.blit(workbench1, (0, 0)) 
+
+        materials = bench_items[current_item_index]["materialsNeeded"]
+        
+        # Initialize or resize bench_contents if necessary
+        if 'bench_contents' not in globals() or len(bench_contents) != len(materials):
+            bench_contents = [None] * len(materials)
+
         showCraftableItems()
+        print(bench_contents) 
     
     if currentBackground == "topRight":
         spawn_collectibles(current_screen)
@@ -1408,9 +1456,9 @@ while running:
                                 inventory_contents[i] = item_name  
                                 inventory_timestamps[i] = None  
                         break
-
-            item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
-            screen.blit(item_img, (slot.x, slot.y))
+                    item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
+                    screen.blit(item_img, (slot.x, slot.y))
+    
 
     if current_screen is not "game":
         pygame.draw.rect(screen, "black", back_rect, 50)
