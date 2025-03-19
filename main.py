@@ -380,46 +380,55 @@ bench_items = [
      "name": "hammer",
      "display": "Hammer",
     "materialsNeeded" : [iron, iron],
+    "materialsNeededName": ["iron", "iron"],
      },
     {"image": nail,
      "name": "nail",
     "display": "Nail",
     "materialsNeeded" : [iron],
+    "materialsNeededName": ["iron"],
      }, 
     {"image": saw,
      "name": "saw",
     "display": "Saw",
     "materialsNeeded" : [iron, purpleRock],
+    "materialsNeededName": ["iron", "purpleRock"],
      }, 
      {"image": hoe,
      "name": "hoe",
     "display": "Hoe",
     "materialsNeeded" : [iron, iron],
+    "materialsNeededName": ["iron", "iron"],
     },
       {"image": wrench,
      "name": "wrench",
     "display": "Wrench", 
     "materialsNeeded" : [iron, purpleRock],
+    "materialsNeededName": ["iron", "purpleRock"],
      },
       {"image": bolt,
      "name": "bolt",
     "display": "Bolt", 
     "materialsNeeded" : [iron],
+    "materialsNeededName": ["iron"],
      },
      {"image": solarPanel, 
      "name": "solarPanel",
     "display": "Solar Panel",
     "materialsNeeded" : [iron, purpleRock, hammer, nail, nail, nail, nail],
+    "materialsNeededName" : ["iron", "purpleRock", "hammer", "nail", "nail", "nail", "nail"],
      },
       {"image": waterStorage,
      "name": "waterStorage",
      "display": "Water Pump",
     "materialsNeeded" : [purpleRock, wrench, bolt, bolt, bolt],
+    "materialsNeededName" : ["purpleRock", "wrench", "bolt", "bolt", "bolt"],
      }, 
     {"image": upgradedWorkbench,
       "name": "3d",
       "display": "Upgraded Workbench",
-     "materialsNeeded" : [purpleRock, iron ,iron, wrench, bolt, bolt, saw, hammer, nail, nail],
+      "materialsNeeded" : [purpleRock, iron ,iron, wrench, bolt, bolt, saw, hammer, nail, nail],
+      "materialsNeededName" : ["purpleRock", "iron" ,"iron", "wrench", "bolt", "bolt", "saw", "hammer", "nail", "nail"],
      }, 
 ]
 
@@ -854,6 +863,7 @@ def showCraftableItems():
         current_item_index = (current_item_index + 1) % len(bench_items)
     
     materials = itemData["materialsNeeded"]
+    materialsNeededName = itemData["materialsNeededName"]
     material_box_width, material_box_height = 55, 55
     gap = 15
 
@@ -861,23 +871,21 @@ def showCraftableItems():
     start_x = (screen_width - total_width) // 2
     start_y = 285
 
-    bench_contents = [None] * len(materials)
-
     for i, material in enumerate(materials):
-        transMat = material.convert_alpha()
-        transMat.set_alpha(150)
-        box_x = start_x + i * (material_box_width + gap)
-        box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
-        box_rects.append(box_rect)
-        pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
-        screen.blit(transMat, (box_x + gap - 8 , start_y + 6))
+        for i, materialNeededName in enumerate(materialsNeededName):
+            transMat = material.convert_alpha()
+            transMat.set_alpha(150)
+            box_x = start_x + i * (material_box_width + gap)
+            box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
+            box_rects.append(box_rect)
+            pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
+            screen.blit(transMat, (box_x + gap - 8 , start_y + 6))
 
-    # if itemRect.collidepoint(mouse_pos) and clicked: 
-
-
-
-    
-    
+            for j, content in enumerate(bench_contents): 
+                if content is not None:
+                    if content == materialNeededName:
+                        box_x = start_x + j * (material_box_width + gap)
+                        screen.blit(material, (box_x + gap - 8 , start_y + 6))
 
 play_music("background", loop=True, volume=2)
 
