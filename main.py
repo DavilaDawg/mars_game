@@ -872,14 +872,14 @@ def showCraftableItems():
     start_y = 285
 
     for i, material in enumerate(materials):
-        for i, materialNeededName in enumerate(materialsNeededName):
+        for k, materialNeededName in enumerate(materialsNeededName):
             transMat = material.convert_alpha()
             transMat.set_alpha(150)
             box_x = start_x + i * (material_box_width + gap)
             box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
             box_rects.append(box_rect)
             pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
-            screen.blit(transMat, (box_x + gap - 8 , start_y + 6))
+            screen.blit(transMat, (box_x + gap - 8 , start_y + 6)) 
 
             for j, content in enumerate(bench_contents): 
                 if content is not None:
