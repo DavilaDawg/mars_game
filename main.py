@@ -769,7 +769,8 @@ def makeTransparent(item, level=80):
 current_item_index = 0
 
 def showCraftableItems():
-    global current_item_index
+    global current_item_index, box_rects
+    box_rects = []
     itemData = bench_items[current_item_index]
     itemImg = itemData["image"]
     itemName = itemData["name"]
@@ -872,17 +873,17 @@ def showCraftableItems():
     start_y = 285
 
     for i, material in enumerate(materials):
-        for k, materialNeededName in enumerate(materialsNeededName):
-            transMat = material.convert_alpha()
-            transMat.set_alpha(150)
-            box_x = start_x + i * (material_box_width + gap)
-            box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
-            box_rects.append(box_rect)
-            pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
-            screen.blit(transMat, (box_x + gap - 8 , start_y + 6)) 
-
-            for j, content in enumerate(bench_contents): 
-                if content is not None:
+        transMat = material.convert_alpha()
+        transMat.set_alpha(150)
+        box_x = start_x + i * (material_box_width + gap)
+        box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
+        box_rects.append(box_rect)
+        pygame.draw.rect(screen, (24, 116, 205),box_rect, 3)
+        screen.blit(transMat, (box_x + gap - 8 , start_y + 6)) 
+        
+        for j, content in enumerate(bench_contents): 
+            if content is not None:
+                for k, materialNeededName in enumerate(materialsNeededName):
                     if content == materialNeededName:
                         box_x = start_x + j * (material_box_width + gap)
                         screen.blit(material, (box_x + gap - 8 , start_y + 6))
@@ -1091,34 +1092,34 @@ while running:
                             break   
             if inBench:
                 for i, slot in enumerate(box_rects):
-                    if slot.collidepoint(mouse_pos):  
-                        if selected_slot_index is None and bench_contents[i] is not None:
-                            selected_slot_index = i
-                            selected_item_from_inventory = False
-                        else:
-                            if bench_contents[i] is None and selected_slot_index is not None:
-                                if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
-                                    print("inventory to storage")
-                                    bench_contents[i] = inventory_contents[selected_slot_index]
-                                    inventory_contents[selected_slot_index] = None
-                                elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None: # move within storage
-                                    bench_contents[i] = bench_contents[selected_slot_index]
-                                    bench_contents[selected_slot_index] = None
+                        if slot.collidepoint(mouse_pos):  
+                            if selected_slot_index is None and bench_contents[i] is not None:
+                                selected_slot_index = i
+                                selected_item_from_inventory = False
                             else:
-                                if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
-                                    print("swap from inventory to storage")
-                                    inventory_contents[selected_slot_index], bench_contents[i] = (
-                                        bench_contents[i],
-                                        inventory_contents[selected_slot_index],
-                                    )
-                                elif selected_slot_index is not None and bench_contents[selected_slot_index] is not None: # swap within storage
-                                    print("swap within")
-                                    bench_contents[selected_slot_index], bench_contents[i] = (
-                                        bench_contents[i],
-                                        bench_contents[selected_slot_index],
-                                    )
-                            selected_slot_index = None
-                        break 
+                                if bench_contents[i] is None and selected_slot_index is not None:
+                                    if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
+                                        print("inventory to storage")
+                                        bench_contents[i] = inventory_contents[selected_slot_index]
+                                        inventory_contents[selected_slot_index] = None
+                                    elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None: # move within storage
+                                        bench_contents[i] = bench_contents[selected_slot_index]
+                                        bench_contents[selected_slot_index] = None
+                                else:
+                                    if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
+                                        print("swap from inventory to storage")
+                                        inventory_contents[selected_slot_index], bench_contents[i] = (
+                                            bench_contents[i],
+                                            inventory_contents[selected_slot_index],
+                                        )
+                                    elif selected_slot_index is not None and bench_contents[selected_slot_index] is not None: # swap within storage
+                                        print("swap within")
+                                        bench_contents[selected_slot_index], bench_contents[i] = (
+                                            bench_contents[i],
+                                            bench_contents[selected_slot_index],
+                                        )
+                                selected_slot_index = None
+                            break 
 
 
         elif event.type == pygame.MOUSEBUTTONUP:
@@ -1388,8 +1389,11 @@ while running:
         if 'bench_contents' not in globals() or len(bench_contents) != len(materials):
             bench_contents = [None] * len(materials)
 
+        box_rects = []
+        
         showCraftableItems()
         print(bench_contents) 
+        print(f"box_rects length: {len(box_rects)}, bench_contents length: {len(bench_contents)}")
     
     if currentBackground == "topRight":
         spawn_collectibles(current_screen)
