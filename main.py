@@ -100,6 +100,7 @@ rockPresent = False
 holding = False
 muted = False 
 showHint = False 
+itemAvailable = False
 
 box_rects = []
 
@@ -769,7 +770,7 @@ def makeTransparent(item, level=80):
 current_item_index = 0
 
 def showCraftableItems():
-    global current_item_index, box_rects
+    global current_item_index, box_rects, itemRectClicked
     box_rects = []
     itemData = bench_items[current_item_index]
     itemImg = itemData["image"]
@@ -852,22 +853,32 @@ def showCraftableItems():
     itemRect = pygame.Rect(screen_width/2 - 45 , screen_height/2 + 76, 90, 90)
     leftRect = pygame.Rect(screen_width/2 - 210, 185, 90, 90)
     rightRect = pygame.Rect(screen_width/2 + 132, 185, 90, 90)
-    pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
+
     screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
     screen.blit(rightArrow, (screen_width/2 + 132, 185)) 
     if None not in bench_contents: 
         item = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (80,80))
-        screen.blit(item, (screen_width/2 -40,screen_height/2 + 80))
-        print("gd")
+        screen.blit(item, (screen_width/2 -40, screen_height/2 + 80))
+        itemAvailable= True
+        if itemRectClicked: 
+            pygame.draw.rect(screen,YELLOW,itemRect, 3)     
+        else:
+            pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
     else:
-        screen.blit(transItem, (screen_width/2 -40,screen_height/2 + 80))
-        print("bad")
+        screen.blit(transItem, (screen_width/2 -40, screen_height/2 + 80))
+        itemAvailable= False        
+        itemRectClicked = False
+        pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
 
     if leftRect.collidepoint(mouse_pos) and clicked: 
         current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
     elif rightRect.collidepoint(mouse_pos) and clicked:
         current_item_index = (current_item_index + 1) % len(bench_items)
-    
+
+    if itemRect.collidepoint(mouse_pos) and itemAvailable and clicked: 
+        itemRectClicked = not itemRectClicked   
+
+
     materials = itemData["materialsNeeded"]
     materialsNeededName = itemData["materialsNeededName"]
     material_box_width, material_box_height = 55, 55
@@ -1397,8 +1408,6 @@ while running:
         box_rects = []
         
         showCraftableItems()
-        print(bench_contents) 
-        print(f"box_rects length: {len(box_rects)}, bench_contents length: {len(bench_contents)}")
     
     if currentBackground == "topRight":
         spawn_collectibles(current_screen)
