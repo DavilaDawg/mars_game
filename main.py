@@ -705,7 +705,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["solarPanel", "waterStorage", "iron", "iron", "purpleRock", None, None, None]
+inventory_contents = ["iron", "iron","iron", "purpleRock","purpleRock", None, None, None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -870,7 +870,7 @@ def showCraftableItems():
     screen.blit(transItem, (screen_width/2 -40, screen_height/2 + 80))    
     #print("blit 1")
 
-    print("itemBuilt:", itemBuilt, "itemAvailable", itemAvailable)
+    #print("itemBuilt:", itemBuilt, "itemAvailable", itemAvailable)
     
     materials = itemData["materialsNeeded"]
     materialsNeededName = itemData["materialsNeededName"]
@@ -893,11 +893,10 @@ def showCraftableItems():
         for j, content in enumerate(bench_contents): 
             if content is not None:
                 for k, materialNeededName in enumerate(materialsNeededName):
-                    swapAvailable = False
                     if content == materialNeededName:
                         swapAvailable = True
                         box_x = start_x + j * (material_box_width + gap)
-                        screen.blit(material, (box_x + gap - 8 , start_y + 6))
+                        screen.blit(materials[k], (box_x + gap - 8 , start_y + 6))
                         if None not in bench_contents: 
                             itemAvailable = True
                     else: 
@@ -920,7 +919,6 @@ def showCraftableItems():
             pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)     
     else:
         screen.blit(transItem, (screen_width/2 -40, screen_height/2 + 80))
-        #print("blit 4")
         itemAvailable= False        
         itemRectClicked = False
         itemBuilt = False 
