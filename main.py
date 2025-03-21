@@ -101,6 +101,8 @@ holding = False
 muted = False 
 showHint = False 
 itemAvailable = False
+itemBuilt = False
+swapAvailable = False
 
 box_rects = []
 
@@ -335,7 +337,16 @@ item_images = {
     "solarPanel": solarPanel,
     "iceMelterUnit": iceMelterUnit,
     "waterStorage": waterStorage,
-    "upgradedWorkbench": upgradedWorkbench
+    "upgradedWorkbench": upgradedWorkbench, 
+    "hammer": hammer, 
+    "nail": nail, 
+    "saw":saw, 
+    "hoe": hoe, 
+    "wrench": wrench,
+    "bolt":bolt,
+    "solarPanel": solarPanel, 
+    "waterStorage": waterStorage,
+    "upgradedWorkbench": upgradedWorkbench,
 }
 
 food_images = {
@@ -770,7 +781,7 @@ def makeTransparent(item, level=80):
 current_item_index = 0
 
 def showCraftableItems():
-    global current_item_index, box_rects, itemRectClicked
+    global current_item_index, box_rects, itemRectClicked, selected_slot_index, itemBuilt, itemAvailable, bench_contents, swapAvailable
     box_rects = []
     itemData = bench_items[current_item_index]
     itemImg = itemData["image"]
@@ -856,29 +867,11 @@ def showCraftableItems():
 
     screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
     screen.blit(rightArrow, (screen_width/2 + 132, 185)) 
-    if None not in bench_contents: 
-        item = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (80,80))
-        screen.blit(item, (screen_width/2 -40, screen_height/2 + 80))
-        itemAvailable= True
-        if itemRectClicked: 
-            pygame.draw.rect(screen,YELLOW,itemRect, 3)     
-        else:
-            pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
-    else:
-        screen.blit(transItem, (screen_width/2 -40, screen_height/2 + 80))
-        itemAvailable= False        
-        itemRectClicked = False
-        pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
+    screen.blit(transItem, (screen_width/2 -40, screen_height/2 + 80))    
+    #print("blit 1")
 
-    if leftRect.collidepoint(mouse_pos) and clicked: 
-        current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
-    elif rightRect.collidepoint(mouse_pos) and clicked:
-        current_item_index = (current_item_index + 1) % len(bench_items)
-
-    if itemRect.collidepoint(mouse_pos) and itemAvailable and clicked: 
-        itemRectClicked = not itemRectClicked   
-
-
+    print("itemBuilt:", itemBuilt, "itemAvailable", itemAvailable)
+    
     materials = itemData["materialsNeeded"]
     materialsNeededName = itemData["materialsNeededName"]
     material_box_width, material_box_height = 55, 55
@@ -890,7 +883,7 @@ def showCraftableItems():
 
     for i, material in enumerate(materials):
         transMat = material.convert_alpha()
-        transMat.set_alpha(150)
+        transMat.set_alpha(90)
         box_x = start_x + i * (material_box_width + gap)
         box_rect = pygame.Rect(box_x, start_y, material_box_width, material_box_height)
         box_rects.append(box_rect)
@@ -900,9 +893,50 @@ def showCraftableItems():
         for j, content in enumerate(bench_contents): 
             if content is not None:
                 for k, materialNeededName in enumerate(materialsNeededName):
+                    swapAvailable = False
                     if content == materialNeededName:
+                        swapAvailable = True
                         box_x = start_x + j * (material_box_width + gap)
-                        screen.blit(material, (box_x + gap - 8 , start_y + 6))            
+                        screen.blit(material, (box_x + gap - 8 , start_y + 6))
+                        if None not in bench_contents: 
+                            itemAvailable = True
+                    else: 
+                        itemAvailable = False
+        
+    if None not in bench_contents: 
+        item = pygame.transform.scale(pygame.image.load(f'./icon/{itemName}.png'), (80,80))
+        if itemAvailable: 
+            screen.blit(item, (screen_width/2 -40, screen_height/2 + 80)) 
+        if itemRectClicked and itemAvailable: 
+            pygame.draw.rect(screen,YELLOW,itemRect, 3)  
+            for i, slot in enumerate(inventory_slots):
+                if slot.collidepoint(mouse_pos) and clicked: 
+                    if selected_slot_index is None and inventory_contents[i] is None:
+                        selected_slot_index = i 
+                        inventory_contents[i]= itemName 
+                        itemAvailable= False 
+                        itemBuilt = True  
+        else:
+            pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)     
+    else:
+        screen.blit(transItem, (screen_width/2 -40, screen_height/2 + 80))
+        #print("blit 4")
+        itemAvailable= False        
+        itemRectClicked = False
+        itemBuilt = False 
+        pygame.draw.rect(screen,(24, 116, 205),itemRect, 3)
+
+    if leftRect.collidepoint(mouse_pos) and clicked: 
+        current_item_index = (current_item_index - 1) % len(bench_items) # index wraps around if it goes below 0
+    elif rightRect.collidepoint(mouse_pos) and clicked:
+        current_item_index = (current_item_index + 1) % len(bench_items)
+
+    if itemRect.collidepoint(mouse_pos) and itemAvailable and clicked: 
+        itemRectClicked = not itemRectClicked   
+
+    if itemBuilt:
+        bench_contents = [None] * len(materials)
+        print("itemBuilt")
 
 play_music("background", loop=True, volume=2)
 
@@ -1107,33 +1141,40 @@ while running:
                                 selected_slot_index = None
                             break   
             if inBench:
+                itemData = bench_items[current_item_index]
+                materialsNeededName = itemData["materialsNeededName"]
                 for i, slot in enumerate(box_rects):
                         if slot.collidepoint(mouse_pos):  
                             if selected_slot_index is None and bench_contents[i] is not None:
                                 selected_slot_index = i
                                 selected_item_from_inventory = False
                             else:
+                                swapAvailable = False
                                 if bench_contents[i] is None and selected_slot_index is not None:
-                                    if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
-                                        print("inventory to storage")
+                                    if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None:
+                                        # Check if the inventory item matches the required material
+                                        if inventory_contents[selected_slot_index] == materialsNeededName[i]:
+                                            swapAvailable = True
+                                            print("Valid Swap Available: Inventory to Bench")
+                                        else:
+                                            print("Invalid Swap: Inventory item doesn't match material needed.")
+                                    elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None:
+                                        # Bench to bench swap is always allowed (adjust this if needed)
+                                        swapAvailable = True
+                                        print("Valid Swap: Bench to Bench")
+                                
+                                # Perform Swap Only If swapAvailable is True
+                                if swapAvailable:
+                                    if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None:
                                         bench_contents[i] = inventory_contents[selected_slot_index]
                                         inventory_contents[selected_slot_index] = None
-                                    elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None: # move within storage
+                                    elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None:
                                         bench_contents[i] = bench_contents[selected_slot_index]
                                         bench_contents[selected_slot_index] = None
+                                    print("Swap Completed")
                                 else:
-                                    if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
-                                        print("swap from inventory to storage")
-                                        inventory_contents[selected_slot_index], bench_contents[i] = (
-                                            bench_contents[i],
-                                            inventory_contents[selected_slot_index],
-                                        )
-                                    elif selected_slot_index is not None and bench_contents[selected_slot_index] is not None: # swap within storage
-                                        print("swap within")
-                                        bench_contents[selected_slot_index], bench_contents[i] = (
-                                            bench_contents[i],
-                                            bench_contents[selected_slot_index],
-                                        )
+                                    print("Swap Denied")
+
                                 selected_slot_index = None
                             break 
 
@@ -1400,13 +1441,9 @@ while running:
         screen.blit(workbench1, (0, 0)) 
 
         materials = bench_items[current_item_index]["materialsNeeded"]
-        
-        # Initialize or resize bench_contents if necessary
         if 'bench_contents' not in globals() or len(bench_contents) != len(materials):
             bench_contents = [None] * len(materials)
-
         box_rects = []
-        
         showCraftableItems()
     
     if currentBackground == "topRight":
