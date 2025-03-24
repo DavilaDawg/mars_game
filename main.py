@@ -714,10 +714,10 @@ storage_contents3 = [None] * (storageRows * storageCols)
 storage_contents1[0] = "pickAx"
 storage_contents1[1] = "spaceFood"
 storage_contents1[2] = "spaceFood"
-storage_contents1[3] = "spaceFood"
-storage_contents1[4] = "spaceFood"
-storage_contents1[5] = "spaceFood"
-storage_contents1[6] = "spaceFood"
+# storage_contents1[3] = "spaceFood"
+# storage_contents1[4] = "spaceFood"
+# storage_contents1[5] = "spaceFood"
+# storage_contents1[6] = "spaceFood"
 
 current_storage_contents = storage_contents1.copy()
 
@@ -1042,6 +1042,7 @@ while running:
                 if current_screen == "game": 
                     if not muted:
                         play_music("background", loop=True, volume=2)
+ 
             for i, slot in enumerate(inventory_slots):
                 if slot.collidepoint(mouse_pos): 
                     if selected_slot_index is None and inventory_contents[i] is not None:
@@ -1049,11 +1050,13 @@ while running:
                         selected_item_from_inventory = True
                         currentInventoryItem= item_images[inventory_contents[i]]
                     else:
-                        if inventory_contents[i] is None and selected_slot_index is not None: 
+                        if inStorage and inventory_contents[i] is None and selected_slot_index is not None: 
                             if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: 
                                 inventory_contents[i]= inventory_contents[selected_slot_index]
                                 inventory_contents[selected_slot_index]= None
+                                print("move within inventory")
                             else: # storage to inventory 
+                                print("storage to inventory 1")
                                 if inStorage and selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None:
                                     inventory_contents[i]= current_storage_contents[selected_slot_index]
                                     if not selected_item_from_inventory:
@@ -1093,17 +1096,22 @@ while running:
                                 if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
                                     current_storage_contents[i] = inventory_contents[selected_slot_index]
                                     inventory_contents[selected_slot_index] = None
-                                elif not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None: # move within storage
-                                    current_storage_contents[i] = current_storage_contents[selected_slot_index]
-                                    current_storage_contents[selected_slot_index] = None
+                                    print("Inventory to storage 2")
+                                elif not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None:  # Swap from storage to inventory
+                                    inventory_contents[i], current_storage_contents[selected_slot_index] = (
+                                    current_storage_contents[selected_slot_index],
+                                    inventory_contents[i],
+                                )
+                                    print("Swap from storage to inventory 2")
                             else:
                                 if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
                                     inventory_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         inventory_contents[selected_slot_index],
                                     )
+                                    print("?????")
                                 elif selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None: # swap within storage
-                                    print("swap within")
+                                    print("swap within 2")
                                     current_storage_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         current_storage_contents[selected_slot_index],
