@@ -427,8 +427,8 @@ bench_items = [
      {"image": solarPanel, 
      "name": "solarPanel",
     "display": "Solar Panel",
-    "materialsNeeded" : [iron, purpleRock, hammer, nail, nail, nail, nail],
-    "materialsNeededName" : ["iron", "purpleRock", "hammer", "nail", "nail", "nail", "nail"],
+    "materialsNeeded" : [iron, purpleRock, hammer, nail, nail, nail],
+    "materialsNeededName" : ["iron", "purpleRock", "hammer", "nail", "nail", "nail"],
      },
       {"image": waterStorage,
      "name": "waterStorage",
@@ -439,8 +439,8 @@ bench_items = [
     {"image": upgradedWorkbench,
       "name": "3d",
       "display": "Upgraded Workbench",
-      "materialsNeeded" : [purpleRock, iron ,iron, wrench, bolt, bolt, saw, hammer, nail, nail],
-      "materialsNeededName" : ["purpleRock", "iron" ,"iron", "wrench", "bolt", "bolt", "saw", "hammer", "nail", "nail"],
+      "materialsNeeded" : [purpleRock, iron ,iron, wrench, bolt, bolt, saw, hammer, nail],
+      "materialsNeededName" : ["purpleRock", "iron" ,"iron", "wrench", "bolt", "bolt", "saw", "hammer", "nail"],
      }, 
 ]
 
@@ -714,10 +714,10 @@ storage_contents3 = [None] * (storageRows * storageCols)
 storage_contents1[0] = "pickAx"
 storage_contents1[1] = "spaceFood"
 storage_contents1[2] = "spaceFood"
-# storage_contents1[3] = "spaceFood"
-# storage_contents1[4] = "spaceFood"
-# storage_contents1[5] = "spaceFood"
-# storage_contents1[6] = "spaceFood"
+storage_contents1[3] = "spaceFood"
+storage_contents1[4] = "spaceFood"
+storage_contents1[5] = "spaceFood"
+storage_contents1[6] = "spaceFood"
 
 current_storage_contents = storage_contents1.copy()
 
@@ -1050,12 +1050,12 @@ while running:
                         selected_item_from_inventory = True
                         currentInventoryItem= item_images[inventory_contents[i]]
                     else:
-                        if inStorage and inventory_contents[i] is None and selected_slot_index is not None: 
+                        if inventory_contents[i] is None and selected_slot_index is not None: 
                             if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: 
                                 inventory_contents[i]= inventory_contents[selected_slot_index]
                                 inventory_contents[selected_slot_index]= None
-                                print("move within inventory")
-                            else: # storage to inventory 
+                                print("move within inventory 1")
+                            elif inStorage: # storage to inventory 
                                 print("storage to inventory 1")
                                 if inStorage and selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None:
                                     inventory_contents[i]= current_storage_contents[selected_slot_index]
@@ -1069,12 +1069,15 @@ while running:
                         elif inventory_contents[i] is not None and selected_slot_index is not None: 
                             if not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None:
                                 # Swap from storage to inventory
-                                inventory_contents[i], current_storage_contents[selected_slot_index] = (
-                                    current_storage_contents[selected_slot_index],
-                                    inventory_contents[i],
-                                )
+                                print("Swap storage to inventory 1")
+                                if inStorage: 
+                                    inventory_contents[i], current_storage_contents[selected_slot_index] = (
+                                        current_storage_contents[selected_slot_index],
+                                        inventory_contents[i],
+                                    )
                             else:                   
-                                # swap/deselect within inventory          
+                                # swap/deselect within inventory      
+                                print("swap/deselect within inventory 1")    
                                 inventory_contents[i], inventory_contents[selected_slot_index] =(
                                 inventory_contents[selected_slot_index],
                                 inventory_contents[i]
@@ -1085,9 +1088,9 @@ while running:
                     break
             if inStorage:
                 for i, slot in enumerate(storageSlots):
-                    if slot.collidepoint(mouse_pos):  
+                    if slot.collidepoint(mouse_pos):   
                         if selected_slot_index is None and current_storage_contents[i] is not None:
-                            selected_slot_index = i
+                            selected_slot_index = i   
                             selected_item_from_inventory = False
                             if current_storage_contents[selected_slot_index] == "pickAx": 
                                 axObtained = True
@@ -1098,18 +1101,16 @@ while running:
                                     inventory_contents[selected_slot_index] = None
                                     print("Inventory to storage 2")
                                 elif not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None:  # Swap from storage to inventory
-                                    inventory_contents[i], current_storage_contents[selected_slot_index] = (
-                                    current_storage_contents[selected_slot_index],
-                                    inventory_contents[i],
-                                )
-                                    print("Swap from storage to inventory 2")
+                                    current_storage_contents[i]= current_storage_contents[selected_slot_index]
+                                    current_storage_contents[selected_slot_index]= None
+                                    print("move within storage 2")
                             else:
                                 if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
                                     inventory_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         inventory_contents[selected_slot_index],
                                     )
-                                    print("?????")
+                                    print("Swap inventory to storage 2")
                                 elif selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None: # swap within storage
                                     print("swap within 2")
                                     current_storage_contents[selected_slot_index], current_storage_contents[i] = (
@@ -1183,7 +1184,6 @@ while running:
 
                                 selected_slot_index = None
                             break 
-
 
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1: 
