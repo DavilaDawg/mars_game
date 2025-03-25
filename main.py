@@ -1,7 +1,6 @@
 # stack items
 # finish health bar/radiation 
 # population and teraform info
-# fix if eat food disapeer
 # make kitchen gadgets 
 # make stackable items for storage 
 # make fuel leak/ critical oxigen level for hallway 
@@ -16,6 +15,10 @@
 # add pause + leaderboard + main page 
 # if Inventory full make thgs nt dIsapre
 # fast forward while sleeping 
+# add eating noise 
+# make fingers get bigger if within range 
+# flip hammer 
+# 
 
 import pygame
 import random
@@ -169,8 +172,8 @@ health = 100
 hunger = 100
 thirst = 100  #city builds, increase decay for this 1
 # energy = 100 
-DECAY_RATE = .5
-DECAY_RATE_THIRST = 0.6
+DECAY_RATE = .3
+DECAY_RATE_THIRST = 0.4
 
 increaseHunger = 40
 increaseThirst= 5 # as 
@@ -230,7 +233,7 @@ oven = pygame.transform.scale(pygame.image.load('./icon/oven.png'), (110,110))
 ice = pygame.transform.scale(pygame.image.load('./icon/ice.png'), (49,49))
 iceMelterUnit = pygame.transform.scale(pygame.image.load('./icon/iceMelterUnit.png'), (49,49))
 waterStorage = pygame.transform.scale(pygame.image.load('./icon/waterStorage.png'), (49,49))
-upgradedWorkbench = pygame.transform.scale(pygame.image.load('./icon/3d.png'), (49,49))
+upgradedWorkbench = pygame.transform.scale(pygame.image.load('./icon/upgradedWorkbench.png'), (49,49))
 
 collectible_items = {
     "game": [
@@ -391,8 +394,10 @@ bench_items = [
     {"image" : hammer,
      "name": "hammer",
      "display": "Hammer",
-    "materialsNeeded" : [iron, iron],
-    "materialsNeededName": ["iron", "iron"],
+     "materialsNeeded" : [iron],
+    "materialsNeededName": ["iron"],
+    # "materialsNeeded" : [iron, iron],
+    # "materialsNeededName": ["iron", "iron"],
      },
     {"image": nail,
      "name": "nail",
@@ -403,20 +408,26 @@ bench_items = [
     {"image": saw,
      "name": "saw",
     "display": "Saw",
-    "materialsNeeded" : [iron, purpleRock],
-    "materialsNeededName": ["iron", "purpleRock"],
+    "materialsNeeded" : [purpleRock],
+    "materialsNeededName": ["purpleRock"],
+    # "materialsNeeded" : [iron, purpleRock],
+    # "materialsNeededName": ["iron", "purpleRock"],
      }, 
      {"image": hoe,
      "name": "hoe",
     "display": "Hoe",
-    "materialsNeeded" : [iron, iron],
-    "materialsNeededName": ["iron", "iron"],
+    "materialsNeeded" : [iron],
+    "materialsNeededName": ["iron"],
+    # "materialsNeeded" : [iron, iron],
+    # "materialsNeededName": ["iron", "iron"],
     },
       {"image": wrench,
      "name": "wrench",
     "display": "Wrench", 
-    "materialsNeeded" : [iron, purpleRock],
-    "materialsNeededName": ["iron", "purpleRock"],
+    "materialsNeeded" : [purpleRock],
+    "materialsNeededName": ["purpleRock"],
+    # "materialsNeeded" : [iron, purpleRock],
+    # "materialsNeededName": ["iron", "purpleRock"],
      },
       {"image": bolt,
      "name": "bolt",
@@ -427,20 +438,26 @@ bench_items = [
      {"image": solarPanel, 
      "name": "solarPanel",
     "display": "Solar Panel",
-    "materialsNeeded" : [iron, purpleRock, hammer, nail, nail, nail],
-    "materialsNeededName" : ["iron", "purpleRock", "hammer", "nail", "nail", "nail"],
+    "materialsNeeded" : [purpleRock, nail],
+    "materialsNeededName" : ["purpleRock", "nail"],
+    # "materialsNeeded" : [iron, purpleRock, hammer, nail, nail, nail],
+    # "materialsNeededName" : ["iron", "purpleRock", "hammer", "nail", "nail", "nail"],
      },
       {"image": waterStorage,
      "name": "waterStorage",
      "display": "Water Pump",
-    "materialsNeeded" : [purpleRock, wrench, bolt, bolt, bolt],
-    "materialsNeededName" : ["purpleRock", "wrench", "bolt", "bolt", "bolt"],
+    # "materialsNeeded" : [purpleRock, wrench, bolt, bolt, bolt],
+    # "materialsNeededName" : ["purpleRock", "wrench", "bolt", "bolt", "bolt"],
+    "materialsNeeded" : [purpleRock],
+    "materialsNeededName" : ["purpleRock"],
      }, 
     {"image": upgradedWorkbench,
-      "name": "3d",
+      "name": "upgradedWorkbench",
       "display": "Upgraded Workbench",
-      "materialsNeeded" : [purpleRock, iron ,iron, wrench, bolt, bolt, saw, hammer, nail],
-      "materialsNeededName" : ["purpleRock", "iron" ,"iron", "wrench", "bolt", "bolt", "saw", "hammer", "nail"],
+      "materialsNeeded" : [purpleRock],
+      "materialsNeededName" : ["purpleRock"],
+    #   "materialsNeeded" : [purpleRock, iron ,iron, wrench, bolt, bolt, saw, hammer, nail],
+    #   "materialsNeededName" : ["purpleRock", "iron" ,"iron", "wrench", "bolt", "bolt", "saw", "hammer", "nail"],
      }, 
 ]
 
