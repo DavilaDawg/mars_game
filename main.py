@@ -66,25 +66,38 @@ workshop = pygame.transform.scale(pygame.image.load('./icon/workshop.webp'), (sc
 workbench1 = pygame.transform.scale(pygame.image.load('./icon/workbench1.jpg'), (screen_width, screen_height))
 
 tileSize = 40
-playerSize = 70
-cowSize= 70
-farmerSize= 70
+playerSize = 60
+cowSize= 60
+farmerSize= 60
 
-spritesheet = pygame.image.load("spriteSheet.png").convert_alpha()
-spriteWidth = 32
-spriteHeight = 32
+spritesheet = pygame.image.load("./icon/spriteSheet.png").convert_alpha()
+spriteWidth = 64
+spriteHeight = 48
 
-startRow=5
+spriteImage = pygame.transform.scale(spritesheet.subsurface(pygame.Rect(5, 60,25, 33)), (playerSize, playerSize)) # dimentions unsure 
+
+startRowWalkRight=5 
 
 spriteWalkRight = []
 for i in range(12):  
     x = i* spriteWidth
-    y= startRow*spriteHeight
+    y= startRowWalkRight*spriteHeight
     rect = pygame.Rect(x, y, spriteWidth, spriteHeight)
     sprite = spritesheet.subsurface(rect).copy()
     spriteWalkRight.append(sprite)
 
 spriteWalkLeft= [pygame.transform.flip(sprite, True, False) for sprite in spriteWalkRight] # true for flip horz false for flip virt
+
+startRowWalkUp = 6
+
+spriteWalkUp = [] 
+for i in range(12):
+    x = i*spriteWidth
+    y = startRowWalkUp*spriteHeight
+    rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
+    sprite= spritesheet.subsurface(rect).copy()
+    spriteWalkUp.append(sprite)
+
 
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
 astroImg1 = pygame.transform.scale(pygame.image.load('./icon/astronaut3.png'), (cowSize, cowSize))
@@ -1294,19 +1307,28 @@ while running:
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:
         player_pos.x -= 400 * dt
+        moving = True
+        imageSprite= spriteWalkLeft
     if keys[pygame.K_RIGHT]:
         player_pos.x += 400 * dt
+        moving =True
+        imageSprite = spriteWalkRight
     if keys[pygame.K_UP]:
         player_pos.y -= 400 * dt
+        moving = True 
+        imageSprite = spriteWalkUp
     if keys[pygame.K_DOWN]:
         player_pos.y += 400 * dt
+        moving= True
+        imageSprite= spriteWalkUp #FIX
 
     # player bounds
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
     player_pos.y = max(35, min(player_pos.y, screen_height - playerSize))
 
     if current_screen == "game":       
-        screen.blit(playerImg, (player_pos.x, player_pos.y))
+        #screen.blit(playerImg, (player_pos.x, player_pos.y))
+        screen.blit(spriteImage, (player_pos.x,player_pos.y))
         if currentBackground == "topRight":
             for farmer in farmers:
                 # Wandering 
@@ -1345,7 +1367,7 @@ while running:
             enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
             stationRect = pygame.Rect(screen_width-200, 120, 100,100)
             stationText = font.render('Enter station', True, (100, 100, 50)) 
-            screen.blit(playerImg, (player_pos.x, player_pos.y)) 
+            screen.blit(spriteImage, (player_pos.x, player_pos.y)) 
 
             # cows logic
             for i, cow in enumerate(cows):
@@ -1503,7 +1525,7 @@ while running:
     if current_screen == "insideCave1":
         last_screen="game"
         screen.blit(insideCave1, (0, 0))  
-        screen.blit(playerImg, (player_pos.x, player_pos.y))
+        screen.blit(spriteImage, (player_pos.x, player_pos.y))
 
         if currentInventoryItem: 
             smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
