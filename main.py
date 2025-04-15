@@ -70,6 +70,22 @@ playerSize = 70
 cowSize= 70
 farmerSize= 70
 
+spritesheet = pygame.image.load("spriteSheet.png").convert_alpha()
+spriteWidth = 32
+spriteHeight = 32
+
+startRow=5
+
+spriteWalkRight = []
+for i in range(12):  
+    x = i* spriteWidth
+    y= startRow*spriteHeight
+    rect = pygame.Rect(x, y, spriteWidth, spriteHeight)
+    sprite = spritesheet.subsurface(rect).copy()
+    spriteWalkRight.append(sprite)
+
+spriteWalkLeft= [pygame.transform.flip(sprite, True, False) for sprite in spriteWalkRight] # true for flip horz false for flip virt
+
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
 astroImg1 = pygame.transform.scale(pygame.image.load('./icon/astronaut3.png'), (cowSize, cowSize))
 astroImg2 = pygame.transform.scale(pygame.image.load('./icon/astronaut2.png'), (farmerSize, farmerSize))
@@ -120,12 +136,22 @@ back_rect = pygame.Rect(6, 45, 100, 50)
 x_offset = 150  # Move to the right
 y_offset = 20  # Move down
 
+# 255, 130, 230, 210
+rect_points_basic = [ 
+    (255, 130),  # Top-left
+    (screen_width // 2 + 112 + x_offset, screen_height // 2 + 2 + y_offset),  # Top-right
+    (screen_width // 2 + 32 + x_offset, screen_height // 2 + 55 + y_offset),  # Bottom-right
+    (screen_width // 2 - 130 + x_offset, screen_height // 2 + 38 + y_offset)   # Bottom-left
+]
+
+
 rect_points = [
     (screen_width // 2 +2 + x_offset, screen_height // 2 -2 + y_offset),  # Top-left
     (screen_width // 2 + 112 + x_offset, screen_height // 2 + 2 + y_offset),  # Top-right
     (screen_width // 2 + 32 + x_offset, screen_height // 2 + 55 + y_offset),  # Bottom-right
     (screen_width // 2 - 130 + x_offset, screen_height // 2 + 38 + y_offset)   # Bottom-left
 ]
+
 
 x_coords = [point[0] for point in rect_points]
 y_coords = [point[1] for point in rect_points]
@@ -1454,8 +1480,10 @@ while running:
         last_screen="hall7"
         screen.blit(workshop, (0, 0)) 
         benchRec = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
+        benchRecBasic = pygame.Rect(255, 130, 230, 210)
         pygame.draw.polygon(screen, (255, 0, 0), rect_points, 4) 
-        if clicked and benchRec.collidepoint(mouse_pos):
+        pygame.draw.polygon(screen, (255, 0, 0), benchRecBasic, 4) 
+        if clicked and benchRecBasic.collidepoint(mouse_pos):
             current_screen = "bench"
 
     if current_screen == "bench":
