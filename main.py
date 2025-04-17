@@ -139,6 +139,32 @@ for i in range(10):
     sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
     spriteIdleDown.append(sprite)
 
+startIdleUp = 2.7
+idleValue = 0
+spriteIdleUp = []
+for i in range(9): 
+    x = i * (spriteWidth + spacingX)
+    y = startIdleUp*spriteHeight
+    rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
+    sprite= spritesheet.subsurface(rect).copy()
+    sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
+    spriteIdleUp.append(sprite)
+
+startIdleRight = 1.7
+idleValue = 0
+spriteIdleRight = []
+for i in range(10): 
+    x = i * (spriteWidth + spacingX)
+    y = startIdleRight*spriteHeight
+    rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
+    sprite= spritesheet.subsurface(rect).copy()
+    sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
+    spriteIdleRight.append(sprite)
+
+spriteIdleLeft= [pygame.transform.flip(sprite, True, False) for sprite in spriteIdleRight]
+
+
+
 spriteImage = spriteIdleDown
 idleSprite = spriteIdleDown
 
@@ -1364,22 +1390,25 @@ while running:
         player_pos.x -= 215 * dt
         moving = True
         idleValue=0
-        idleSprite = spriteIdleDown 
+        idleSprite = spriteIdleLeft
         spriteImage = spriteWalkLeft
     if keys[pygame.K_RIGHT]:
         player_pos.x += 215 * dt
         moving =True
         idleValue=0
+        idleSprite = spriteIdleRight
         spriteImage = spriteWalkRight
     if keys[pygame.K_UP]:
         player_pos.y -= 215 * dt
         moving = True 
         idleValue= 0
+        idleSprite = spriteIdleUp 
         spriteImage = spriteWalkUp
     if keys[pygame.K_DOWN]:
         player_pos.y += 215 * dt
         moving= True
         idleValue = 0 
+        idleSprite = spriteIdleDown 
         spriteImage= spriteWalkDown 
 
     frameTimer += dt
