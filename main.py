@@ -76,9 +76,19 @@ spriteHeight = 34.7
 
 #spriteImage = pygame.transform.scale(spritesheet.subsurface(pygame.Rect(5, 60,25, 33)), (playerSize, playerSize)) # dimentions unsure 
 
-# startRowWalkRight = 5 
+startRowMap = 5 
+spacingX= 7
+
+spriteMap= []
+for i in range(10):
+    x = i* (spriteWidth+ spacingX)
+    y= startRowMap * spriteHeight
+    rect = pygame.Rect(x,y, spriteWidth, spriteHeight)
+    sprite= spritesheet.subsurface(rect).copy()
+    sprite  = pygame.transform.scale(sprite, (playerSize, playerSize))
+    spriteMap.append(sprite)
+
 startRowWalkRight = 7.3
-spacingX = 7
 
 spriteWalkRight = []
 for i in range(12):  
@@ -113,16 +123,24 @@ spriteWalkDown = []
 for i in range(12): 
     x = i * (spriteWidth + spacingX)
     y = startRowWalkDown*spriteHeight
-    if x + spriteWidth > spritesheet.get_width():
-        print(f"Skipping frame {i}: x={x} out of bounds")
-        continue
-    
     rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
     sprite= spritesheet.subsurface(rect).copy()
     sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
     spriteWalkDown.append(sprite)
 
-spriteImage = spriteWalkRight
+startIdleDown = 3.7
+idleValue = 0
+spriteIdleDown = []
+for i in range(10): 
+    x = i * (spriteWidth + spacingX)
+    y = startIdleDown*spriteHeight
+    rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
+    sprite= spritesheet.subsurface(rect).copy()
+    sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
+    spriteIdleDown.append(sprite)
+
+spriteImage = spriteIdleDown
+idleSprite = spriteIdleDown
 
 if value >= len(spriteImage):
     value = 0
@@ -1345,18 +1363,23 @@ while running:
     if keys[pygame.K_LEFT]:
         player_pos.x -= 215 * dt
         moving = True
+        idleValue=0
+        idleSprite = spriteIdleDown 
         spriteImage = spriteWalkLeft
     if keys[pygame.K_RIGHT]:
         player_pos.x += 215 * dt
         moving =True
+        idleValue=0
         spriteImage = spriteWalkRight
     if keys[pygame.K_UP]:
         player_pos.y -= 215 * dt
         moving = True 
+        idleValue= 0
         spriteImage = spriteWalkUp
     if keys[pygame.K_DOWN]:
         player_pos.y += 215 * dt
         moving= True
+        idleValue = 0 
         spriteImage= spriteWalkDown 
 
     frameTimer += dt
@@ -1365,9 +1388,13 @@ while running:
         if frameTimer >= animationSpeed:
             frameTimer = 0
             value += 1
-            imageSprite = spriteImage[value % len(spriteImage)]
+        imageSprite = spriteImage[value % len(spriteImage)]
     else:
         value = 0
+        if frameTimer >= animationSpeed:
+            frameTimer = 0
+            idleValue = (idleValue + 1) % len(idleSprite)
+        imageSprite = idleSprite[idleValue]
 
     # player bounds
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
