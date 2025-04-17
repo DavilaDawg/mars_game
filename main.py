@@ -71,32 +71,36 @@ cowSize= 60
 farmerSize= 60
 
 spritesheet = pygame.image.load("./icon/spriteSheet.png").convert_alpha()
-spriteWidth = 64
-spriteHeight = 48
+spriteWidth = 25
+spriteHeight = 34.5
 
-spriteImage = pygame.transform.scale(spritesheet.subsurface(pygame.Rect(5, 60,25, 33)), (playerSize, playerSize)) # dimentions unsure 
+#spriteImage = pygame.transform.scale(spritesheet.subsurface(pygame.Rect(5, 60,25, 33)), (playerSize, playerSize)) # dimentions unsure 
 
-startRowWalkRight=5 
+startRowWalkRight = 5 
 
 spriteWalkRight = []
 for i in range(12):  
-    x = i* spriteWidth
-    y= startRowWalkRight*spriteHeight
+    x = i *2
+    y= startRowWalkRight * spriteHeight
     rect = pygame.Rect(x, y, spriteWidth, spriteHeight)
     sprite = spritesheet.subsurface(rect).copy()
+    sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
     spriteWalkRight.append(sprite)
 
 spriteWalkLeft= [pygame.transform.flip(sprite, True, False) for sprite in spriteWalkRight] # true for flip horz false for flip virt
 
-startRowWalkUp = 6
+startRowWalkUp = 8.35
 
 spriteWalkUp = [] 
 for i in range(12):
-    x = i*spriteWidth
+    x = i * spriteWidth + 5
     y = startRowWalkUp*spriteHeight
     rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
     sprite= spritesheet.subsurface(rect).copy()
+    sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
     spriteWalkUp.append(sprite)
+
+spriteImage = spriteWalkUp[1]
 
 
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
