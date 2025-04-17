@@ -97,10 +97,6 @@ spriteWalkUp = []
 for i in range(12):
     x = i * (spriteWidth + spacingX)
     y = startRowWalkUp*spriteHeight
-    if x + spriteWidth > spritesheet.get_width():
-        print(f"Skipping frame {i}: x={x} out of bounds")
-        continue
-    
     rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
     sprite= spritesheet.subsurface(rect).copy()
     sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
@@ -110,6 +106,21 @@ value = 0
 moving = False
 frameTimer = 0
 animationSpeed = 0.11  # seconds per frame 
+
+startRowWalkDown = 9.25
+
+spriteWalkDown = []
+for i in range(12): 
+    x = i * (spriteWidth + spacingX)
+    y = startRowWalkDown*spriteHeight
+    if x + spriteWidth > spritesheet.get_width():
+        print(f"Skipping frame {i}: x={x} out of bounds")
+        continue
+    
+    rect = pygame.Rect(x,y,spriteWidth,spriteHeight)
+    sprite= spritesheet.subsurface(rect).copy()
+    sprite = pygame.transform.scale(sprite, (playerSize,playerSize))
+    spriteWalkDown.append(sprite)
 
 spriteImage = spriteWalkRight
 
@@ -1346,7 +1357,7 @@ while running:
     if keys[pygame.K_DOWN]:
         player_pos.y += 215 * dt
         moving= True
-        spriteImage= spriteWalkUp #FIX
+        spriteImage= spriteWalkDown 
 
     frameTimer += dt
 
