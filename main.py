@@ -234,18 +234,18 @@ y_offset = 20  # Move down
 
 # 255, 130, 230, 210
 rect_points_basic = [ 
-    (255, 113),  # Top-left
-    (475, 172),  # Top-right
-    (475, 335),  # Bottom-right
-    (255, 342)   # Bottom-left
+    (255, 113),  # Top left
+    (475, 172),  # Top right
+    (475, 335),  # Bottom right
+    (255, 342)   # Bottom left
 ]
 
 
 rect_points = [
-    (screen_width // 2 +2 + x_offset, screen_height // 2 -2 + y_offset),  # Top-left
-    (screen_width // 2 + 112 + x_offset, screen_height // 2 + 2 + y_offset),  # Top-right
-    (screen_width // 2 + 32 + x_offset, screen_height // 2 + 55 + y_offset),  # Bottom-right
-    (screen_width // 2 - 130 + x_offset, screen_height // 2 + 38 + y_offset)   # Bottom-left
+    (screen_width // 2 +2 + x_offset, screen_height // 2 -2 + y_offset),  # Top left
+    (screen_width // 2 + 112 + x_offset, screen_height // 2 + 2 + y_offset),  # Top right
+    (screen_width // 2 + 32 + x_offset, screen_height // 2 + 55 + y_offset),  # Bottom right
+    (screen_width // 2 - 130 + x_offset, screen_height // 2 + 38 + y_offset)   # Bottom left
 ]
 
 
@@ -260,7 +260,7 @@ fontSmall = pygame.font.Font("MODERNA.ttf", 25)
 fontSmall2 = pygame.font.Font("MODERNA.ttf", 23)
 fontSmaller = pygame.font.Font("MODERNA.ttf", 25)
 
-font_path = pygame.font.match_font("arial")  # Use Arial or a similar font
+font_path = pygame.font.match_font("arial")  
 font2 = pygame.font.Font(font_path, 27)
 
 WHITE = (255, 255, 255)
