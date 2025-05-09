@@ -1,6 +1,4 @@
-# stack items
 # finish health bar/radiation 
-# population and teraform info
 # make kitchen gadgets 
 # make stackable items for storage 
 # make fuel leak/ critical oxigen level for hallway 
@@ -10,15 +8,24 @@
 # task list 
 # fix comms 
 # build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
-# make random roocks generate, make finger generration unique/independent per cave 
 # fix mining glitch if click a lot
 # add pause + leaderboard + main page 
 # if Inventory full make thgs nt dIsapre
 # fast forward while sleeping 
-# add eating noise 
 # make fingers get bigger if within range 
 # flip hammer 
-# 
+# make item being held move in the player hand 
+# fix bug of placing items right when you click them in the inventory 
+# animate energy coming out of solar panels 
+
+## CURRENT TASKS
+# fix crafting door issue 
+# implent random shipments
+# make random roocks generate, make finger generration unique/independent per cave 
+# add eating noise 
+# add pause + leaderboard + main page 
+# population and teraform info
+# MODULATE
 
 import pygame
 import random
@@ -227,10 +234,10 @@ y_offset = 20  # Move down
 
 # 255, 130, 230, 210
 rect_points_basic = [ 
-    (255, 130),  # Top-left
-    (screen_width // 2 + 112 + x_offset, screen_height // 2 + 2 + y_offset),  # Top-right
-    (screen_width // 2 + 32 + x_offset, screen_height // 2 + 55 + y_offset),  # Bottom-right
-    (screen_width // 2 - 130 + x_offset, screen_height // 2 + 38 + y_offset)   # Bottom-left
+    (255, 113),  # Top-left
+    (475, 172),  # Top-right
+    (475, 335),  # Bottom-right
+    (255, 342)   # Bottom-left
 ]
 
 
@@ -1607,7 +1614,7 @@ while running:
         benchRec = pygame.Rect(min_x, min_y, max_x - min_x, max_y - min_y)
         benchRecBasic = pygame.Rect(255, 130, 230, 210)
         pygame.draw.polygon(screen, (255, 0, 0), rect_points, 4) 
-        pygame.draw.polygon(screen, (255, 0, 0), benchRecBasic, 4) 
+        pygame.draw.polygon(screen, (255, 0, 0), rect_points_basic, 4) 
         if clicked and benchRecBasic.collidepoint(mouse_pos):
             current_screen = "bench"
 
