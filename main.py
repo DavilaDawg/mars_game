@@ -192,6 +192,7 @@ cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 1
 
 numOfCows = 2
 numOfFarmers = 2
+numOfParachuteLanders = 1
 numOfCaves = random.randint(1, 4)
 numOfFingers = random.randint(7, 11)
 xPosFinger = random.randint(0, screen_width)
@@ -220,7 +221,8 @@ showHint = False
 itemAvailable = False
 itemBuilt = False
 swapAvailable = False
-thrustersAttached = True
+thrustersAttached = False
+activateThrusters= False
 
 box_rects = []
 
@@ -363,7 +365,7 @@ upgradedWorkbench = pygame.transform.scale(pygame.image.load('./icon/upgradedWor
 monoPropelent = pygame.transform.scale(pygame.image.load('./icon/monoPropelent.png'), (80,80))
 flamingLander = pygame.transform.smoothscale(pygame.image.load('./icon/flamingLander.png'), (80,80))
 lander = pygame.transform.smoothscale(pygame.image.load('./icon/lander.png'), (80,80))
-parachuteLander = pygame.transform.smoothscale(pygame.image.load('./icon/parachuteLander.png'), (100,130))
+parachuteLanderImage = pygame.transform.smoothscale(pygame.image.load('./icon/parachuteLander.png'), (100,130))
 landerAndPayload = pygame.transform.smoothscale(pygame.image.load('./icon/landerAndPayload.png'), (80,80))
 payload = pygame.transform.smoothscale(pygame.image.load('./icon/payload.png'), (110,110))
 launchPad = pygame.transform.smoothscale(pygame.image.load('./icon/launchPad.png'), (300,300))
@@ -754,6 +756,18 @@ farmers= [
     "time_since_last_change": 0,
     }
     for _ in range(numOfFarmers)
+]
+
+parachuteLanders = [
+    {
+        "pos": pygame.Vector2(
+            random.randint(0, screen_width),
+            0
+        ),
+    "speed": random.randint(5, 25),
+    "direction": pygame.Vector2(0, 1), # idk
+    }
+    for _ in range(numOfParachuteLanders)
 ]
 
 caves = [
@@ -1454,17 +1468,30 @@ while running:
 
         print(totalTime)
 
-        if totalTime > 2:
-            if thrustersAttached is not True and totalTime < 5:
-                screen.blit(parachuteLander, (100,100)) # not in front of plaYER???
+        for parachuteLander in parachuteLanders:
+            parachuteLander["pos"] += parachuteLander["direction"] * parachuteLander["speed"] * dt
+            if parachuteLander["pos"].y >= screen_height - 130:
+                parachuteCrash = True 
+        
+            #parachuteLander_rect = pygame.Rect(parachuteLander["pos"].x, parachuteLander["pos"].y, 100, 130)
+            
+            if thrustersAttached is not True and totalTime < 5: # thrusters attached must be in state array 
+                #parachuteLanderRect = pygame.Rect(parachuteLander["pos"].x, parachuteLander["pos"].y, 100,130)
+                screen.blit(parachuteLanderImage, (parachuteLander["pos"].x,parachuteLander["pos"].y)) # not in front of plaYER???
+                #if clicked and parachuteLanderRect.collidepoint(mouse_pos):
+                    #activateThrusters = True 
             elif thrustersAttached: 
-                screen.blit(landerAndPayload, (100,100))
+                screen.blit(landerAndPayload, (parachuteLander["pos"].x,parachuteLander["pos"].y))
             elif totalTime > 5: 
-                screen.blit(brokenCapsle, (100,100))
+                screen.blit(brokenCapsle, (parachuteLander["pos"].x,parachuteLander["pos"].y))
+
+
 
         screen.blit(imageSprite, (player_pos.x,player_pos.y))
 
         if currentBackground == "topRight":
+            screen.blit(hab1, (screen_width-400, 5))
+
             for farmer in farmers:
                 # Wandering 
                 farmer["time_since_last_change"] += dt
@@ -1478,8 +1505,6 @@ while running:
                     farmer["direction"].y *= -1
 
                 screen.blit(astroImg1, (farmer["pos"].x, farmer["pos"].y))
-
-                screen.blit(hab1, (screen_width-400, 5))
             
                 farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
             
