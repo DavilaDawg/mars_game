@@ -17,9 +17,11 @@
 # make item being held move in the player hand 
 # fix bug of placing items right when you click them in the inventory 
 # animate energy coming out of solar panels 
+# refactor naming convention to cammel case 
+# minigames where players have to solve aero problems with tips 
+# monopropelent (low thrust) for packeges, bipropelent (high thrust) for launch vehicle, Cold Gas (very low thrust) for attitude control 
 
 ## CURRENT TASKS
-# fix crafting door issue 
 # implent random shipments
 # make random roocks generate, make finger generration unique/independent per cave 
 # add eating noise 
@@ -218,6 +220,7 @@ showHint = False
 itemAvailable = False
 itemBuilt = False
 swapAvailable = False
+thrustersAttached = True
 
 box_rects = []
 
@@ -327,7 +330,8 @@ caramelApple = pygame.transform.scale(pygame.image.load('./icon/caramel-apple.pn
 grapes = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
 finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (60,60))
 table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
-station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
+#station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
+hab1 = pygame.transform.scale(pygame.image.load("./icon/hab1.png"), (350,350))
 flippedpickAx= pygame.transform.scale(pygame.image.load('./icon/pickax.png'), (40,40))
 pickAx = pygame.transform.flip(flippedpickAx, True, False)
 message = pygame.transform.scale(pygame.image.load('./icon/message.png'), (40,40))
@@ -356,6 +360,16 @@ ice = pygame.transform.scale(pygame.image.load('./icon/ice.png'), (49,49))
 iceMelterUnit = pygame.transform.scale(pygame.image.load('./icon/iceMelterUnit.png'), (49,49))
 waterStorage = pygame.transform.scale(pygame.image.load('./icon/waterStorage.png'), (49,49))
 upgradedWorkbench = pygame.transform.scale(pygame.image.load('./icon/upgradedWorkbench.png'), (49,49))
+monoPropelent = pygame.transform.scale(pygame.image.load('./icon/monoPropelent.png'), (80,80))
+flamingLander = pygame.transform.smoothscale(pygame.image.load('./icon/flamingLander.png'), (80,80))
+lander = pygame.transform.smoothscale(pygame.image.load('./icon/lander.png'), (80,80))
+parachuteLander = pygame.transform.smoothscale(pygame.image.load('./icon/parachuteLander.png'), (100,130))
+landerAndPayload = pygame.transform.smoothscale(pygame.image.load('./icon/landerAndPayload.png'), (80,80))
+payload = pygame.transform.smoothscale(pygame.image.load('./icon/payload.png'), (110,110))
+launchPad = pygame.transform.smoothscale(pygame.image.load('./icon/launchPad.png'), (300,300))
+launchPadWithRocket = pygame.transform.smoothscale(pygame.image.load('./icon/launchPadWithRocket2.png'), (300,300))
+expensiveHab = pygame.transform.scale(pygame.image.load('./icon/expensiveHab.png'), (80,80))
+brokenCapsle = pygame.transform.smoothscale(pygame.image.load('./icon/brokenCapsle.png'), (100,100))
 
 collectible_items = {
     "game": [
@@ -1346,7 +1360,7 @@ while running:
                         selected_slot_index= None
                         currentInventoryItem = None
 
-    if current_screen == "game":       
+    if current_screen == "game":     
         if currentBackground == "topRight":
             screen.blit(topRight, (0,0))
             if ufo_rect.left == 0:  
@@ -1437,8 +1451,19 @@ while running:
     player_pos.y = max(35, min(player_pos.y, screen_height - playerSize))
 
     if current_screen == "game":       
-        #screen.blit(playerImg, (player_pos.x, player_pos.y))
+
+        print(totalTime)
+
+        if totalTime > 2:
+            if thrustersAttached is not True and totalTime < 5:
+                screen.blit(parachuteLander, (100,100)) # not in front of plaYER???
+            elif thrustersAttached: 
+                screen.blit(landerAndPayload, (100,100))
+            elif totalTime > 5: 
+                screen.blit(brokenCapsle, (100,100))
+
         screen.blit(imageSprite, (player_pos.x,player_pos.y))
+
         if currentBackground == "topRight":
             for farmer in farmers:
                 # Wandering 
@@ -1454,7 +1479,7 @@ while running:
 
                 screen.blit(astroImg1, (farmer["pos"].x, farmer["pos"].y))
 
-                screen.blit(station, (screen_width-200, 120))
+                screen.blit(hab1, (screen_width-400, 5))
             
                 farmer_rect = pygame.Rect(farmer["pos"].x, farmer["pos"].y, farmerSize, farmerSize)
             
@@ -1474,8 +1499,8 @@ while running:
                         if not muted:
                             play_music("mine", loop=True, volume=3)
 
-            enter_station_rect = pygame.Rect(screen_width-260, 55, 230, 60)  
-            stationRect = pygame.Rect(screen_width-200, 120, 100,100)
+            enter_station_rect = pygame.Rect(screen_width-400, 55, 230, 60)  
+            stationRect = pygame.Rect(screen_width-350, 150, 100,100)
             stationText = font.render('Enter station', True, (100, 100, 50)) 
             screen.blit(imageSprite, (player_pos.x, player_pos.y)) 
 
@@ -1646,7 +1671,6 @@ while running:
             if finger_rect.colliderect(ufo_rect): 
                 mouse_pos = pygame.mouse.get_pos()  
                 if finger_rect.collidepoint(mouse_pos):
-                    print("collide")
                     if heldItem == "pickAx":
                         print("waiting for click")
                         if clicked: 
