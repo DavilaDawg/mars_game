@@ -20,6 +20,7 @@
 # refactor naming convention to cammel case 
 # minigames where players have to solve aero problems with tips 
 # monopropelent (low thrust) for packeges, bipropelent (high thrust) for launch vehicle, Cold Gas (very low thrust) for attitude control 
+# make it so that when water and food is zero health starts going down and you only die when health is zero 
 
 ## CURRENT TASKS
 # implent random shipments
@@ -192,7 +193,7 @@ cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 1
 
 numOfCows = 2
 numOfFarmers = 2
-numOfParachuteLanders = 1
+numOfParachuteLanders = 2
 numOfCaves = random.randint(1, 4)
 numOfFingers = random.randint(7, 11)
 xPosFinger = random.randint(0, screen_width)
@@ -764,8 +765,10 @@ parachuteLanders = [
             random.randint(0, screen_width),
             0
         ),
-    "speed": random.randint(5, 25),
-    "direction": pygame.Vector2(0, 1), # idk
+    "speed": random.randint(70, 90),
+    "direction": pygame.Vector2(0, 1), 
+    "crashed": False,
+    "activateThrusters": False
     }
     for _ in range(numOfParachuteLanders)
 ]
@@ -1466,24 +1469,26 @@ while running:
 
     if current_screen == "game":       
 
-        print(totalTime)
-
         for parachuteLander in parachuteLanders:
-            parachuteLander["pos"] += parachuteLander["direction"] * parachuteLander["speed"] * dt
-            if parachuteLander["pos"].y >= screen_height - 130:
-                parachuteCrash = True 
-        
-            #parachuteLander_rect = pygame.Rect(parachuteLander["pos"].x, parachuteLander["pos"].y, 100, 130)
+            if parachuteLander["crashed"] == False: 
+                parachuteLander["pos"] += parachuteLander["direction"] * parachuteLander["speed"] * dt
+            if parachuteLander["pos"].y >= screen_height - 115:
+                parachuteLander["crashed"] = True 
+
+            parachuteLander_rect = pygame.Rect(parachuteLander["pos"].x, parachuteLander["pos"].y, 100, 130)
             
-            if thrustersAttached is not True and totalTime < 5: # thrusters attached must be in state array 
-                #parachuteLanderRect = pygame.Rect(parachuteLander["pos"].x, parachuteLander["pos"].y, 100,130)
+            if parachuteLander["activateThrusters"] == False and totalTime < 6: # thrusters attached must be in state array 
                 screen.blit(parachuteLanderImage, (parachuteLander["pos"].x,parachuteLander["pos"].y)) # not in front of plaYER???
-                #if clicked and parachuteLanderRect.collidepoint(mouse_pos):
-                    #activateThrusters = True 
-            elif thrustersAttached: 
-                screen.blit(landerAndPayload, (parachuteLander["pos"].x,parachuteLander["pos"].y))
-            elif totalTime > 5: 
-                screen.blit(brokenCapsle, (parachuteLander["pos"].x,parachuteLander["pos"].y))
+                if clicked and parachuteLander_rect.collidepoint(mouse_pos):
+                    parachuteLander["activateThrusters"]= True 
+            elif parachuteLander["activateThrusters"] and parachuteLander["crashed"] == False: 
+                screen.blit(landerAndPayload, (parachuteLander["pos"].x,parachuteLander["pos"].y + 40))
+            elif parachuteLander["activateThrusters"] == False and totalTime > 6: 
+                parachuteLander["crashed"] = True 
+                screen.blit(brokenCapsle, (parachuteLander["pos"].x, parachuteLander["pos"].y + 27))
+            elif parachuteLander["crashed"] == True: 
+                screen.blit(brokenCapsle, (parachuteLander["pos"].x, parachuteLander["pos"].y+20))
+
 
 
 
