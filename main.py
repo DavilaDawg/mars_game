@@ -74,6 +74,7 @@ bedroom = pygame.transform.scale(pygame.image.load("./icon/bedroom.jpg"), (scree
 kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_width, screen_height))
 workshop = pygame.transform.scale(pygame.image.load('./icon/workshop.webp'), (screen_width, screen_height))
 workbench1 = pygame.transform.scale(pygame.image.load('./icon/workbench1.jpg'), (screen_width, screen_height))
+inPayload = pygame.transform.scale(pygame.image.load('./icon/payloadLoot.png'), (screen_width, screen_height))
 
 tileSize = 40
 playerSize = 60
@@ -83,8 +84,6 @@ farmerSize= 60
 spritesheet = pygame.image.load("./icon/spriteSheet.png").convert_alpha()
 spriteWidth = 25
 spriteHeight = 34.7
-
-#spriteImage = pygame.transform.scale(spritesheet.subsurface(pygame.Rect(5, 60,25, 33)), (playerSize, playerSize)) # dimentions unsure 
 
 startRowMap = 5 
 spacingX= 7
@@ -368,7 +367,7 @@ flamingLander = pygame.transform.smoothscale(pygame.image.load('./icon/flamingLa
 lander = pygame.transform.smoothscale(pygame.image.load('./icon/lander.png'), (80,80))
 parachuteLanderImage = pygame.transform.smoothscale(pygame.image.load('./icon/parachuteLander.png'), (100,130))
 landerAndPayload = pygame.transform.smoothscale(pygame.image.load('./icon/landerAndPayload.png'), (80,80))
-payload = pygame.transform.smoothscale(pygame.image.load('./icon/payload.png'), (110,110))
+payload = pygame.transform.smoothscale(pygame.image.load('./icon/payload.png'), (70,70))
 launchPad = pygame.transform.smoothscale(pygame.image.load('./icon/launchPad.png'), (300,300))
 launchPadWithRocket = pygame.transform.smoothscale(pygame.image.load('./icon/launchPadWithRocket2.png'), (300,300))
 expensiveHab = pygame.transform.scale(pygame.image.load('./icon/expensiveHab.png'), (80,80))
@@ -612,11 +611,6 @@ bench_items = [
     #         "display": "Backpack"
     #         "materialsNeeded" : [purpleRock],
     #     },{
-    #         "image": backpack,
-    #         "name": "backpack",
-    #         "display": "Backpack"
-    #         "materialsNeeded" : [purpleRock],
-    #     },{
     #         "image": atmosphericWaterExtractor,
     #         "name": "atmosphericWaterExtractor",
     #         "materialsNeeded" : [purpleRock, purpleRock],
@@ -768,7 +762,8 @@ parachuteLanders = [
     "speed": random.randint(70, 90),
     "direction": pygame.Vector2(0, 1), 
     "crashed": False,
-    "activateThrusters": False
+    "activateThrusters": False,
+    "landed": False,
     }
     for _ in range(numOfParachuteLanders)
 ]
@@ -1126,7 +1121,7 @@ last_update_time = time.time()
 while running: 
     dt = clock.tick(60) / 1000
     totalTime += dt 
-    ufo_rect = pygame.Rect(player_pos.x, player_pos.y, playerSize, playerSize)
+    player_rect = pygame.Rect(player_pos.x, player_pos.y, playerSize, playerSize)
     mouse_pos = pygame.mouse.get_pos()
     clicked = False
 
@@ -1380,34 +1375,34 @@ while running:
     if current_screen == "game":     
         if currentBackground == "topRight":
             screen.blit(topRight, (0,0))
-            if ufo_rect.left == 0:  
+            if player_rect.left == 0:  
                 change_background("topLeft")
                 player_pos.x = screen_width - playerSize
-            elif ufo_rect.bottom >= screen_height:  
+            elif player_rect.bottom >= screen_height:  
                 change_background("bottomRight")
                 player_pos.y = 35
 
         elif currentBackground == "topLeft":
-            if ufo_rect.right >= screen_width: 
+            if player_rect.right >= screen_width: 
                 change_background("topRight")
                 player_pos.x = 0
-            elif ufo_rect.bottom >= screen_height:  
+            elif player_rect.bottom >= screen_height:  
                 change_background("bottomLeft")
                 player_pos.y = 35
 
         elif currentBackground == "bottomRight":
-            if ufo_rect.left == 0:  
+            if player_rect.left == 0:  
                 change_background("bottomLeft")
                 player_pos.x = screen_width - playerSize
-            elif ufo_rect.top == 35: 
+            elif player_rect.top == 35: 
                 change_background("topRight")
                 player_pos.y = screen_height - playerSize
 
         elif currentBackground == "bottomLeft":
-            if ufo_rect.right >= screen_width:  
+            if player_rect.right >= screen_width:  
                 change_background("bottomRight")
                 player_pos.x = 0
-            elif ufo_rect.top == 35: 
+            elif player_rect.top == 35: 
                 change_background("topLeft")
                 player_pos.y = screen_height - playerSize
 
@@ -1420,7 +1415,7 @@ while running:
         elif currentBackground == "bottomLeft":
             screen.blit(bottomLeft, (0,0))
 
-    check_item_collision(ufo_rect)
+    check_item_collision(player_rect)
 
     # Player movement
     keys = pygame.key.get_pressed()
@@ -1470,7 +1465,7 @@ while running:
     if current_screen == "game":       
 
         for parachuteLander in parachuteLanders:
-            if parachuteLander["crashed"] == False: 
+            if parachuteLander["crashed"] == False and parachuteLander["landed"] == False: 
                 parachuteLander["pos"] += parachuteLander["direction"] * parachuteLander["speed"] * dt
             if parachuteLander["pos"].y >= screen_height - 115:
                 parachuteLander["crashed"] = True 
@@ -1480,17 +1475,23 @@ while running:
             if parachuteLander["activateThrusters"] == False and totalTime < 6: # thrusters attached must be in state array 
                 screen.blit(parachuteLanderImage, (parachuteLander["pos"].x,parachuteLander["pos"].y)) # not in front of plaYER???
                 if clicked and parachuteLander_rect.collidepoint(mouse_pos):
-                    parachuteLander["activateThrusters"]= True 
+                    parachuteLander["activateThrusters"] = True 
+                    parachuteLander["speed"] = random.randint(15,40)
+            elif parachuteLander["activateThrusters"] == True and totalTime > 7: 
+                parachuteLander["landed"] = True 
+                screen.blit(payload, (parachuteLander["pos"].x, parachuteLander["pos"].y + 27))
             elif parachuteLander["activateThrusters"] and parachuteLander["crashed"] == False: 
                 screen.blit(landerAndPayload, (parachuteLander["pos"].x,parachuteLander["pos"].y + 40))
-            elif parachuteLander["activateThrusters"] == False and totalTime > 6: 
+            elif parachuteLander["activateThrusters"] == False and totalTime > 4: 
                 parachuteLander["crashed"] = True 
                 screen.blit(brokenCapsle, (parachuteLander["pos"].x, parachuteLander["pos"].y + 27))
             elif parachuteLander["crashed"] == True: 
-                screen.blit(brokenCapsle, (parachuteLander["pos"].x, parachuteLander["pos"].y+20))
+                screen.blit(brokenCapsle, (parachuteLander["pos"].x, parachuteLander["pos"].y + 20)) 
 
-
-
+            if parachuteLander["landed"]: 
+                if clicked and parachuteLander_rect.collidepoint(mouse_pos):
+                    if parachuteLander_rect.colliderect(player_rect): 
+                        current_screen = "inPayload"
 
         screen.blit(imageSprite, (player_pos.x,player_pos.y))
 
@@ -1519,7 +1520,7 @@ while running:
                 mineText = font.render('Enter cave', True, (100, 100, 50)) 
                 cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
             
-                if ufo_rect.colliderect(cave_rect):  
+                if player_rect.colliderect(cave_rect):  
                     mining = True 
                     pygame.draw.rect(screen, "black", enter_cave_rect, 50)
                     screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
@@ -1565,7 +1566,7 @@ while running:
                             pygame.draw.rect(screen, "black", (20, 350, screen_width-40, 60), 50)
                             screen.blit(crewText, (45, screen_height/2 +3)) 
 
-        if ufo_rect.colliderect(stationRect):  
+        if player_rect.colliderect(stationRect):  
             pygame.draw.rect(screen, "black", enter_station_rect, 50)
             screen.blit(stationText, (enter_station_rect.x + 7, enter_station_rect.y + 10)) 
             keys = pygame.key.get_pressed()
@@ -1698,7 +1699,7 @@ while running:
         
         for finger in fingers: 
             finger_rect = pygame.Rect(finger["pos"].x, finger["pos"].y, 100, 100)
-            if finger_rect.colliderect(ufo_rect): 
+            if finger_rect.colliderect(player_rect): 
                 mouse_pos = pygame.mouse.get_pos()  
                 if finger_rect.collidepoint(mouse_pos):
                     if heldItem == "pickAx":
@@ -1759,6 +1760,10 @@ while running:
                     item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
                     screen.blit(item_img, (slot.x, slot.y))
     
+    if current_screen == "inPayload": 
+        last_screen = "game"
+        screen.blit(inPayload, (0, 0))  
+
 
     if current_screen is not "game":
         pygame.draw.rect(screen, "black", back_rect, 50)
