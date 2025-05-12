@@ -182,8 +182,6 @@ if value >= len(spriteImage):
 
 imageSprite = spriteImage[0]
 
-
-
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
 astroImg1 = pygame.transform.scale(pygame.image.load('./icon/astronaut3.png'), (cowSize, cowSize))
 astroImg2 = pygame.transform.scale(pygame.image.load('./icon/astronaut2.png'), (farmerSize, farmerSize))
@@ -764,6 +762,7 @@ parachuteLanders = [
     "crashed": False,
     "activateThrusters": False,
     "landed": False,
+    "collectedLoot": False, 
     }
     for _ in range(numOfParachuteLanders)
 ]
@@ -1477,10 +1476,10 @@ while running:
                 if clicked and parachuteLander_rect.collidepoint(mouse_pos):
                     parachuteLander["activateThrusters"] = True 
                     parachuteLander["speed"] = random.randint(15,40)
-            elif parachuteLander["activateThrusters"] == True and totalTime > 7: 
+            elif parachuteLander["activateThrusters"] == True and totalTime > 7 and parachuteLander["collectedLoot"] == False: 
                 parachuteLander["landed"] = True 
                 screen.blit(payload, (parachuteLander["pos"].x, parachuteLander["pos"].y + 27))
-            elif parachuteLander["activateThrusters"] and parachuteLander["crashed"] == False: 
+            elif parachuteLander["activateThrusters"] and parachuteLander["crashed"] == False and parachuteLander["collectedLoot"] == False: 
                 screen.blit(landerAndPayload, (parachuteLander["pos"].x,parachuteLander["pos"].y + 40))
             elif parachuteLander["activateThrusters"] == False and totalTime > 4: 
                 parachuteLander["crashed"] = True 
@@ -1492,6 +1491,7 @@ while running:
                 if clicked and parachuteLander_rect.collidepoint(mouse_pos):
                     if parachuteLander_rect.colliderect(player_rect): 
                         current_screen = "inPayload"
+                        parachuteLander["collectedLoot"] = True
 
         screen.blit(imageSprite, (player_pos.x,player_pos.y))
 
