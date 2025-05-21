@@ -1165,7 +1165,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYUP:
-            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN:
+            if event.key == pygame.K_a or event.key == pygame.K_d or event.key == pygame.K_w or event.key == pygame.K_s:
                 moving = False
                 value = 0
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -1418,25 +1418,25 @@ while running:
 
     # Player movement
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
+    if keys[pygame.K_a]:
         player_pos.x -= 215 * dt
         moving = True
         idleValue=0
         idleSprite = spriteIdleLeft
         spriteImage = spriteWalkLeft
-    if keys[pygame.K_RIGHT]:
+    if keys[pygame.K_d]:
         player_pos.x += 215 * dt
         moving =True
         idleValue=0
         idleSprite = spriteIdleRight
         spriteImage = spriteWalkRight
-    if keys[pygame.K_UP]:
+    if keys[pygame.K_w]:
         player_pos.y -= 215 * dt
         moving = True 
         idleValue= 0
         idleSprite = spriteIdleUp 
         spriteImage = spriteWalkUp
-    if keys[pygame.K_DOWN]:
+    if keys[pygame.K_s]:
         player_pos.y += 215 * dt
         moving= True
         idleValue = 0 
@@ -1788,8 +1788,8 @@ while running:
         pygame.draw.rect(screen, "black", back_rect, 50)
         backText = font.render('BACK', True, (100, 100, 50))
         screen.blit(backText, (12, 47))
-        if back_rect.collidepoint(mouse_pos):
-                current_screen = last_screen
+        if back_rect.collidepoint(mouse_pos) and clicked:
+            current_screen = last_screen
 
     # health bar
     pygame.draw.rect(screen, RED, (healthPos[0], healthPos[1] +5, health * (BAR_WIDTH / 100), BAR_HEIGHT))
