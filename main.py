@@ -1168,6 +1168,8 @@ while running:
             if event.key == pygame.K_a or event.key == pygame.K_d or event.key == pygame.K_w or event.key == pygame.K_s:
                 moving = False
                 value = 0
+            if event.key == pygame.K_ESCAPE:
+                current_screen = last_screen
         elif event.type == pygame.MOUSEBUTTONDOWN:
             clicked = True 
             if event.button == 1:
