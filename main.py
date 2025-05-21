@@ -1502,7 +1502,7 @@ while running:
             elif parachuteLander["crashed"] == True: 
                 screen.blit(brokenCapsle, (parachuteLander["pos"].x, parachuteLander["pos"].y + 20)) 
 
-            if parachuteLander["landed"]: 
+            if parachuteLander["landed"] and parachuteLander["collectedLoot"] == False: 
                 if clicked and parachuteLander_rect.collidepoint(mouse_pos):
                     if parachuteLander_rect.colliderect(player_rect): 
                         current_screen = "inPayload"
@@ -1782,6 +1782,7 @@ while running:
         collect_rect = pygame.Rect(400, 472, 375, 85)
         if collect_rect.collidepoint(mouse_pos) and clicked:
             print("collecting")
+            current_screen = "game"
 
     if current_screen is not "game" and current_screen is not "inPayload":
         pygame.draw.rect(screen, "black", back_rect, 50)
