@@ -191,7 +191,7 @@ cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 1
 
 numOfCows = 2
 numOfFarmers = 2
-numOfCaves = random.randint(1, 4)
+numOfCaves = 1
 numOfFingers = random.randint(7, 11)
 xPosFinger = random.randint(0, screen_width)
 yPosFinger = random.randint(0, screen_height)
@@ -1777,7 +1777,6 @@ while running:
                     item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
                     screen.blit(item_img, (slot.x, slot.y))
     
-
     if current_screen == "inPayload": 
         last_screen = "game"
         screen.blit(inPayload, (0, 0))  
