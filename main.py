@@ -21,9 +21,10 @@
 # minigames where players have to solve aero problems with tips 
 # monopropelent (low thrust) for packeges, bipropelent (high thrust) for launch vehicle, Cold Gas (very low thrust) for attitude control 
 # make it so that when water and food is zero health starts going down and you only die when health is zero 
+# Fix health and add way to gain health 
 
 ## CURRENT TASKS
-# implent random shipments
+# implent gift items in payload
 # make random roocks generate, make finger generration unique/independent per cave 
 # add eating noise 
 # add pause + leaderboard + main page 
@@ -190,11 +191,15 @@ cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 1
 
 numOfCows = 2
 numOfFarmers = 2
-numOfParachuteLanders = 2
 numOfCaves = random.randint(1, 4)
 numOfFingers = random.randint(7, 11)
 xPosFinger = random.randint(0, screen_width)
 yPosFinger = random.randint(0, screen_height)
+
+parachuteLanders = []
+parachute_spawn_delay = 1
+next_parachute_spawn_time = 10
+max_parachutes = 10
 
 # States
 game_over = False
@@ -297,8 +302,9 @@ health = 100
 hunger = 100
 thirst = 100  #city builds, increase decay for this 1
 # energy = 100 
-DECAY_RATE = .3
+DECAY_RATE = 0.3
 DECAY_RATE_THIRST = 0.4
+DECAY_RATE_HEALTH = 0.1
 
 increaseHunger = 40
 increaseThirst= 5 # as 
@@ -751,22 +757,6 @@ farmers= [
     for _ in range(numOfFarmers)
 ]
 
-parachuteLanders = [
-    {
-        "pos": pygame.Vector2(
-            random.randint(0, screen_width),
-            0
-        ),
-    "speed": random.randint(70, 90),
-    "direction": pygame.Vector2(0, 1), 
-    "crashed": False,
-    "activateThrusters": False,
-    "landed": False,
-    "collectedLoot": False, 
-    }
-    for _ in range(numOfParachuteLanders)
-]
-
 caves = [
     {
     "pos": pygame.Vector2(
@@ -869,7 +859,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["iron", "iron","iron", "purpleRock","purpleRock", None, None, None]
+inventory_contents = ["iron", "iron","iron", "purpleRock","purpleRock", "waterStorage", "waterStorage", None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -1131,7 +1121,18 @@ while running:
         # energy = max(0, energy - DECAY_RATE)
         last_update_time = current_time
 
-    if hunger == 0 or thirst ==0 or health ==0: 
+    if hunger == 0 or thirst == 0: 
+        health = max(0, health-DECAY_RATE_HEALTH)
+        last_update_time = current_time
+
+    # FIX!!!!!!!!!
+    if hunger != 0 and thirst != 0 and health != 100:
+        print(current_time - last_update_time) 
+        if current_time - last_update_time >= 0.5: 
+            heath = min(health+DECAY_RATE_HEALTH, 100)
+            #print(health)
+
+    if health == 0: 
         game_over=True
 
     # Emit bolts for each solar panel placed
@@ -1205,7 +1206,6 @@ while running:
                             currentInventoryItem = None
 
             if back_rect.collidepoint(mouse_pos):
-                current_screen = last_screen
                 if last_screen == "game": 
                     showHint = False
                 if current_screen == "game": 
@@ -1461,9 +1461,24 @@ while running:
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
     player_pos.y = max(35, min(player_pos.y, screen_height - playerSize))
 
+    if totalTime >= next_parachute_spawn_time and len(parachuteLanders) < max_parachutes:
+        parachuteLanders.append({
+            "pos": pygame.Vector2(random.randint(0, screen_width), 0),
+            "speed": random.randint(70, 90),
+            "direction": pygame.Vector2(0, 1),
+            "crashed": False,
+            "activateThrusters": False,
+            "landed": False,
+            "collectedLoot": False,
+            "spawnTime": totalTime,
+        })
+        next_parachute_spawn_time += random.choice([3, 10, 30, 60, 120])
+
     if current_screen == "game":       
 
         for parachuteLander in parachuteLanders:
+            time_alive = totalTime - parachuteLander["spawnTime"]
+
             if parachuteLander["crashed"] == False and parachuteLander["landed"] == False: 
                 parachuteLander["pos"] += parachuteLander["direction"] * parachuteLander["speed"] * dt
             if parachuteLander["pos"].y >= screen_height - 115:
@@ -1471,12 +1486,12 @@ while running:
 
             parachuteLander_rect = pygame.Rect(parachuteLander["pos"].x, parachuteLander["pos"].y, 100, 130)
             
-            if parachuteLander["activateThrusters"] == False and totalTime < 6: # thrusters attached must be in state array 
+            if parachuteLander["activateThrusters"] == False and time_alive < 6: # thrusters attached must be in state array 
                 screen.blit(parachuteLanderImage, (parachuteLander["pos"].x,parachuteLander["pos"].y)) # not in front of plaYER???
                 if clicked and parachuteLander_rect.collidepoint(mouse_pos):
                     parachuteLander["activateThrusters"] = True 
                     parachuteLander["speed"] = random.randint(15,40)
-            elif parachuteLander["activateThrusters"] == True and totalTime > 7 and parachuteLander["collectedLoot"] == False: 
+            elif parachuteLander["activateThrusters"] == True and time_alive > 7 and parachuteLander["collectedLoot"] == False: 
                 parachuteLander["landed"] = True 
                 screen.blit(payload, (parachuteLander["pos"].x, parachuteLander["pos"].y + 27))
             elif parachuteLander["activateThrusters"] and parachuteLander["crashed"] == False and parachuteLander["collectedLoot"] == False: 
@@ -1760,15 +1775,20 @@ while running:
                     item_img = pygame.transform.scale(item_images[item_name], (inventory_slot_size, inventory_slot_size))
                     screen.blit(item_img, (slot.x, slot.y))
     
+
     if current_screen == "inPayload": 
         last_screen = "game"
         screen.blit(inPayload, (0, 0))  
+        collect_rect = pygame.Rect(400, 472, 375, 85)
+        if collect_rect.collidepoint(mouse_pos) and clicked:
+            print("collecting")
 
-
-    if current_screen is not "game":
+    if current_screen is not "game" and current_screen is not "inPayload":
         pygame.draw.rect(screen, "black", back_rect, 50)
         backText = font.render('BACK', True, (100, 100, 50))
         screen.blit(backText, (12, 47))
+        if back_rect.collidepoint(mouse_pos):
+                current_screen = last_screen
 
     # health bar
     pygame.draw.rect(screen, RED, (healthPos[0], healthPos[1] +5, health * (BAR_WIDTH / 100), BAR_HEIGHT))
