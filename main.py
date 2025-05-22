@@ -1,18 +1,17 @@
 # finish health bar/radiation 
-# make kitchen gadgets 
 # make stackable items for storage 
 # make fuel leak/ critical oxigen level for hallway 
-# make farming 
 # assignable tasks for crew 
 # skills for crew 
 # task list 
 # fix comms 
-# build farm, start with only space food, build 2 stations, then tell ground to send the next crew??
+# make crew appear when population grows
+# more people mean more money and ores and boosts 
+# build 2 stations, then tell ground to send the next crew??
 # fix mining glitch if click a lot
 # add pause + leaderboard + main page 
 # if Inventory full make thgs nt dIsapre
 # fast forward while sleeping 
-# make fingers get bigger if within range 
 # flip hammer 
 # make item being held move in the player hand 
 # fix bug of placing items right when you click them in the inventory 
@@ -20,16 +19,18 @@
 # refactor naming convention to cammel case 
 # minigames where players have to solve aero problems with tips 
 # monopropelent (low thrust) for packeges, bipropelent (high thrust) for launch vehicle, Cold Gas (very low thrust) for attitude control 
-# make it so that when water and food is zero health starts going down and you only die when health is zero 
 # Fix health and add way to gain health 
-
-## CURRENT TASKS
-# implent gift items in payload
-# make random roocks generate, make finger generration unique/independent per cave 
-# add eating noise 
-# add pause + leaderboard + main page 
 # population and teraform info
 # MODULATE
+
+
+## CURRENT TASKS
+# make fingers get bigger if within range 
+# REMOVE enter cave only click to enter 
+# remove unnessisary code for clickcount for fingers 
+# implent gift items in payload
+# add eating noise 
+# add pause + leaderboard + main page 
 
 import pygame
 import random
@@ -186,13 +187,13 @@ imageSprite = spriteImage[0]
 playerImg = pygame.transform.scale(pygame.image.load('./icon/astronaut.png'), (playerSize, playerSize))
 astroImg1 = pygame.transform.scale(pygame.image.load('./icon/astronaut3.png'), (cowSize, cowSize))
 astroImg2 = pygame.transform.scale(pygame.image.load('./icon/astronaut2.png'), (farmerSize, farmerSize))
-cave1Img = pygame.transform.scale(pygame.image.load('./icon/cave1.png'), (100, 100))
-cave2Img = pygame.transform.scale(pygame.image.load('./icon/cave2.png'), (100, 100))
+cave1Img = pygame.transform.smoothscale(pygame.image.load('./icon/cave.png'), (100, 100))
+cave2Img = pygame.transform.smoothscale(pygame.image.load('./icon/cave2.png'), (100, 100))
 
 numOfCows = 2
 numOfFarmers = 2
 numOfCaves = 1
-numOfFingers = random.randint(7, 11)
+numOfFingers = random.randint(11, 15)
 xPosFinger = random.randint(0, screen_width)
 yPosFinger = random.randint(0, screen_height)
 
@@ -468,6 +469,8 @@ collectible_items = {
         }
     ],
 }
+
+weights = [0.4, 0.4, 0.3, 0.2] # For ores 
 
 item_images = {
     "flippedBannana": flippedBannana, 
@@ -769,16 +772,17 @@ caves = [
 
 fingers = [
     {
-    "pos": pygame.Vector2(
-             random.randint(100, screen_width),
-            random.randint(0, screen_height - 200) 
+        "pos": pygame.Vector2(
+                random.randint(100, screen_width),
+                random.randint(0, screen_height - 200) 
         ),
-    "clickCount": 0,
-    "rockPresent": False,
-    "rockCollected": False,
-    "collected": False,
-    "last_click_time": 0,
-    "image": finger
+        "clickCount": 0,
+        "rockPresent": False,
+        "rockCollected": False,
+        "collected": False,
+        "last_click_time": 0,
+        "image": finger, 
+        "assignedCollectible": random.choices(collectible_items["insideCave1"], weights=weights, k=1)[0],
     }
     for _ in range(numOfFingers)
 ]
@@ -859,7 +863,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["iron", "iron","iron", "purpleRock","purpleRock", "waterStorage", "waterStorage", None]
+inventory_contents = ["iron", "pickAx","purpleRock", None ,None , None, None , None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -1725,22 +1729,24 @@ while running:
                             print("Mouse clicked")
                             finger["clickCount"] += 1
                             finger["last_click_time"] = pygame.time.get_ticks() 
-                        if finger["clickCount"] >= 3:
+                        if finger["clickCount"] == 1:
                             finger["rockPresent"] = True  
                     else: 
                         if clicked: 
                             showHint = True
 
             if finger["rockPresent"] and not finger["rockCollected"]: 
-                screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))
-
-                current_time = pygame.time.get_ticks()
+                collectible = finger["assignedCollectible"]
+                if collectible:
+                    screen.blit(collectible["goodImage"], (finger["pos"].x, finger["pos"].y))
+                else:
+                    screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))                
                 
+                current_time = pygame.time.get_ticks()
                 elapsed_time = current_time - finger.get("last_click_time", 0)
-                print(f"Elapsed Time: {elapsed_time} ms")
-
+                
                 if elapsed_time < 1:
-                    add_to_inventory(collectible_items["insideCave1"][0])
+                    add_to_inventory(collectible)
                 if elapsed_time > 500:
                     print("Rock collected after 1 second")
                     finger["rockCollected"] = True 
