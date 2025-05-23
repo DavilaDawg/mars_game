@@ -22,15 +22,21 @@
 # Fix health and add way to gain health 
 # population and teraform info
 # MODULATE
+# Add tutorial 
 
 
 ## CURRENT TASKS
+# add mining fearure 
+# pixax hint only if havnt mined yet 
+# deslect item when ging to main game to prevent placing it right away 
+# add scavange scrap metals
 # make fingers get bigger if within range 
 # REMOVE enter cave only click to enter 
 # remove unnessisary code for clickcount for fingers 
 # implent gift items in payload
 # add eating noise 
 # add pause + leaderboard + main page 
+# Fix health and add way to gain health 
 
 import pygame
 import random
@@ -355,8 +361,8 @@ thirsty = pygame.transform.scale(pygame.image.load('./icon/thirsty.png'), (30,30
 forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'), (30,30))
 healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (30,30))
 energyImg = pygame.transform.scale(pygame.image.load('./icon/energy.png'), (30,30))
-volume = pygame.transform.scale(pygame.image.load('./icon/volume.png'), (40,40))
-mute = pygame.transform.scale(pygame.image.load('./icon/volumeOff.png'), (40,40))
+volume = pygame.transform.scale(pygame.image.load('./icon/volume.png'), (35,35))
+mute = pygame.transform.scale(pygame.image.load('./icon/volumeOff.png'), (35,35))
 leftArrow = pygame.transform.scale(pygame.image.load('./icon/leftArrow.png'), (80,80))
 rightArrow = pygame.transform.scale(pygame.image.load('./icon/rightArrow.png'), (80,80))
 hoe =pygame.transform.scale(pygame.image.load('./icon/hoe.png'), (40,40))
@@ -377,6 +383,16 @@ launchPad = pygame.transform.smoothscale(pygame.image.load('./icon/launchPad.png
 launchPadWithRocket = pygame.transform.smoothscale(pygame.image.load('./icon/launchPadWithRocket2.png'), (300,300))
 expensiveHab = pygame.transform.scale(pygame.image.load('./icon/expensiveHab.png'), (80,80))
 brokenCapsle = pygame.transform.smoothscale(pygame.image.load('./icon/brokenCapsle.png'), (100,100))
+miner1 = pygame.transform.smoothscale(pygame.image.load('./icon/miner1.png'), (100,100))
+miner2 = pygame.transform.smoothscale(pygame.image.load('./icon/miner2.png'), (100,100))
+miner3 = pygame.transform.smoothscale(pygame.image.load('./icon/miner3.png'), (100,100))
+miner4 = pygame.transform.smoothscale(pygame.image.load('./icon/miner4.png'), (100,100))
+miner5 = pygame.transform.smoothscale(pygame.image.load('./icon/miner5.png'), (100,100))
+miner6 = pygame.transform.smoothscale(pygame.image.load('./icon/miner6.png'), (100,100))
+money = pygame.transform.smoothscale(pygame.image.load('./icon/moneyIcon.png'), (40,40))
+people = pygame.transform.smoothscale(pygame.image.load('./icon/peopleIcon.png'), (40,40))
+clockIcon = pygame.transform.smoothscale(pygame.image.load('./icon/clockIcon.png'), (40,40))
+ore = pygame.transform.smoothscale(pygame.image.load('./icon/ore.png'), (40,30))
 
 collectible_items = {
     "game": [
@@ -494,6 +510,12 @@ item_images = {
     "bolt":bolt,
     "solarPanel": solarPanel, 
     "waterStorage": waterStorage,
+    "miner1" : miner1,
+    "miner2" : miner2,
+    "miner3" : miner3,
+    "miner4" : miner4,
+    "miner5" : miner5,
+    "miner6" : miner6,
     "upgradedWorkbench": upgradedWorkbench,
 }
 
@@ -591,6 +613,14 @@ bench_items = [
       {"image": waterStorage,
      "name": "waterStorage",
      "display": "Water Pump",
+    # "materialsNeeded" : [purpleRock, wrench, bolt, bolt, bolt],
+    # "materialsNeededName" : ["purpleRock", "wrench", "bolt", "bolt", "bolt"],
+    "materialsNeeded" : [purpleRock],
+    "materialsNeededName" : ["purpleRock"],
+     }, 
+     {"image": miner1,
+     "name": "miner1",
+     "display": "Mining Rig",
     # "materialsNeeded" : [purpleRock, wrench, bolt, bolt, bolt],
     # "materialsNeededName" : ["purpleRock", "wrench", "bolt", "bolt", "bolt"],
     "materialsNeeded" : [purpleRock],
@@ -724,14 +754,22 @@ bench_items = [
 #     # "asteroidRedirector":asteroidRedirector,
 # }
 
-placable_item = ["solarPanel", "waterStorage", "upgradedWorkbench"] 
+placable_item = ["solarPanel", "waterStorage","miner1","miner2","miner3","miner4", "miner5","miner6", "upgradedWorkbench"] 
 placed_items = [] # if here, remove from inventrry
 MIN_DISTANCE = 50
 
 last_emission_times = {}
 emission_interval = 3
-emitted_bolts_count = 0
-bolts_emitted = {}
+emittedBoltsCount = 0
+boltRate = 3
+
+last_ore_times = {} 
+ore_interal = 3
+oreCount = 0
+oreRate= 0
+
+money_count = 0
+
 
 def distance_between(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
@@ -863,7 +901,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["iron", "pickAx","purpleRock", None ,None , None, None , None]
+inventory_contents = ["iron", "pickAx","purpleRock", "miner1" , None , None, None , None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -1139,13 +1177,37 @@ while running:
     if health == 0: 
         game_over=True
 
+
     # Emit bolts for each solar panel placed
     for item in placed_items:
-        last_emission_time = last_emission_times.get(item["position"], 0)
+        last_emission_time = last_emission_times.get(item["position"], 0) # this makes no sense 
+        last_ore_time = last_ore_times.get(item["position"], 0) # this too
+        
+        miner1Count = 0
+        miner2Count = 0
+        miner3Count = 0
+        miner4Count = 0
+        miner5Count = 0
+        miner6Count = 0
+
+        item_name = item['item']
+            
+        if item_name == 'miner1':
+            miner1Count = miner1Count + 1
+        elif item_name == 'miner2':
+            miner2Count = miner2Count + 1
+        elif item_name == 'miner3':
+            miner3Count = miner3Count + 1
+        elif item_name == 'miner4':
+            miner4Count = miner4Count + 1
+        elif item_name == 'miner5':
+            miner5Count = miner5Count + 1
+        elif item_name == 'miner6':
+            miner6Count = miner6Count + 1
 
         if item["item"] == "solarPanel":
             if current_time - last_emission_time >= emission_interval:
-                emitted_bolts_count += 3  # Increment the total emitted bolts count
+                emittedBoltsCount += boltRate 
                 last_emission_times[item["position"]] = current_time
 
         if item["item"] == "waterStorage":
@@ -1156,6 +1218,13 @@ while running:
                 else: 
                     thirst = 100
                     last_emission_times[item["position"]] = current_time
+
+        if item["item"] == "miner1": 
+            if current_time - last_ore_time >= ore_interal:
+                oreRate = 3
+                oreCount += oreRate 
+                last_ore_times[item["position"]] = current_time
+
 
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
@@ -1497,7 +1566,7 @@ while running:
                 if clicked and parachuteLander_rect.collidepoint(mouse_pos):
                     parachuteLander["activateThrusters"] = True 
                     parachuteLander["speed"] = random.randint(15,40)
-            elif parachuteLander["activateThrusters"] == True and time_alive > 7 and parachuteLander["collectedLoot"] == False: 
+            elif parachuteLander["activateThrusters"] == True and time_alive > 6 and parachuteLander["collectedLoot"] == False: 
                 parachuteLander["landed"] = True 
                 screen.blit(payload, (parachuteLander["pos"].x, parachuteLander["pos"].y + 27))
             elif parachuteLander["activateThrusters"] and parachuteLander["crashed"] == False and parachuteLander["collectedLoot"] == False: 
@@ -1813,16 +1882,25 @@ while running:
     pygame.draw.rect(screen, WHITE, (THIRST_POS[0], THIRST_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
     screen.blit(thirsty, (THIRST_POS[0] - 30 , THIRST_POS[1])) 
 
-    # # energy bar
-    # pygame.draw.rect(screen, GREEN, (ENERGY_POS[0], ENERGY_POS[1]+5, energy * (BAR_WIDTH / 100), BAR_HEIGHT))
-    # pygame.draw.rect(screen, WHITE, (ENERGY_POS[0], ENERGY_POS[1]+5, BAR_WIDTH, BAR_HEIGHT), 2)
-    # screen.blit(energyImg, (ENERGY_POS[0] - 30 , ENERGY_POS[1])) 
-
     # Stats bar
     pygame.draw.rect(screen, "black", (0,0, screen_width, 40), 50)
-    screen.blit(energyImg, (20, 5))
-    count_text = font2.render(f"{emitted_bolts_count}", True, (255, 255, 255))
-    screen.blit(count_text, (50, 5))
+    screen.blit(money, (20, 1))
+    # countMoneyText = font2.render(f"{money_count}", True, (255, 255, 255))
+    # screen.blit(countMoneyText, (50, 5))
+
+    screen.blit(energyImg, (250, 5))
+    energyCountText = font2.render(f"{emittedBoltsCount}", True, (255, 255, 255))
+    screen.blit(energyCountText, (280, 5))
+
+    screen.blit(ore, (500,5))
+    oreCountText = font2.render(f"{oreCount}", True, (255, 255, 255))
+    screen.blit(oreCountText, (540, 5))
+
+    screen.blit(clockIcon, (750,1))
+    oreRateText = font2.render(f"{oreRate}", True, (255, 255, 255))
+    screen.blit(oreRateText, (790, 5))
+
+    screen.blit(people, (1000,1))
 
     if mutedRec.collidepoint(mouse_pos) and clicked: 
         muted = not muted
@@ -1832,9 +1910,9 @@ while running:
             pygame.mixer.music.unpause()
 
     if not muted: 
-        screen.blit(volume, (screen_width-50, 10))
+        screen.blit(volume, (screen_width-50, 2))
     else:
-        screen.blit(mute, (screen_width-50, 10))
+        screen.blit(mute, (screen_width-50, 2))
 
     # game over page 
     if (game_over):   #??????
