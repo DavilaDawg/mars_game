@@ -383,12 +383,12 @@ launchPad = pygame.transform.smoothscale(pygame.image.load('./icon/launchPad.png
 launchPadWithRocket = pygame.transform.smoothscale(pygame.image.load('./icon/launchPadWithRocket2.png'), (300,300))
 expensiveHab = pygame.transform.scale(pygame.image.load('./icon/expensiveHab.png'), (80,80))
 brokenCapsle = pygame.transform.smoothscale(pygame.image.load('./icon/brokenCapsle.png'), (100,100))
-miner1 = pygame.transform.smoothscale(pygame.image.load('./icon/miner1.png'), (100,100))
-miner2 = pygame.transform.smoothscale(pygame.image.load('./icon/miner2.png'), (100,100))
-miner3 = pygame.transform.smoothscale(pygame.image.load('./icon/miner3.png'), (100,100))
-miner4 = pygame.transform.smoothscale(pygame.image.load('./icon/miner4.png'), (100,100))
-miner5 = pygame.transform.smoothscale(pygame.image.load('./icon/miner5.png'), (100,100))
-miner6 = pygame.transform.smoothscale(pygame.image.load('./icon/miner6.png'), (100,100))
+miner1 = pygame.transform.smoothscale(pygame.image.load('./icon/miner1.png'), (70,70))
+miner2 = pygame.transform.smoothscale(pygame.image.load('./icon/miner2.png'), (60, 60))
+miner3 = pygame.transform.smoothscale(pygame.image.load('./icon/miner3.png'), (220,220))
+miner4 = pygame.transform.smoothscale(pygame.image.load('./icon/miner4.png'), (220,220))
+miner5 = pygame.transform.smoothscale(pygame.image.load('./icon/miner5.png'), (220,220))
+miner6 = pygame.transform.smoothscale(pygame.image.load('./icon/miner6.png'), (300,300))
 money = pygame.transform.smoothscale(pygame.image.load('./icon/moneyIcon.png'), (40,40))
 people = pygame.transform.smoothscale(pygame.image.load('./icon/peopleIcon.png'), (40,40))
 clockIcon = pygame.transform.smoothscale(pygame.image.load('./icon/clockIcon.png'), (40,40))
@@ -763,12 +763,30 @@ emission_interval = 3
 emittedBoltsCount = 0
 boltRate = 3
 
-last_ore_times = {} 
-ore_interal = 3
+ore_interval = 3
+last_ore_time = 0
 oreCount = 0
-oreRate= 0
+oreRate = 0
+
+oreRates = {
+        "miner1": 0.1,
+        "miner2": 0.5,
+        "miner3": 1,
+        "miner4": 5,
+        "miner5": 10,
+        "miner6": 20
+    }
+
+miner1Count = 0
+miner2Count = 0
+miner3Count = 0
+miner4Count = 0
+miner5Count = 0
+miner6Count = 0
 
 money_count = 0
+
+people_count = 3
 
 
 def distance_between(p1, p2):
@@ -901,7 +919,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["iron", "pickAx","purpleRock", "miner1" , None , None, None , None]
+inventory_contents = ["iron", "pickAx","purpleRock", "miner1" , "miner2" , "miner3", "miner6" , None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -1139,7 +1157,6 @@ mutedRec = pygame.Rect(screen_width-50, 10 , 50, 50)
 if muted:
     pygame.mixer.music.stop()  
 
-
 ######################################################################################
 ######################################################################################
 ######################################################################################
@@ -1173,37 +1190,37 @@ while running:
         if current_time - last_update_time >= 0.5: 
             heath = min(health+DECAY_RATE_HEALTH, 100)
             #print(health)
-
     if health == 0: 
         game_over=True
 
-
-    # Emit bolts for each solar panel placed
     for item in placed_items:
         last_emission_time = last_emission_times.get(item["position"], 0) # this makes no sense 
-        last_ore_time = last_ore_times.get(item["position"], 0) # this too
-        
-        miner1Count = 0
-        miner2Count = 0
-        miner3Count = 0
-        miner4Count = 0
-        miner5Count = 0
-        miner6Count = 0
 
-        item_name = item['item']
-            
-        if item_name == 'miner1':
-            miner1Count = miner1Count + 1
-        elif item_name == 'miner2':
-            miner2Count = miner2Count + 1
-        elif item_name == 'miner3':
-            miner3Count = miner3Count + 1
-        elif item_name == 'miner4':
-            miner4Count = miner4Count + 1
-        elif item_name == 'miner5':
-            miner5Count = miner5Count + 1
-        elif item_name == 'miner6':
-            miner6Count = miner6Count + 1
+        itemName = item['item']
+
+        if item["isAdded"] == False:
+            if itemName == 'miner1':
+                miner1Count += 1
+            if itemName == 'miner2':
+                miner2Count += 1
+            if itemName == 'miner3':
+                miner3Count += 1
+            if itemName == 'miner4':
+                miner4Count += 1
+            if itemName == 'miner5':
+                miner5Count += 1
+            if itemName == 'miner6':
+                miner6Count += 1
+            item["isAdded"] = True 
+        
+            oreRate = (
+                    (miner1Count * 0.1) +
+                    (miner2Count * 0.5) +
+                    (miner3Count * 1) +
+                    (miner4Count * 5) +
+                    (miner5Count * 10) +
+                    (miner6Count * 30)
+                )
 
         if item["item"] == "solarPanel":
             if current_time - last_emission_time >= emission_interval:
@@ -1219,12 +1236,8 @@ while running:
                     thirst = 100
                     last_emission_times[item["position"]] = current_time
 
-        if item["item"] == "miner1": 
-            if current_time - last_ore_time >= ore_interal:
-                oreRate = 3
-                oreCount += oreRate 
-                last_ore_times[item["position"]] = current_time
-
+        oreCount += oreRate
+        last_ore_time = current_time
 
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
@@ -1232,7 +1245,6 @@ while running:
         current_storage_contents = storage_contents2
     elif current_screen == "storage3":
         current_storage_contents = storage_contents3
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -1272,6 +1284,7 @@ while running:
                                 "background": currentBackground, 
                                 "position": centered_pos, 
                                 "item": heldItem, 
+                                "isAdded" : False,
                             })
                         if heldItem in inventory_contents and heldItem in placable_item:
                             item_index = inventory_contents.index(heldItem) 
@@ -1885,8 +1898,8 @@ while running:
     # Stats bar
     pygame.draw.rect(screen, "black", (0,0, screen_width, 40), 50)
     screen.blit(money, (20, 1))
-    # countMoneyText = font2.render(f"{money_count}", True, (255, 255, 255))
-    # screen.blit(countMoneyText, (50, 5))
+    countMoneyText = font2.render(f"{money_count}", True, (255, 255, 255))
+    screen.blit(countMoneyText, (60, 5))
 
     screen.blit(energyImg, (250, 5))
     energyCountText = font2.render(f"{emittedBoltsCount}", True, (255, 255, 255))
@@ -1901,6 +1914,8 @@ while running:
     screen.blit(oreRateText, (790, 5))
 
     screen.blit(people, (1000,1))
+    countPeopleText = font2.render(f"{people_count}", True, (255, 255, 255))
+    screen.blit(countPeopleText, (1040, 5))
 
     if mutedRec.collidepoint(mouse_pos) and clicked: 
         muted = not muted
