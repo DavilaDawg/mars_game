@@ -21,12 +21,19 @@
 # monopropelent (low thrust) for packeges, bipropelent (high thrust) for launch vehicle, Cold Gas (very low thrust) for attitude control 
 # Fix health and add way to gain health 
 # population and teraform info
+# ensure things don't randomly spawn on top of eachother 
+# change other chars to be animated too
 # MODULATE
-# Add tutorial 
-
+# Add tutorial/ intro cut scene 
+# tile based placing system 
 
 ## CURRENT TASKS
-# add mining fearure 
+# add pause + leaderboard + main page 
+# add low energy state images for miners 
+# add bolt animation to solar panel every 3 seconds 
+# rocket ship to send ore
+# incoming money after send off ship 
+
 # pixax hint only if havnt mined yet 
 # deslect item when ging to main game to prevent placing it right away 
 # add scavange scrap metals
@@ -35,7 +42,6 @@
 # remove unnessisary code for clickcount for fingers 
 # implent gift items in payload
 # add eating noise 
-# add pause + leaderboard + main page 
 # Fix health and add way to gain health 
 
 import pygame
@@ -83,6 +89,8 @@ kitchen = pygame.transform.scale(pygame.image.load("./icon/k2.webp"), (screen_wi
 workshop = pygame.transform.scale(pygame.image.load('./icon/workshop.webp'), (screen_width, screen_height))
 workbench1 = pygame.transform.scale(pygame.image.load('./icon/workbench1.jpg'), (screen_width, screen_height))
 inPayload = pygame.transform.scale(pygame.image.load('./icon/payloadLoot.png'), (screen_width, screen_height))
+pauseScreen = pygame.transform.scale(pygame.image.load('./icon/pausescreen.png'), (screen_width, screen_height))
+
 
 tileSize = 40
 playerSize = 60
@@ -227,6 +235,7 @@ axObtained = False
 rockPresent = False
 holding = False
 muted = False 
+paused = False
 showHint = False 
 itemAvailable = False
 itemBuilt = False
@@ -362,6 +371,7 @@ forkAndKnife= pygame.transform.scale(pygame.image.load('./icon/forkAndknife.png'
 healthImg = pygame.transform.scale(pygame.image.load('./icon/health.png'), (30,30))
 energyImg = pygame.transform.scale(pygame.image.load('./icon/energy.png'), (30,30))
 volume = pygame.transform.scale(pygame.image.load('./icon/volume.png'), (35,35))
+pauseGame = pygame.transform.scale(pygame.image.load('./icon/pause.png'), (35,35))
 mute = pygame.transform.scale(pygame.image.load('./icon/volumeOff.png'), (35,35))
 leftArrow = pygame.transform.scale(pygame.image.load('./icon/leftArrow.png'), (80,80))
 rightArrow = pygame.transform.scale(pygame.image.load('./icon/rightArrow.png'), (80,80))
@@ -767,6 +777,7 @@ ore_interval = 3
 last_ore_time = 0
 oreCount = 0
 oreRate = 0
+minerTotalEnergyReq = 0
 
 oreRates = {
         "miner1": 0.1,
@@ -783,6 +794,15 @@ miner3Count = 0
 miner4Count = 0
 miner5Count = 0
 miner6Count = 0
+
+totalMines = miner1Count + miner2Count + miner3Count + miner4Count + miner5Count + miner6Count
+
+miner1energyReq = 1 
+miner2energyReq = 2
+miner3energyReq = 6
+miner4energyReq = 10
+miner5energyReq = 13
+miner6energyReq = 15
 
 money_count = 0
 
@@ -919,7 +939,7 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["iron", "pickAx","purpleRock", "miner1" , "miner2" , "miner3", "miner6" , None]
+inventory_contents = ["iron", "pickAx","purpleRock", "miner1" , "miner2" , "solarPanel", "miner6" , "solarPanel"]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -1152,7 +1172,7 @@ def showCraftableItems():
 
 play_music("background", loop=True, volume=2)
 
-mutedRec = pygame.Rect(screen_width-50, 10 , 50, 50)
+mutedRec = pygame.Rect(screen_width-100, 10 , 50, 50)
 
 if muted:
     pygame.mixer.music.stop()  
@@ -1174,70 +1194,82 @@ while running:
     clicked = False
 
     current_time = time.time()
-    if current_time - last_update_time >= 1: 
-        hunger = max(0, hunger - DECAY_RATE) # Compares the result of hunger - DECAY_RATE with 0 and returns the greater of the two
-        thirst = max(0, thirst - DECAY_RATE_THIRST)
-        # energy = max(0, energy - DECAY_RATE)
-        last_update_time = current_time
 
-    if hunger == 0 or thirst == 0: 
-        health = max(0, health-DECAY_RATE_HEALTH)
-        last_update_time = current_time
+    if not paused: 
+        if current_time - last_update_time >= 1: 
+            hunger = max(0, hunger - DECAY_RATE) # Compares the result of hunger - DECAY_RATE with 0 and returns the greater of the two
+            thirst = max(0, thirst - DECAY_RATE_THIRST)
+            # energy = max(0, energy - DECAY_RATE)
+            last_update_time = current_time
 
-    # FIX!!!!!!!!!
-    if hunger != 0 and thirst != 0 and health != 100:
-        print(current_time - last_update_time) 
-        if current_time - last_update_time >= 0.5: 
-            heath = min(health+DECAY_RATE_HEALTH, 100)
-            #print(health)
+        if hunger == 0 or thirst == 0: 
+            health = max(0, health-DECAY_RATE_HEALTH)
+            last_update_time = current_time
+
+        # FIX!!!!!!!!!
+        if hunger != 0 and thirst != 0 and health != 100:
+            if current_time - last_update_time >= 0.5: 
+                heath = min(health+DECAY_RATE_HEALTH, 100)
+                #print(health)
+        if health == 0: 
+            game_over = True
+
     if health == 0: 
-        game_over=True
+        game_over = True
 
     for item in placed_items:
         last_emission_time = last_emission_times.get(item["position"], 0) # this makes no sense 
 
         itemName = item['item']
 
-        if item["isAdded"] == False:
-            if itemName == 'miner1':
-                miner1Count += 1
-            if itemName == 'miner2':
-                miner2Count += 1
-            if itemName == 'miner3':
-                miner3Count += 1
-            if itemName == 'miner4':
-                miner4Count += 1
-            if itemName == 'miner5':
-                miner5Count += 1
-            if itemName == 'miner6':
-                miner6Count += 1
-            item["isAdded"] = True 
-        
-            oreRate = (
-                    (miner1Count * 0.1) +
-                    (miner2Count * 0.5) +
-                    (miner3Count * 1) +
-                    (miner4Count * 5) +
-                    (miner5Count * 10) +
-                    (miner6Count * 30)
-                )
+        if not paused: 
+            if item["isAdded"] == False and emittedBoltsCount > 0:
+                if itemName == 'miner1':
+                    miner1Count += 1
+                if itemName == 'miner2':
+                    miner2Count += 1
+                if itemName == 'miner3':
+                    miner3Count += 1
+                if itemName == 'miner4':
+                    miner4Count += 1
+                if itemName == 'miner5':
+                    miner5Count += 1
+                if itemName == 'miner6':
+                    miner6Count += 1
+                item["isAdded"] = True 
+            
+                oreRate = (
+                        (miner1Count * 0.1) +
+                        (miner2Count * 0.5) +
+                        (miner3Count * 1) +
+                        (miner4Count * 5) +
+                        (miner5Count * 10) +
+                        (miner6Count * 30)
+                    )
+                minerTotalEnergyReq = (miner1energyReq * miner1Count) + (miner2energyReq * miner2Count) + (miner3energyReq * miner3Count) + (miner4energyReq * miner4Count) + (miner5energyReq * miner5Count) + (miner6energyReq * miner6Count)
+                print(minerTotalEnergyReq)
 
-        if item["item"] == "solarPanel":
-            if current_time - last_emission_time >= emission_interval:
-                emittedBoltsCount += boltRate 
-                last_emission_times[item["position"]] = current_time
-
-        if item["item"] == "waterStorage":
-            if current_time - last_emission_time >= emission_interval:
-                if 100 >= thirst + increaseThirst:
-                    thirst += increaseThirst
-                    last_emission_times[item["position"]] = current_time
-                else: 
-                    thirst = 100
+            if item["item"] == "solarPanel":
+                if current_time - last_emission_time >= emission_interval:
+                    emittedBoltsCount += boltRate 
                     last_emission_times[item["position"]] = current_time
 
-        oreCount += oreRate
-        last_ore_time = current_time
+            if item["item"] == "waterStorage":
+                if current_time - last_emission_time >= emission_interval:
+                    if 100 >= thirst + increaseThirst:
+                        thirst += increaseThirst
+                        last_emission_times[item["position"]] = current_time
+                    else: 
+                        thirst = 100
+                        last_emission_times[item["position"]] = current_time
+
+            if emittedBoltsCount > 0 and oreRate != 0: 
+                if current_time - last_ore_time >= ore_interval:
+                    oreCount += oreRate
+                    emittedBoltsCount -= minerTotalEnergyReq
+                    last_ore_time = current_time
+            elif emittedBoltsCount != 0: 
+                oreRate = 0 # does not go back to normal value after bolts is no longer 0 ``
 
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
@@ -1549,21 +1581,21 @@ while running:
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
     player_pos.y = max(35, min(player_pos.y, screen_height - playerSize))
 
-    if totalTime >= next_parachute_spawn_time and len(parachuteLanders) < max_parachutes:
-        parachuteLanders.append({
-            "pos": pygame.Vector2(random.randint(0, screen_width), 0),
-            "speed": random.randint(70, 90),
-            "direction": pygame.Vector2(0, 1),
-            "crashed": False,
-            "activateThrusters": False,
-            "landed": False,
-            "collectedLoot": False,
-            "spawnTime": totalTime,
-        })
-        next_parachute_spawn_time += random.choice([3, 10, 30, 60, 120])
+    if not paused: 
+        if totalTime >= next_parachute_spawn_time and len(parachuteLanders) < max_parachutes:
+            parachuteLanders.append({
+                "pos": pygame.Vector2(random.randint(0, screen_width), 0),
+                "speed": random.randint(70, 90),
+                "direction": pygame.Vector2(0, 1),
+                "crashed": False,
+                "activateThrusters": False,
+                "landed": False,
+                "collectedLoot": False,
+                "spawnTime": totalTime,
+            })
+            next_parachute_spawn_time += random.choice([3, 10, 30, 60, 120])
 
     if current_screen == "game":       
-
         for parachuteLander in parachuteLanders:
             time_alive = totalTime - parachuteLander["spawnTime"]
 
@@ -1639,35 +1671,36 @@ while running:
             screen.blit(imageSprite, (player_pos.x, player_pos.y)) 
 
             # cows logic
-            for i, cow in enumerate(cows):
-                if not cow["stopped"] or axObtained:
-                    cow["time_since_last_change"] += dt
-                    if cow["time_since_last_change"] >= 2: 
-                        cow["direction"] = pygame.Vector2(
-                            random.choice([-1, 1]),
-                            random.choice([-1, 1])
-                        )
-                        cow["time_since_last_change"] = 0
+            if not paused: 
+                for i, cow in enumerate(cows):
+                    if not cow["stopped"] or axObtained:
+                        cow["time_since_last_change"] += dt
+                        if cow["time_since_last_change"] >= 2: 
+                            cow["direction"] = pygame.Vector2(
+                                random.choice([-1, 1]),
+                                random.choice([-1, 1])
+                            )
+                            cow["time_since_last_change"] = 0
 
-                    cow["pos"] += cow["direction"] * cow["speed"] * dt
+                        cow["pos"] += cow["direction"] * cow["speed"] * dt
 
-                    # Reverse direction if hitting a wall
-                    if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
-                        cow["direction"].x *= -1
-                    if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
-                        cow["direction"].y *= -1
+                        # Reverse direction if hitting a wall
+                        if cow["pos"].x <= 0 or cow["pos"].x >= screen_width - cowSize:
+                            cow["direction"].x *= -1
+                        if cow["pos"].y <= 0 or cow["pos"].y >= screen_height - cowSize:
+                            cow["direction"].y *= -1
 
-                screen.blit(astroImg2, (cow["pos"].x, cow["pos"].y))
-                
-                if i == len(cows) - 1: 
-                    if not axObtained: 
-                        cowRect = pygame.Rect(cow["pos"].x -40 , cow["pos"].y -40 , cowSize+20, cowSize+20)
-                        screen.blit(message, (cow["pos"].x +50, cow["pos"].y - 30))  
-                        if cowRect.collidepoint(player_pos): 
-                            cow["stopped"] = True
-                            crewText = fontSmall.render(crewMessage, True, (100, 100, 50)) 
-                            pygame.draw.rect(screen, "black", (20, 350, screen_width-40, 60), 50)
-                            screen.blit(crewText, (45, screen_height/2 +3)) 
+                    screen.blit(astroImg2, (cow["pos"].x, cow["pos"].y))
+                    
+                    if i == len(cows) - 1: 
+                        if not axObtained: 
+                            cowRect = pygame.Rect(cow["pos"].x -40 , cow["pos"].y -40 , cowSize+20, cowSize+20)
+                            screen.blit(message, (cow["pos"].x +50, cow["pos"].y - 30))  
+                            if cowRect.collidepoint(player_pos): 
+                                cow["stopped"] = True
+                                crewText = fontSmall.render(crewMessage, True, (100, 100, 50)) 
+                                pygame.draw.rect(screen, "black", (20, 350, screen_width-40, 60), 50)
+                                screen.blit(crewText, (45, screen_height/2 +3)) 
 
         if player_rect.colliderect(stationRect):  
             pygame.draw.rect(screen, "black", enter_station_rect, 50)
@@ -1902,11 +1935,14 @@ while running:
     screen.blit(countMoneyText, (60, 5))
 
     screen.blit(energyImg, (250, 5))
-    energyCountText = font2.render(f"{emittedBoltsCount}", True, (255, 255, 255))
+    if emittedBoltsCount >= 0: 
+        energyCountText = font2.render(f"{emittedBoltsCount}", True, (255, 255, 255))
+    else: 
+        energyCountText = font2.render(f"0", True, (255, 255, 255))
     screen.blit(energyCountText, (280, 5))
 
     screen.blit(ore, (500,5))
-    oreCountText = font2.render(f"{oreCount}", True, (255, 255, 255))
+    oreCountText = font2.render(f"{oreCount:.2f}", True, (255, 255, 255))
     screen.blit(oreCountText, (540, 5))
 
     screen.blit(clockIcon, (750,1))
@@ -1925,9 +1961,25 @@ while running:
             pygame.mixer.music.unpause()
 
     if not muted: 
-        screen.blit(volume, (screen_width-50, 2))
+        screen.blit(volume, (screen_width-100, 2))
     else:
-        screen.blit(mute, (screen_width-50, 2))
+        screen.blit(mute, (screen_width-100, 2))
+
+    if not paused: 
+        pauseRec = pygame.Rect(screen_width-50, 10 , 45, 45)
+        screen.blit(pauseGame, (screen_width-50, 2))
+
+        if pauseRec.collidepoint(mouse_pos) and clicked: 
+            paused = not paused
+    
+    if paused: 
+        screen.blit(pauseScreen, (0,0))
+        unpauseRec = pygame.Rect(screen_width/2 - 205, 250, 335, 90)
+        # pygame.draw.rect(screen, "black", unpauseRec, 50)
+        # (screen_width/2 - 205, screen_height/2 + 20, 335, 90) for restart 
+        
+        if unpauseRec.collidepoint(mouse_pos) and clicked: 
+            paused = not paused
 
     # game over page 
     if (game_over):   #??????
