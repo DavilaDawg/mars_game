@@ -26,6 +26,7 @@
 # MODULATE
 # Add tutorial/ intro cut scene 
 # tile based placing system 
+# bug with the energy and oreRate. when it hits zero it needs a panel to be placed to reset it even if bolts>0 
 
 ## CURRENT TASKS
 # add pause + leaderboard + main page 
@@ -90,7 +91,19 @@ workshop = pygame.transform.scale(pygame.image.load('./icon/workshop.webp'), (sc
 workbench1 = pygame.transform.scale(pygame.image.load('./icon/workbench1.jpg'), (screen_width, screen_height))
 inPayload = pygame.transform.scale(pygame.image.load('./icon/payloadLoot.png'), (screen_width, screen_height))
 pauseScreen = pygame.transform.scale(pygame.image.load('./icon/pausescreen.png'), (screen_width, screen_height))
-
+homeScreen = pygame.transform.scale(pygame.image.load('./icon/homeScreen.png'), (screen_width, screen_height))
+intro1 = pygame.transform.scale(pygame.image.load('./icon/intro1.png'), (screen_width, screen_height))
+intro2 = pygame.transform.scale(pygame.image.load('./icon/intro2.png'), (screen_width, screen_height))
+intro3 = pygame.transform.scale(pygame.image.load('./icon/intro3.png'), (screen_width, screen_height))
+intro35 = pygame.transform.scale(pygame.image.load('./icon/intro4.png'), (screen_width, screen_height))
+intro4 = pygame.transform.scale(pygame.image.load('./icon/intro5.png'), (screen_width, screen_height))
+intro5 = pygame.transform.scale(pygame.image.load('./icon/intro5.png'), (screen_width, screen_height))
+intro6 = pygame.transform.scale(pygame.image.load('./icon/intro6.png'), (screen_width, screen_height))
+intro7 = pygame.transform.scale(pygame.image.load('./icon/intro7.png'), (screen_width, screen_height))
+intro8 = pygame.transform.scale(pygame.image.load('./icon/intro8.png'), (screen_width, screen_height))
+intro9 = pygame.transform.scale(pygame.image.load('./icon/intro9.png'), (screen_width, screen_height))
+intro10 = pygame.transform.scale(pygame.image.load('./icon/intro10.png'), (screen_width, screen_height))
+intro11 = pygame.transform.scale(pygame.image.load('./icon/intro11.png'), (screen_width, screen_height))
 
 tileSize = 40
 playerSize = 60
@@ -236,6 +249,20 @@ rockPresent = False
 holding = False
 muted = False 
 paused = False
+inHome = True 
+inIntro1 = False 
+inIntro2 = False 
+inIntro3 = False 
+inIntro35 = False 
+inIntro4 = False 
+inIntro5 = False 
+inIntro6 = False 
+inIntro7 = False 
+inIntro8 = False 
+inIntro9 = False 
+inIntro10 = False 
+inIntro11 = False 
+skipIntro = False 
 showHint = False 
 itemAvailable = False
 itemBuilt = False
@@ -1195,7 +1222,7 @@ while running:
 
     current_time = time.time()
 
-    if not paused: 
+    if not paused and inHome != True: 
         if current_time - last_update_time >= 1: 
             hunger = max(0, hunger - DECAY_RATE) # Compares the result of hunger - DECAY_RATE with 0 and returns the greater of the two
             thirst = max(0, thirst - DECAY_RATE_THIRST)
@@ -1222,7 +1249,7 @@ while running:
 
         itemName = item['item']
 
-        if not paused: 
+        if not paused and inHome != True: 
             if item["isAdded"] == False and emittedBoltsCount > 0:
                 if itemName == 'miner1':
                     miner1Count += 1
@@ -1581,7 +1608,7 @@ while running:
     player_pos.x = max(0, min(player_pos.x, screen_width - playerSize))
     player_pos.y = max(35, min(player_pos.y, screen_height - playerSize))
 
-    if not paused: 
+    if not paused and inHome != True: 
         if totalTime >= next_parachute_spawn_time and len(parachuteLanders) < max_parachutes:
             parachuteLanders.append({
                 "pos": pygame.Vector2(random.randint(0, screen_width), 0),
@@ -1671,7 +1698,7 @@ while running:
             screen.blit(imageSprite, (player_pos.x, player_pos.y)) 
 
             # cows logic
-            if not paused: 
+            if not paused and inHome != True: 
                 for i, cow in enumerate(cows):
                     if not cow["stopped"] or axObtained:
                         cow["time_since_last_change"] += dt
@@ -1965,7 +1992,7 @@ while running:
     else:
         screen.blit(mute, (screen_width-100, 2))
 
-    if not paused: 
+    if not paused and inHome != True: 
         pauseRec = pygame.Rect(screen_width-50, 10 , 45, 45)
         screen.blit(pauseGame, (screen_width-50, 2))
 
@@ -1981,6 +2008,95 @@ while running:
         if unpauseRec.collidepoint(mouse_pos) and clicked: 
             paused = not paused
 
+    screenRec = pygame.Rect(0, 0, screen_width, screen_height)
+    
+    mouseReleased = True
+
+    #move this to the begining of the game loop
+    if event.type == pygame.MOUSEBUTTONUP:
+        mouseReleased = True
+
+    if inHome: 
+        screen.blit(homeScreen, (0,0))
+        startGameRec = pygame.Rect(screen_width/2 - 120, 380, 335, 90)
+        if startGameRec.collidepoint(mouse_pos) and clicked: 
+            inHome = False 
+            paused = True # CHANGE TO NEW VAR  ININTROS 
+            inIntro1 = True 
+            mouseReleased = False
+    if inIntro1 == True: 
+        screen.blit(intro1, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro1 = False
+            inIntro2 = True
+            mouseReleased = False
+    if inIntro2 == True:
+        screen.blit(intro2, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro2 = False
+            inIntro3 = True
+            mouseReleased = False
+    if inIntro3 == True:
+        screen.blit(intro3, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro3 = False
+            inIntro35 = True
+            mouseReleased = False
+    if inIntro35 == True:
+        screen.blit(intro35, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro35 = False
+            inIntro4 = True
+            mouseReleased = False
+    if inIntro4 == True:
+        screen.blit(intro4, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro4 = False
+            inIntro5 = True
+            mouseReleased = False
+    if inIntro5 == True:
+        screen.blit(intro5, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro5 = False
+            inIntro6 = True
+            mouseReleased = False
+    if inIntro6 == True:
+        screen.blit(intro6, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro6 = False
+            inIntro7 = True
+            mouseReleased = False
+    if inIntro7 == True:
+        screen.blit(intro7, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro7 = False
+            inIntro8 = True
+            mouseReleased = False
+    if inIntro8 == True:
+        screen.blit(intro8, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro8 = False
+            inIntro9 = True
+            mouseReleased = False
+    if inIntro9 == True:
+        screen.blit(intro9, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro9 = False
+            inIntro10 = True
+            mouseReleased = False
+    if inIntro10 == True:
+        screen.blit(intro10, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro10 = False
+            inIntro11 = True
+            mouseReleased = False
+    if inIntro11 == True:
+        screen.blit(intro11, (0,0))
+        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            inIntro11 = False
+            paused = False
+            mouseReleased = False
+        
     # game over page 
     if (game_over):   #??????
         if not game_over:  
