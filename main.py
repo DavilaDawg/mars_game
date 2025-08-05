@@ -277,6 +277,52 @@ holdStartTime = 0
 crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 hintMessage= 'You need a pickax to mine. Go to your bedroom storage for it.'
 
+
+text_color = (255, 235, 210)     # Soft white
+shadow_color = (0, 0, 0)      # Black
+# add these to the color array 
+
+intro1Text = "hi"; 
+intro2Lines = [
+    "Great news!",
+    "Climate deniers finally changed their minds right around",
+    "the time their beachfront homes caught fire.",
+    "But hey, you made it out...",
+    "Welcome to Mars.",
+    "We believe in science… and 12 hour shifts."
+]
+x_margin = 30
+y_start2 = 720 - (len(intro2Lines) * 30) 
+
+clock = pygame.time.Clock()
+frame_count = 0
+chars_per_frame = 1
+
+def draw_typing_dialog(screen, font, lines, text_color, shadow_color, x, y_start, chars_per_frame, frame_count):
+    current_text = []
+
+    # Flatten all lines into one string with line breaks
+    full_text = "\n".join(lines)
+
+    # Reveal characters gradually
+    visible_chars = min(frame_count * chars_per_frame, len(full_text))
+
+    # Slice the visible text
+    sliced_text = full_text[:visible_chars]
+
+    # Split again into lines for rendering
+    current_text = sliced_text.split("\n")
+
+    y = y_start2
+
+    for line in current_text:
+        shadow = font.render(line, True, shadow_color)
+        text = font.render(line, True, text_color)
+
+        screen.blit(shadow, (x + 4, y + 4))
+        screen.blit(text, (x, y))
+        y += 26
+
 back_rect1= pygame.Rect(495, 620, 300, 80)
 back_rect = pygame.Rect(6, 45, 100, 50)
 
@@ -313,6 +359,8 @@ fontSmaller = pygame.font.Font("MODERNA.ttf", 25)
 
 font_path = pygame.font.match_font("arial")  
 font2 = pygame.font.Font(font_path, 27)
+
+font3 = pygame.font.Font("Orbit.ttf", 25)
 
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -2032,6 +2080,21 @@ while running:
             mouseReleased = False
     if inIntro2 == True:
         screen.blit(intro2, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro2Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y_start=screen.get_height() - len(intro2Lines) * 40 - 40,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
             inIntro2 = False
             inIntro3 = True
