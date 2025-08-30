@@ -24,16 +24,21 @@
 # ensure things don't randomly spawn on top of eachother 
 # change other chars to be animated too
 # MODULATE
-# Add tutorial/ intro cut scene 
+# bug: when click resume and the cave is bhind it you enter the cave 
+# leaderboard 
 # tile based placing system 
 # bug with the energy and oreRate. when it hits zero it needs a panel to be placed to reset it even if bolts>0 
+# add bolt animation to solar panel every 3 seconds 
+#change the way things are swaped, i want to select the new item rather than switch them: do click and hold
+# when click anywhere when in range of 
 
 ## CURRENT TASKS
-# add pause + leaderboard + main page 
-# add low energy state images for miners 
-# add bolt animation to solar panel every 3 seconds 
+# maks scrap logic 
+# display minertotalenergyrequired better
+# add low energy state images for miners
 # rocket ship to send ore
 # incoming money after send off ship 
+# add shadow to things you can click when you get close to them 
 
 # pixax hint only if havnt mined yet 
 # deslect item when ging to main game to prevent placing it right away 
@@ -97,7 +102,7 @@ intro2 = pygame.transform.scale(pygame.image.load('./icon/intro2.png'), (screen_
 intro3 = pygame.transform.scale(pygame.image.load('./icon/intro3.png'), (screen_width, screen_height))
 intro35 = pygame.transform.scale(pygame.image.load('./icon/intro4.png'), (screen_width, screen_height))
 intro4 = pygame.transform.scale(pygame.image.load('./icon/intro5.png'), (screen_width, screen_height))
-intro5 = pygame.transform.scale(pygame.image.load('./icon/intro5.png'), (screen_width, screen_height))
+intro5c = pygame.transform.scale(pygame.image.load('./icon/intro5c.png'), (screen_width, screen_height))
 intro6 = pygame.transform.scale(pygame.image.load('./icon/intro6.png'), (screen_width, screen_height))
 intro7 = pygame.transform.scale(pygame.image.load('./icon/intro7.png'), (screen_width, screen_height))
 intro8 = pygame.transform.scale(pygame.image.load('./icon/intro8.png'), (screen_width, screen_height))
@@ -269,12 +274,13 @@ itemBuilt = False
 swapAvailable = False
 thrustersAttached = False
 activateThrusters= False
+fingerIsBigger = False
 
 box_rects = []
 
 minHoldTime = 750
 holdStartTime = 0
-crewMessage= "Hi there captin! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
+crewMessage= "Hi there captain! Go to your bedroom and find your pickax in the storage bin. Time to go mining!" 
 hintMessage= 'You need a pickax to mine. Go to your bedroom storage for it.'
 
 
@@ -282,23 +288,82 @@ text_color = (255, 235, 210)     # Soft white
 shadow_color = (0, 0, 0)      # Black
 # add these to the color array 
 
-intro1Text = "hi"; 
+intro1Lines = [
+    "Hey there captain!", 
+    "Oh do I have some great news for you."
+] 
+
 intro2Lines = [
-    "Great news!",
     "Climate deniers finally changed their minds right around",
     "the time their beachfront homes caught fire.",
-    "But hey, you made it out...",
-    "Welcome to Mars.",
+    "But hey, you made it out. Welcome to Mars.",
     "We believe in science… and 12 hour shifts."
 ]
+
+intro3Lines = [
+    "Your first task is to get the mining system up and running.", 
+    "To do that you will need to manually mine for ore then ",
+    "head to the machine shop in the station."
+]
+
+intro4Lines = [
+    "These mines need power!"
+]
+
+
+intro5Lines = [
+    "You will need to build solar panels to collect energy.", 
+    "Mines continuously drain your energy supply.", 
+    "As you build and upgrade mines", 
+    "more solar panels will be required to power them."
+]
+
+intro6Lines = [
+    "It's critical that you set up a water storage system right away.", 
+    "As your colony grows, water usage will increase and you will need", 
+    "to expand your water storage system to survive."
+]
+
+intro7Lines = [
+    "Remember your goal is to save humanity but you need money to do so."
+]
+
+intro8Lines = [
+    "This is Dr. Mae Jemison.", 
+    "She is here to help you out."
+]
+
+intro9Lines = [
+    "Once every 2.1 years there's a launch window",
+    "when Earth and Mars are aligned.",
+    "The trip requires minimal fuel (Delta-v).",
+]
+
+intro10Lines = [ 
+    "You can launch anytime using a slingshot maneuver", 
+    "or a longer transfer arc but it requires more fuel.", 
+    " ",
+    "It is up to you to decide if it is worth it."
+]
+
+intro11Lines = [
+    "You exchange ore for money.",
+]
+
+intro12Lines = [
+    "And a lucky 30 new crew members arrive",
+    "on mars to join the effort.",
+    "Before they arrive you must build habitats",
+    "and interview them to assign roles."
+]
+
 x_margin = 30
-y_start2 = 720 - (len(intro2Lines) * 30) 
 
 clock = pygame.time.Clock()
 frame_count = 0
-chars_per_frame = 1
+chars_per_frame = 2
 
-def draw_typing_dialog(screen, font, lines, text_color, shadow_color, x, y_start, chars_per_frame, frame_count):
+def draw_typing_dialog(screen, font, lines, text_color, shadow_color, x, y, chars_per_frame, frame_count):
     current_text = []
 
     # Flatten all lines into one string with line breaks
@@ -313,7 +378,18 @@ def draw_typing_dialog(screen, font, lines, text_color, shadow_color, x, y_start
     # Split again into lines for rendering
     current_text = sliced_text.split("\n")
 
-    y = y_start2
+    BLACK_TRANSPARENT = (0, 0, 0, 100)  # 128 = 50% transparent
+
+    temp_surface = pygame.Surface((1215, 150), pygame.SRCALPHA)
+    
+    # Draw rounded rectangle on the temporary surface
+    pygame.draw.rect(temp_surface, BLACK_TRANSPARENT,
+                     (0, 0, 1215, 150), border_radius=20)
+
+    screen.blit(temp_surface, (25, 535))
+
+    skipText = font.render('Click to continute', True, MARS_RED)
+    screen.blit(skipText, (screen_width-290, screen_height-70))
 
     for line in current_text:
         shadow = font.render(line, True, shadow_color)
@@ -322,6 +398,39 @@ def draw_typing_dialog(screen, font, lines, text_color, shadow_color, x, y_start
         screen.blit(shadow, (x + 4, y + 4))
         screen.blit(text, (x, y))
         y += 26
+
+# not working anymore 
+# def skipIntroSlides():
+#     skipRect = pygame.Rect(15, 15, 110, 50)
+#     pygame.draw.rect(screen, "black", skipRect, 50)
+#     skipText = font.render('Skip', True, MARS_RED)
+#     screen.blit(skipText, (35, 16))
+
+#     if skipRect.collidepoint(mouse_pos) and clicked:
+#         inIntro2 = False 
+#         inIntro3 = False
+#         inIntro4 = False
+#         inIntro5 = False
+#         inIntro6 = False
+#         inIntro7 = False
+#         inIntro8 = False
+#         inIntro9 = False
+#         inIntro10 = False
+#         inIntro11 = False
+#         paused = False
+
+#TypeError: cannot unpack non-iterable NoneType object
+# def nextSlide(current, next, mouseReleased):
+#     next = next
+#     mouseReleased = mouseReleased
+#     print("here1")
+#     if current:
+#         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+#             print("here2")
+#             current = False
+#             next = True
+#             mouseReleased = False
+#             return (current, next, mouseReleased, 0)
 
 back_rect1= pygame.Rect(495, 620, 300, 80)
 back_rect = pygame.Rect(6, 45, 100, 50)
@@ -337,14 +446,12 @@ rect_points_basic = [
     (255, 342)   # Bottom left
 ]
 
-
 rect_points = [
     (screen_width // 2 +2 + x_offset, screen_height // 2 -2 + y_offset),  # Top left
     (screen_width // 2 + 112 + x_offset, screen_height // 2 + 2 + y_offset),  # Top right
     (screen_width // 2 + 32 + x_offset, screen_height // 2 + 55 + y_offset),  # Bottom right
     (screen_width // 2 - 130 + x_offset, screen_height // 2 + 38 + y_offset)   # Bottom left
 ]
-
 
 x_coords = [point[0] for point in rect_points]
 y_coords = [point[1] for point in rect_points]
@@ -355,10 +462,12 @@ font = pygame.font.Font("MODERNA.ttf", 36)
 fontBig = pygame.font.Font("MODERNA.ttf", 70)
 fontSmall = pygame.font.Font("MODERNA.ttf", 25)
 fontSmall2 = pygame.font.Font("MODERNA.ttf", 23)
-fontSmaller = pygame.font.Font("MODERNA.ttf", 25)
 
 font_path = pygame.font.match_font("arial")  
 font2 = pygame.font.Font(font_path, 27)
+
+font2Small = pygame.font.Font(font_path, 18)
+
 
 font3 = pygame.font.Font("Orbit.ttf", 25)
 
@@ -382,6 +491,8 @@ GOLD = (255, 215, 0)             # Rare resources
 BRONZE = (205, 127, 50)          # Metals
 SILVER = (192, 192, 192)         # Electronics or conduits
 LAVA_RED = (255, 69, 0) 
+GREEN = (0, 200, 0)
+GREEN_HOVER = (0, 255, 0)
 
 BAR_WIDTH, BAR_HEIGHT = 150, 20
 healthPos = (300, 45)
@@ -426,6 +537,7 @@ caramel = pygame.transform.scale(pygame.image.load('./icon/caramel.png'), (40,40
 caramelApple = pygame.transform.scale(pygame.image.load('./icon/caramel-apple.png'), (40,40))
 grapes = pygame.transform.scale(pygame.image.load('./icon/apple.png'), (40,40))
 finger = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (60,60))
+fingerBig = pygame.transform.scale(pygame.image.load('./icon/finger.png'), (100,100))
 table =  pygame.transform.scale(pygame.image.load("./icon/table.png"), (100,100))
 #station = pygame.transform.scale(pygame.image.load("./icon/station.png"), (110,110))
 hab1 = pygame.transform.scale(pygame.image.load("./icon/hab1.png"), (350,350))
@@ -474,6 +586,9 @@ miner3 = pygame.transform.smoothscale(pygame.image.load('./icon/miner3.png'), (2
 miner4 = pygame.transform.smoothscale(pygame.image.load('./icon/miner4.png'), (220,220))
 miner5 = pygame.transform.smoothscale(pygame.image.load('./icon/miner5.png'), (220,220))
 miner6 = pygame.transform.smoothscale(pygame.image.load('./icon/miner6.png'), (300,300))
+miner1Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner1Eng.png'), (70,70))
+miner2Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner1Eng.png'), (60,60))
+
 money = pygame.transform.smoothscale(pygame.image.load('./icon/moneyIcon.png'), (40,40))
 people = pygame.transform.smoothscale(pygame.image.load('./icon/peopleIcon.png'), (40,40))
 clockIcon = pygame.transform.smoothscale(pygame.image.load('./icon/clockIcon.png'), (40,40))
@@ -601,6 +716,8 @@ item_images = {
     "miner4" : miner4,
     "miner5" : miner5,
     "miner6" : miner6,
+    "miner1Eng" : miner1Eng, 
+    "miner2Eng": miner2Eng, 
     "upgradedWorkbench": upgradedWorkbench,
 }
 
@@ -840,7 +957,7 @@ bench_items = [
 # }
 
 placable_item = ["solarPanel", "waterStorage","miner1","miner2","miner3","miner4", "miner5","miner6", "upgradedWorkbench"] 
-placed_items = [] # if here, remove from inventrry
+placed_items = [] 
 MIN_DISTANCE = 50
 
 last_emission_times = {}
@@ -854,15 +971,6 @@ oreCount = 0
 oreRate = 0
 minerTotalEnergyReq = 0
 
-oreRates = {
-        "miner1": 0.1,
-        "miner2": 0.5,
-        "miner3": 1,
-        "miner4": 5,
-        "miner5": 10,
-        "miner6": 20
-    }
-
 miner1Count = 0
 miner2Count = 0
 miner3Count = 0
@@ -873,7 +981,7 @@ miner6Count = 0
 totalMines = miner1Count + miner2Count + miner3Count + miner4Count + miner5Count + miner6Count
 
 miner1energyReq = 1 
-miner2energyReq = 2
+miner2energyReq = 13 #2
 miner3energyReq = 6
 miner4energyReq = 10
 miner5energyReq = 13
@@ -882,7 +990,6 @@ miner6energyReq = 15
 money_count = 0
 
 people_count = 3
-
 
 def distance_between(p1, p2):
     return math.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
@@ -933,6 +1040,7 @@ fingers = [
         "collected": False,
         "last_click_time": 0,
         "image": finger, 
+        "bigImage": fingerBig,
         "assignedCollectible": random.choices(collectible_items["insideCave1"], weights=weights, k=1)[0],
     }
     for _ in range(numOfFingers)
@@ -1014,7 +1122,8 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["iron", "pickAx","purpleRock", "miner1" , "miner2" , "solarPanel", "miner6" , "solarPanel"]
+inventory_contents = ["pickAx", "solarPanel","purpleRock", "miner1" , "miner2" , "solarPanel", "miner5" , "solarPanel"]
+# inventory_contents = [None, None,None, None , None, None, None , None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
 storage_contents2 = [None] * (storageRows * storageCols)
@@ -1146,7 +1255,6 @@ def showCraftableItems():
                     screen.blit(first_line_text, (first_line_x, first_line_y))
                     screen.blit(second_line_text, (second_line_x, second_line_y))
                 else:
-                    print("first line has two words then the rest on the second but smaller")
                     first_line_text = fontSmall.render(first_line, True, (255, 255, 255))
                     second_line_text = fontSmall.render(second_line, True, (255, 255, 255))
 
@@ -1160,7 +1268,7 @@ def showCraftableItems():
                     screen.blit(second_line_text, (second_line_x, second_line_y))
         else:
             # Single-word but smaller
-            itemText = fontSmaller.render(displayName, True, (255, 255, 255))
+            itemText = fontSmall.render(displayName, True, (255, 255, 255))
             text_x = screen_width / 2 - 130
             screen.blit(itemText, (text_x, 201))
     else:
@@ -1177,10 +1285,7 @@ def showCraftableItems():
     screen.blit(leftArrow, (screen_width/2 - 211, 185)) 
     screen.blit(rightArrow, (screen_width/2 + 132, 185)) 
     screen.blit(transItem, (screen_width/2 -40, screen_height/2 + 80))    
-    #print("blit 1")
 
-    #print("itemBuilt:", itemBuilt, "itemAvailable", itemAvailable)
-    
     materials = itemData["materialsNeeded"]
     materialsNeededName = itemData["materialsNeededName"]
     material_box_width, material_box_height = 55, 55
@@ -1243,7 +1348,6 @@ def showCraftableItems():
 
     if itemBuilt:
         bench_contents = [None] * len(materials)
-        print("itemBuilt")
 
 play_music("background", loop=True, volume=2)
 
@@ -1292,8 +1396,42 @@ while running:
     if health == 0: 
         game_over = True
 
+    if not paused and inHome != True: 
+        if emittedBoltsCount > minerTotalEnergyReq: 
+            oreRate = (
+                    (miner1Count * 0.1) +
+                    (miner2Count * 0.5) +
+                    (miner3Count * 1) +
+                    (miner4Count * 5) +
+                    (miner5Count * 10) +
+                    (miner6Count * 30)
+                )
+        minerTotalEnergyReq = (miner1energyReq * miner1Count) + (miner2energyReq * miner2Count) + (miner3energyReq * miner3Count) + (miner4energyReq * miner4Count) + (miner5energyReq * miner5Count) + (miner6energyReq * miner6Count)
+        # print("required: ", minerTotalEnergyReq)
+
+        if emittedBoltsCount > 0 and oreRate != 0: 
+            if current_time - last_ore_time >= ore_interval:
+                oreCount += oreRate
+                emittedBoltsCount -= minerTotalEnergyReq 
+                # emittedBoltsCount = max(0, emittedBoltsCount - minerTotalEnergyReq) # this didn't fix it cause it will go 3 then 0 then back to 3
+                last_ore_time = current_time
+        if emittedBoltsCount <= 0:  
+            oreRate = 0
+            emittedBoltsCount = 0 # i think this is causing bug. when i place solar pannel it makes bolt count 0. but without it it would go negeitv :(
+        # if emittedBoltsCount > minerTotalEnergyReq: 
+        #     oreRate = (
+        #             (miner1Count * 0.1) +
+        #             (miner2Count * 0.5) +
+        #             (miner3Count * 1) +
+        #             (miner4Count * 5) +
+        #             (miner5Count * 10) +
+        #             (miner6Count * 30)
+        #         )
+        # if emittedBoltsCount > minerTotalEnergyReq: 
+        #     orerate = oreRateCopy
+
     for item in placed_items:
-        last_emission_time = last_emission_times.get(item["position"], 0) # this makes no sense 
+        last_emission_time = last_emission_times.get(item["position"], 0) # this makes no sense !!!!!!!!!
 
         itemName = item['item']
 
@@ -1312,17 +1450,6 @@ while running:
                 if itemName == 'miner6':
                     miner6Count += 1
                 item["isAdded"] = True 
-            
-                oreRate = (
-                        (miner1Count * 0.1) +
-                        (miner2Count * 0.5) +
-                        (miner3Count * 1) +
-                        (miner4Count * 5) +
-                        (miner5Count * 10) +
-                        (miner6Count * 30)
-                    )
-                minerTotalEnergyReq = (miner1energyReq * miner1Count) + (miner2energyReq * miner2Count) + (miner3energyReq * miner3Count) + (miner4energyReq * miner4Count) + (miner5energyReq * miner5Count) + (miner6energyReq * miner6Count)
-                print(minerTotalEnergyReq)
 
             if item["item"] == "solarPanel":
                 if current_time - last_emission_time >= emission_interval:
@@ -1337,14 +1464,6 @@ while running:
                     else: 
                         thirst = 100
                         last_emission_times[item["position"]] = current_time
-
-            if emittedBoltsCount > 0 and oreRate != 0: 
-                if current_time - last_ore_time >= ore_interval:
-                    oreCount += oreRate
-                    emittedBoltsCount -= minerTotalEnergyReq
-                    last_ore_time = current_time
-            elif emittedBoltsCount != 0: 
-                oreRate = 0 # does not go back to normal value after bolts is no longer 0 ``
 
     if current_screen == "storage1":
         current_storage_contents = storage_contents1
@@ -1387,6 +1506,10 @@ while running:
                                 break
 
                         if is_valid_position and heldItem in placable_item:
+                            # if heldItem == "miner2": 
+                            #     if emittedBoltsCount > minerTotalEnergyReq:  # or if orerate > 0
+                            #         heldItem == "miner2Eng"
+                            #         print("HIIIIII: ", heldItem)
                             placed_items.append({
                                 "background": currentBackground, 
                                 "position": centered_pos, 
@@ -1418,9 +1541,7 @@ while running:
                             if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: 
                                 inventory_contents[i]= inventory_contents[selected_slot_index]
                                 inventory_contents[selected_slot_index]= None
-                                print("move within inventory 1")
                             elif inStorage: # storage to inventory 
-                                print("storage to inventory 1")
                                 if inStorage and selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None:
                                     inventory_contents[i]= current_storage_contents[selected_slot_index]
                                     if not selected_item_from_inventory:
@@ -1433,7 +1554,6 @@ while running:
                         elif inventory_contents[i] is not None and selected_slot_index is not None: 
                             if not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None:
                                 # Swap from storage to inventory
-                                print("Swap storage to inventory 1")
                                 if inStorage: 
                                     inventory_contents[i], current_storage_contents[selected_slot_index] = (
                                         current_storage_contents[selected_slot_index],
@@ -1441,7 +1561,6 @@ while running:
                                     )
                             else:                   
                                 # swap/deselect within inventory      
-                                print("swap/deselect within inventory 1")    
                                 inventory_contents[i], inventory_contents[selected_slot_index] =(
                                 inventory_contents[selected_slot_index],
                                 inventory_contents[i]
@@ -1463,20 +1582,16 @@ while running:
                                 if selected_item_from_inventory and inventory_contents[selected_slot_index] is not None: # Inventory to storage
                                     current_storage_contents[i] = inventory_contents[selected_slot_index]
                                     inventory_contents[selected_slot_index] = None
-                                    print("Inventory to storage 2")
                                 elif not selected_item_from_inventory and current_storage_contents[selected_slot_index] is not None:  # Swap from storage to inventory
                                     current_storage_contents[i]= current_storage_contents[selected_slot_index]
                                     current_storage_contents[selected_slot_index]= None
-                                    print("move within storage 2")
                             else:
                                 if selected_item_from_inventory and selected_slot_index is not None and inventory_contents[selected_slot_index] is not None: # swap from inventory to storage
                                     inventory_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         inventory_contents[selected_slot_index],
                                     )
-                                    print("Swap inventory to storage 2")
                                 elif selected_slot_index is not None and current_storage_contents[selected_slot_index] is not None: # swap within storage
-                                    print("swap within 2")
                                     current_storage_contents[selected_slot_index], current_storage_contents[i] = (
                                         current_storage_contents[i],
                                         current_storage_contents[selected_slot_index],
@@ -1526,13 +1641,11 @@ while running:
                                         # Check if the inventory item matches the required material
                                         if inventory_contents[selected_slot_index] == materialsNeededName[i]:
                                             swapAvailable = True
-                                            print("Valid Swap Available: Inventory to Bench")
                                         else:
                                             print("Invalid Swap: Inventory item doesn't match material needed.")
                                     elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None:
                                         # Bench to bench swap is always allowed (adjust this if needed)
                                         swapAvailable = True
-                                        print("Valid Swap: Bench to Bench")
                                 
                                 # Perform Swap Only If swapAvailable is True
                                 if swapAvailable:
@@ -1542,7 +1655,6 @@ while running:
                                     elif not selected_item_from_inventory and bench_contents[selected_slot_index] is not None:
                                         bench_contents[i] = bench_contents[selected_slot_index]
                                         bench_contents[selected_slot_index] = None
-                                    print("Swap Completed")
                                 else:
                                     print("Swap Denied")
 
@@ -1667,8 +1779,12 @@ while running:
                 "landed": False,
                 "collectedLoot": False,
                 "spawnTime": totalTime,
+                "rockPresent": False,
+                "rockCollected": False,
+                "collected": False,
+                "assignedCollectible": random.choices(collectible_items["insideCave1"], weights=weights, k=1)[0],
             })
-            next_parachute_spawn_time += random.choice([3, 10, 30, 60, 120])
+            next_parachute_spawn_time += random.choice([3, 5, 30, 60, 120])
 
     if current_screen == "game":       
         for parachuteLander in parachuteLanders:
@@ -1702,6 +1818,21 @@ while running:
                     if parachuteLander_rect.colliderect(player_rect): 
                         current_screen = "inPayload"
                         parachuteLander["collectedLoot"] = True
+            if parachuteLander["crashed"] == True and parachuteLander["collectedLoot"] == False:
+                if parachuteLander_rect.collidepoint(mouse_pos):
+                    if parachuteLander_rect.colliderect(player_rect): 
+                        print("in range")
+                        if clicked: 
+                            print("clicked")
+                            parachuteLander["rockPresent"] = True  
+
+                if parachuteLander["rockPresent"] and not parachuteLander["rockCollected"]: 
+                    collectible = parachuteLander["assignedCollectible"]
+                    if collectible:
+                        screen.blit(collectible["goodImage"], (parachuteLander["pos"].x, parachuteLander["pos"].y))
+                    else:
+                        screen.blit(purpleRock, (parachuteLander["pos"].x, parachuteLander["pos"].y))
+                
 
         screen.blit(imageSprite, (player_pos.x,player_pos.y))
 
@@ -1726,23 +1857,18 @@ while running:
             
             for cave in caves:
                 screen.blit(cave1Img, (cave["pos"].x, cave["pos"].y))
-                enter_cave_rect = pygame.Rect(cave["pos"].x - 50, cave["pos"].y - 40, 200, 60)  
-                mineText = font.render('Enter cave', True, (100, 100, 50)) 
                 cave_rect = pygame.Rect(cave["pos"].x, cave["pos"].y, 100, 100)
             
                 if player_rect.colliderect(cave_rect):  
                     mining = True 
-                    pygame.draw.rect(screen, "black", enter_cave_rect, 50)
-                    screen.blit(mineText, (enter_cave_rect.x + 7, enter_cave_rect.y + 10)) 
-                    keys = pygame.key.get_pressed()
-                    if keys[pygame.K_RETURN]:
+                    if cave_rect.collidepoint(mouse_pos) and clicked:
                         current_screen = "insideCave1"  
                         if not muted:
                             play_music("mine", loop=True, volume=3)
 
             enter_station_rect = pygame.Rect(screen_width-400, 55, 230, 60)  
             stationRect = pygame.Rect(screen_width-350, 150, 100,100)
-            stationText = font.render('Enter station', True, (100, 100, 50)) 
+            stationText = font.render('Enter station', True, (100, 100, 50)) #remove
             screen.blit(imageSprite, (player_pos.x, player_pos.y)) 
 
             # cows logic
@@ -1778,10 +1904,7 @@ while running:
                                 screen.blit(crewText, (45, screen_height/2 +3)) 
 
         if player_rect.colliderect(stationRect):  
-            pygame.draw.rect(screen, "black", enter_station_rect, 50)
-            screen.blit(stationText, (enter_station_rect.x + 7, enter_station_rect.y + 10)) 
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_RETURN]:
+            if enter_station_rect.collidepoint(mouse_pos) and clicked:
                 current_screen = "hall3"  
 
         for item in placed_items:
@@ -1911,26 +2034,27 @@ while running:
         for finger in fingers: 
             finger_rect = pygame.Rect(finger["pos"].x, finger["pos"].y, 100, 100)
             if finger_rect.colliderect(player_rect): 
+                fingerIsBigger = True
                 mouse_pos = pygame.mouse.get_pos()  
                 if finger_rect.collidepoint(mouse_pos):
                     if heldItem == "pickAx":
-                        print("waiting for click")
                         if clicked: 
-                            print("Mouse clicked")
-                            finger["clickCount"] += 1
+                            finger["clickCount"] += 1 #remove all this 
                             finger["last_click_time"] = pygame.time.get_ticks() 
                         if finger["clickCount"] == 1:
                             finger["rockPresent"] = True  
                     else: 
                         if clicked: 
                             showHint = True
+            else: 
+                fingerIsBigger = False
 
             if finger["rockPresent"] and not finger["rockCollected"]: 
                 collectible = finger["assignedCollectible"]
                 if collectible:
                     screen.blit(collectible["goodImage"], (finger["pos"].x, finger["pos"].y))
                 else:
-                    screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))                
+                    screen.blit(purpleRock, (finger["pos"].x, finger["pos"].y))     # why           
                 
                 current_time = pygame.time.get_ticks()
                 elapsed_time = current_time - finger.get("last_click_time", 0)
@@ -1938,10 +2062,12 @@ while running:
                 if elapsed_time < 1:
                     add_to_inventory(collectible)
                 if elapsed_time > 500:
-                    print("Rock collected after 1 second")
                     finger["rockCollected"] = True 
             elif not finger["rockCollected"]: 
-                screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y)) 
+                if fingerIsBigger: 
+                    screen.blit(finger["bigImage"], (finger["pos"].x, finger["pos"].y)) 
+                else:
+                    screen.blit(finger["image"], (finger["pos"].x, finger["pos"].y)) 
 
         if showHint: 
             pygame.draw.rect(screen, "black", (200, 350, 880, 60), 50)
@@ -1978,7 +2104,6 @@ while running:
         screen.blit(inPayload, (0, 0))  
         collect_rect = pygame.Rect(400, 472, 375, 85)
         if collect_rect.collidepoint(mouse_pos) and clicked:
-            print("collecting")
             current_screen = "game"
 
     if current_screen is not "game" and current_screen is not "inPayload":
@@ -2009,12 +2134,16 @@ while running:
     countMoneyText = font2.render(f"{money_count}", True, (255, 255, 255))
     screen.blit(countMoneyText, (60, 5))
 
-    screen.blit(energyImg, (250, 5))
-    if emittedBoltsCount >= 0: 
-        energyCountText = font2.render(f"{emittedBoltsCount}", True, (255, 255, 255))
-    else: 
-        energyCountText = font2.render(f"0", True, (255, 255, 255))
-    screen.blit(energyCountText, (280, 5))
+    # print("bolts available: ", emittedBoltsCount)
+
+    # screen.blit(energyImg, (250, 5))
+    screen.blit(energyImg, (160, 5))
+    energyCountText = font2.render(f"{emittedBoltsCount}", True, (255, 255, 255))
+    # screen.blit(energyCountText, (280, 5))
+    screen.blit(energyCountText, (190, 5))
+
+    oreCountText = font2Small.render(f"Eng Req: {minerTotalEnergyReq:.2f}", True, (255, 255, 255))
+    screen.blit(oreCountText, (220, 10))
 
     screen.blit(ore, (500,5))
     oreCountText = font2.render(f"{oreCount:.2f}", True, (255, 255, 255))
@@ -2022,7 +2151,9 @@ while running:
 
     screen.blit(clockIcon, (750,1))
     oreRateText = font2.render(f"{oreRate}", True, (255, 255, 255))
+    oreRateUnitsText = font2Small.render("Ore/Sec", True, (255, 255, 255))
     screen.blit(oreRateText, (790, 5))
+    screen.blit(oreRateUnitsText, (835, 14)) # change x location dynamiclly depending on length of number
 
     screen.blit(people, (1000,1))
     countPeopleText = font2.render(f"{people_count}", True, (255, 255, 255))
@@ -2066,18 +2197,70 @@ while running:
 
     if inHome: 
         screen.blit(homeScreen, (0,0))
-        startGameRec = pygame.Rect(screen_width/2 - 120, 380, 335, 90)
-        if startGameRec.collidepoint(mouse_pos) and clicked: 
+        startGameRec = pygame.Rect(screen_width/2 - 172, 380, 335, 90)
+
+        isHovered = startGameRec.collidepoint(mouse_pos) 
+
+        pulse = 1 + 0.05 * math.sin(totalTime * 3)
+        draw_rect = startGameRec.inflate(startGameRec.width * (pulse - 1),
+                                        startGameRec.height * (pulse - 1))
+        
+        color = LAVA_RED if isHovered else SUNSET_ORANGE
+
+        pygame.draw.rect(screen, color, draw_rect, border_radius=20)
+
+        text_surface = font.render("START", True, WHITE)
+        text_rect = text_surface.get_rect(center=draw_rect.center) 
+        text_rect.y += 5
+        screen.blit(text_surface, text_rect)
+
+        if isHovered and clicked: 
             inHome = False 
             paused = True # CHANGE TO NEW VAR  ININTROS 
             inIntro1 = True 
             mouseReleased = False
     if inIntro1 == True: 
         screen.blit(intro1, (0,0))
-        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
-            inIntro1 = False
-            inIntro2 = True
-            mouseReleased = False
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro1Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y=555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro1 = False 
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+        if inIntro1:
+            if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+                frame_count = 0
+                inIntro1 = False
+                inIntro2 = True
+                mouseReleased = False
+        # inIntro1, inIntro2, mouseReleased, frame_count = nextSlide(inIntro1, inIntro2, mouseReleased)
     if inIntro2 == True:
         screen.blit(intro2, (0,0))
         draw_typing_dialog(
@@ -2087,7 +2270,7 @@ while running:
             text_color,
             shadow_color,
             x=40,
-            y_start=screen.get_height() - len(intro2Lines) * 40 - 40,
+            y = 555,
             chars_per_frame=chars_per_frame,
             frame_count=frame_count
         )
@@ -2095,67 +2278,427 @@ while running:
         pygame.display.flip()
         clock.tick(60) 
 
-        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
-            inIntro2 = False
-            inIntro3 = True
-            mouseReleased = False
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+
+        if inIntro2:
+            if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+                frame_count = 0
+                inIntro2 = False
+                inIntro3 = True
+                mouseReleased = False
     if inIntro3 == True:
         screen.blit(intro3, (0,0))
-        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro3Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
             inIntro3 = False
-            inIntro35 = True
-            mouseReleased = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+        if inIntro3:
+            if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+                frame_count = 0 
+                inIntro3 = False
+                inIntro35 = True
+                mouseReleased = False
     if inIntro35 == True:
         screen.blit(intro35, (0,0))
-        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
-            inIntro35 = False
-            inIntro4 = True
-            mouseReleased = False
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro4Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+        if inIntro35:
+            if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+                frame_count = 0
+                inIntro35 = False
+                inIntro4 = True
+                mouseReleased = False
     if inIntro4 == True:
         screen.blit(intro4, (0,0))
-        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro5Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
             inIntro4 = False
-            inIntro5 = True
-            mouseReleased = False
-    if inIntro5 == True:
-        screen.blit(intro5, (0,0))
-        if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
             inIntro5 = False
-            inIntro6 = True
-            mouseReleased = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+        if inIntro4:
+            if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+                frame_count = 0
+                inIntro4 = False
+                inIntro5 = True
+                mouseReleased = False
+    if inIntro5 == True:
+        screen.blit(intro5c, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro6Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+        if inIntro5:
+            if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+                frame_count = 0
+                inIntro5 = False
+                inIntro6 = True
+                mouseReleased = False
     if inIntro6 == True:
         screen.blit(intro6, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro7Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+
         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            frame_count = 0
             inIntro6 = False
             inIntro7 = True
             mouseReleased = False
     if inIntro7 == True:
         screen.blit(intro7, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro8Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+
         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            frame_count = 0
             inIntro7 = False
             inIntro8 = True
             mouseReleased = False
     if inIntro8 == True:
         screen.blit(intro8, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro9Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+
         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            frame_count = 0
             inIntro8 = False
             inIntro9 = True
             mouseReleased = False
     if inIntro9 == True:
         screen.blit(intro9, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro10Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+
         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            frame_count = 0
             inIntro9 = False
             inIntro10 = True
             mouseReleased = False
     if inIntro10 == True:
         screen.blit(intro10, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro11Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+
         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            frame_count = 0
             inIntro10 = False
             inIntro11 = True
             mouseReleased = False
     if inIntro11 == True:
         screen.blit(intro11, (0,0))
+        draw_typing_dialog(
+            screen,
+            font3,
+            intro12Lines,
+            text_color,
+            shadow_color,
+            x=40,
+            y = 555,
+            chars_per_frame=chars_per_frame,
+            frame_count=frame_count
+        )
+        frame_count += 1  
+        pygame.display.flip()
+        clock.tick(60) 
+
+        skipRect = pygame.Rect(15, 15, 110, 50)
+        pygame.draw.rect(screen, "black", skipRect, 50)
+        skipText = font.render('Skip', True, MARS_RED)
+        screen.blit(skipText, (35, 16))
+
+        if skipRect.collidepoint(mouse_pos) and clicked:
+            inIntro2 = False 
+            inIntro3 = False
+            inIntro4 = False
+            inIntro5 = False
+            inIntro6 = False
+            inIntro7 = False
+            inIntro8 = False
+            inIntro9 = False
+            inIntro10 = False
+            inIntro11 = False
+            paused = False
+
         if screenRec.collidepoint(mouse_pos) and clicked and mouseReleased:
+            frame_count = 0
             inIntro11 = False
             paused = False
             mouseReleased = False
