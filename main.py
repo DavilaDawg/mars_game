@@ -30,7 +30,8 @@
 # bug with the energy and oreRate. when it hits zero it needs a panel to be placed to reset it even if bolts>0 
 # add bolt animation to solar panel every 3 seconds 
 #change the way things are swaped, i want to select the new item rather than switch them: do click and hold
-# when click anywhere when in range of 
+# when click anywhere when in range of ??
+# make food disapere from inventory when held for long enough rather than waiting for the mouse to go up 
 
 ## CURRENT TASKS
 # maks scrap logic 
@@ -279,6 +280,7 @@ swapAvailable = False
 thrustersAttached = False
 activateThrusters= False
 fingerIsBigger = False
+removeFood = False
 
 box_rects = []
 
@@ -1702,11 +1704,15 @@ while running:
 
                                 selected_slot_index = None
                             break 
-        # elif event.type == pygame.MOUSEBUTTONDOWN: 
-        #     if heldItem in food_images:
-        #         eat_sfx.set_volume(2.0)
-        #         eat_sfx.play()
-        elif event.type == pygame.MOUSEBUTTONUP:
+
+        # if removeFood:  # doesnt work to auto remove food cause it becomes true only after mouse up 
+        #     item_index = inventory_contents.index(heldItem) 
+        #     inventory_contents[item_index] = None  
+        #     heldItem = None
+        #     currentInventoryItem = None 
+        #     selected_slot_index= None
+
+        if event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1: 
                 holding = False
                 hold_duration = pygame.time.get_ticks() - holdStartTime 
@@ -1714,6 +1720,7 @@ while running:
                     if heldItem in food_images:
                         if 100 >= hunger + increaseHunger:
                             hunger += increaseHunger
+                            removeFood = True 
                         else: 
                             hunger = 100
                         item_index = inventory_contents.index(heldItem) 
@@ -1721,7 +1728,6 @@ while running:
                         heldItem = None
                         currentInventoryItem = None 
                         selected_slot_index= None
-                        currentInventoryItem = None
 
     if current_screen == "game":     
         if currentBackground == "topRight":
