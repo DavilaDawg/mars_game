@@ -585,10 +585,13 @@ miner2 = pygame.transform.smoothscale(pygame.image.load('./icon/miner2.png'), (6
 miner3 = pygame.transform.smoothscale(pygame.image.load('./icon/miner3.png'), (220,220))
 miner4 = pygame.transform.smoothscale(pygame.image.load('./icon/miner4.png'), (220,220))
 miner5 = pygame.transform.smoothscale(pygame.image.load('./icon/miner5.png'), (220,220))
-miner6 = pygame.transform.smoothscale(pygame.image.load('./icon/miner6.png'), (300,300))
+miner6 = pygame.transform.smoothscale(pygame.image.load('./icon/miner6.png'), (280,280))
 miner1Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner1Eng.png'), (70,70))
-miner2Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner1Eng.png'), (60,60))
-
+miner2Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner2Eng.png'), (60,60))
+miner3Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner3Eng.png'), (220,220))
+miner4Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner4Eng.png'), (220,220))
+miner5Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner5Eng.png'), (220,220))
+miner6Eng = pygame.transform.smoothscale(pygame.image.load('./icon/miner6eng.png'), (280,280))
 money = pygame.transform.smoothscale(pygame.image.load('./icon/moneyIcon.png'), (40,40))
 people = pygame.transform.smoothscale(pygame.image.load('./icon/peopleIcon.png'), (40,40))
 clockIcon = pygame.transform.smoothscale(pygame.image.load('./icon/clockIcon.png'), (40,40))
@@ -718,6 +721,10 @@ item_images = {
     "miner6" : miner6,
     "miner1Eng" : miner1Eng, 
     "miner2Eng": miner2Eng, 
+    "miner3Eng": miner3Eng,
+    "miner4Eng": miner4Eng,
+    "miner5Eng": miner5Eng,
+    "miner6Eng": miner6Eng,
     "upgradedWorkbench": upgradedWorkbench,
 }
 
@@ -981,11 +988,28 @@ miner6Count = 0
 totalMines = miner1Count + miner2Count + miner3Count + miner4Count + miner5Count + miner6Count
 
 miner1energyReq = 1 
-miner2energyReq = 13 #2
+miner2energyReq = 2
 miner3energyReq = 6
 miner4energyReq = 10
 miner5energyReq = 13
 miner6energyReq = 15
+
+TO_ENG = { 
+    "miner1": "miner1Eng",
+    "miner2": "miner2Eng",
+    "miner3": "miner3Eng",
+    "miner4": "miner4Eng",
+    "miner5": "miner5Eng",
+    "miner6": "miner6Eng",
+}
+TO_BASE = {
+    "miner1Eng": "miner1",
+    "miner2Eng": "miner2",
+    "miner3Eng": "miner3",
+    "miner4Eng": "miner4",
+    "miner5Eng": "miner5",
+    "miner6Eng": "miner6",
+}
 
 money_count = 0
 
@@ -1122,7 +1146,8 @@ for row in range(foodRows):
         y = foodStartY + row * (foodSlotSize + foodMargin)
         foodSlots.append(pygame.Rect(x, y, foodSlotSize, foodSlotSize))
 
-inventory_contents = ["pickAx", "solarPanel","purpleRock", "miner1" , "miner2" , "solarPanel", "miner5" , "solarPanel"]
+inventory_contents = ["miner3", "solarPanel","solarPanel", "miner1" , "miner2" , "solarPanel", "miner5" , "solarPanel"]
+# inventory_contents = ["pickAx", "solarPanel","purpleRock", "miner1" , "miner2" , "solarPanel", "miner5" , "solarPanel"]
 # inventory_contents = [None, None,None, None , None, None, None , None]
 
 storage_contents1 = [None] * (storageRows * storageCols)
@@ -1407,29 +1432,16 @@ while running:
                     (miner6Count * 30)
                 )
         minerTotalEnergyReq = (miner1energyReq * miner1Count) + (miner2energyReq * miner2Count) + (miner3energyReq * miner3Count) + (miner4energyReq * miner4Count) + (miner5energyReq * miner5Count) + (miner6energyReq * miner6Count)
-        # print("required: ", minerTotalEnergyReq)
 
         if emittedBoltsCount > 0 and oreRate != 0: 
             if current_time - last_ore_time >= ore_interval:
                 oreCount += oreRate
                 emittedBoltsCount -= minerTotalEnergyReq 
-                # emittedBoltsCount = max(0, emittedBoltsCount - minerTotalEnergyReq) # this didn't fix it cause it will go 3 then 0 then back to 3
                 last_ore_time = current_time
         if emittedBoltsCount <= 0:  
             oreRate = 0
-            emittedBoltsCount = 0 # i think this is causing bug. when i place solar pannel it makes bolt count 0. but without it it would go negeitv :(
-        # if emittedBoltsCount > minerTotalEnergyReq: 
-        #     oreRate = (
-        #             (miner1Count * 0.1) +
-        #             (miner2Count * 0.5) +
-        #             (miner3Count * 1) +
-        #             (miner4Count * 5) +
-        #             (miner5Count * 10) +
-        #             (miner6Count * 30)
-        #         )
-        # if emittedBoltsCount > minerTotalEnergyReq: 
-        #     orerate = oreRateCopy
-
+            emittedBoltsCount = 0 
+    
     for item in placed_items:
         last_emission_time = last_emission_times.get(item["position"], 0) # this makes no sense !!!!!!!!!
 
@@ -1437,17 +1449,17 @@ while running:
 
         if not paused and inHome != True: 
             if item["isAdded"] == False and emittedBoltsCount > 0:
-                if itemName == 'miner1':
+                if itemName == 'miner1' or itemName == 'miner1Eng':
                     miner1Count += 1
-                if itemName == 'miner2':
+                if itemName == 'miner2' or itemName == "miner2Eng":
                     miner2Count += 1
-                if itemName == 'miner3':
+                if itemName == 'miner3' or itemName == "miner3Eng":
                     miner3Count += 1
-                if itemName == 'miner4':
+                if itemName == 'miner4' or itemName == "miner4Eng":
                     miner4Count += 1
-                if itemName == 'miner5':
+                if itemName == 'miner5' or itemName == "miner5Eng":
                     miner5Count += 1
-                if itemName == 'miner6':
+                if itemName == 'miner6' or itemName == "miner6Eng":
                     miner6Count += 1
                 item["isAdded"] = True 
 
@@ -1506,20 +1518,39 @@ while running:
                                 break
 
                         if is_valid_position and heldItem in placable_item:
-                            # if heldItem == "miner2": 
-                            #     if emittedBoltsCount > minerTotalEnergyReq:  # or if orerate > 0
-                            #         heldItem == "miner2Eng"
-                            #         print("HIIIIII: ", heldItem)
+                            item_to_place = heldItem
+                            
+                            # if oreRate > 0:
+                            #     # UPGRADE: Eng -> base; base stays base
+                            #     item_to_place = TO_BASE.get(heldItem, heldItem)
+                            # else:  # oreRate == 0
+                            #     # DOWNGRADE: base -> Eng; Eng stays Eng
+                            #     item_to_place = TO_ENG.get(heldItem, heldItem)
+                            
+                            if heldItem == "miner1" and emittedBoltsCount < minerTotalEnergyReq:  
+                                item_to_place = "miner1Eng"
+                            if heldItem == "miner2" and oreRate == 0:  
+                                item_to_place = "miner2Eng"
+                            if heldItem == "miner3" and oreRate == 0:  
+                                item_to_place = "miner3Eng"
+                            if heldItem == "miner4" and oreRate == 0:  
+                                item_to_place = "miner4Eng"
+                            if heldItem == "miner5" and oreRate == 0:  
+                                item_to_place = "miner5Eng"
+                            if heldItem == "miner6" and oreRate == 0:  
+                                item_to_place = "miner6Eng"
+
                             placed_items.append({
                                 "background": currentBackground, 
                                 "position": centered_pos, 
-                                "item": heldItem, 
+                                "item": item_to_place, 
                                 "isAdded" : False,
                             })
                         if heldItem in inventory_contents and heldItem in placable_item:
                             item_index = inventory_contents.index(heldItem) 
                             inventory_contents[item_index] = None  
                             heldItem = None
+                            item_to_place = None
                             selected_slot_index= None
                             currentInventoryItem = None
 
@@ -1909,6 +1940,11 @@ while running:
 
         for item in placed_items:
             if item["background"] == currentBackground:
+                if oreRate == 0 and item["item"] in TO_ENG:
+                    item["item"] = TO_ENG[item["item"]]
+                elif oreRate > 0 and item["item"] in TO_BASE:
+                    item["item"] = TO_BASE[item["item"]]
+
                 image = item_images[item["item"]]
                 screen.blit(image, item["position"])
 
@@ -2143,7 +2179,7 @@ while running:
     screen.blit(energyCountText, (190, 5))
 
     oreCountText = font2Small.render(f"Eng Req: {minerTotalEnergyReq:.2f}", True, (255, 255, 255))
-    screen.blit(oreCountText, (220, 10))
+    screen.blit(oreCountText, (300, 11))
 
     screen.blit(ore, (500,5))
     oreCountText = font2.render(f"{oreCount:.2f}", True, (255, 255, 255))
