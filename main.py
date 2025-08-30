@@ -68,7 +68,9 @@ music_files = {
 
 pop_sfx = pygame.mixer.Sound("./sound/pop.mp3")
 eat_sfx = pygame.mixer.Sound("./sound/eat.mp3")
-placeItem_sfx = pygame.mixer.Sound("./sound/placeItem.mp3")
+itemPickup_sfx = pygame.mixer.Sound("./sound/itemPickup.mp3")
+loot_sfx = pygame.mixer.Sound("./sound/loot.mp3")
+
 
 def play_music(music_key, loop=True, volume=1):
     if music_key in music_files:
@@ -1177,6 +1179,9 @@ inventory_timestamps = [None] * len(inventory_contents)
 def add_to_inventory(item):
     for i, content in enumerate(inventory_contents):
         if content is None:  # first empty slot
+            if not muted:
+                itemPickup_sfx.set_volume(2.0)
+                itemPickup_sfx.play()
             if "bad_after" in item:
                 if totalTime < item.get("bad_after", 0):
                     inventory_contents[i] = item["goodName"]
@@ -1506,8 +1511,9 @@ while running:
                 holdStartTime = pygame.time.get_ticks()
 
                 if heldItem in food_images:
-                    eat_sfx.set_volume(2.0)
-                    eat_sfx.play()
+                    if not muted:
+                        eat_sfx.set_volume(2.0)
+                        eat_sfx.play()
 
                 is_valid_position = True
                 if current_screen == "game": 
@@ -1556,8 +1562,9 @@ while running:
                                 "item": item_to_place, 
                                 "isAdded" : False,
                             })
-                            pop_sfx.set_volume(2.0)
-                            pop_sfx.play()
+                            if not muted:
+                                pop_sfx.set_volume(2.0)
+                                pop_sfx.play()
 
                         if heldItem in inventory_contents and heldItem in placable_item:
                             item_index = inventory_contents.index(heldItem) 
@@ -2161,6 +2168,9 @@ while running:
         screen.blit(inPayload, (0, 0))  
         collect_rect = pygame.Rect(400, 472, 375, 85)
         if collect_rect.collidepoint(mouse_pos) and clicked:
+            if not muted:
+                loot_sfx.set_volume(3.0)
+                loot_sfx.play()
             current_screen = "game"
 
     if current_screen is not "game" and current_screen is not "inPayload":
