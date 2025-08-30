@@ -65,6 +65,10 @@ music_files = {
     "mine" : "./sound/mine.mp3",
 }
 
+pop_sfx = pygame.mixer.Sound("./sound/pop.mp3")
+eat_sfx = pygame.mixer.Sound("./sound/eat.mp3")
+placeItem_sfx = pygame.mixer.Sound("./sound/placeItem.mp3")
+
 def play_music(music_key, loop=True, volume=1):
     if music_key in music_files:
         pygame.mixer.music.load(music_files[music_key])
@@ -1499,6 +1503,10 @@ while running:
                 holding = True
                 holdStartTime = pygame.time.get_ticks()
 
+                if heldItem in food_images:
+                    eat_sfx.set_volume(2.0)
+                    eat_sfx.play()
+
                 is_valid_position = True
                 if current_screen == "game": 
                     if heldItem and heldItem in item_images:
@@ -1546,6 +1554,9 @@ while running:
                                 "item": item_to_place, 
                                 "isAdded" : False,
                             })
+                            pop_sfx.set_volume(2.0)
+                            pop_sfx.play()
+
                         if heldItem in inventory_contents and heldItem in placable_item:
                             item_index = inventory_contents.index(heldItem) 
                             inventory_contents[item_index] = None  
@@ -1691,7 +1702,10 @@ while running:
 
                                 selected_slot_index = None
                             break 
-
+        # elif event.type == pygame.MOUSEBUTTONDOWN: 
+        #     if heldItem in food_images:
+        #         eat_sfx.set_volume(2.0)
+        #         eat_sfx.play()
         elif event.type == pygame.MOUSEBUTTONUP:
             if event.button == 1: 
                 holding = False
@@ -1947,6 +1961,7 @@ while running:
 
                 image = item_images[item["item"]]
                 screen.blit(image, item["position"])
+
 
     if currentInventoryItem and heldItem in inventory_contents: 
         smaller_item = pygame.transform.scale(currentInventoryItem, (30, 30))
